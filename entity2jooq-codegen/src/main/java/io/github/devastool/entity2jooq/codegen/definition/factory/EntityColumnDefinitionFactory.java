@@ -26,7 +26,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.logging.Logger;
 import org.jooq.impl.SQLDataType;
 import org.jooq.meta.SchemaDefinition;
 import org.jooq.meta.TableDefinition;
@@ -50,7 +49,6 @@ public class EntityColumnDefinitionFactory {
     String name = field.getName();
     Class<?> classType = field.getType();
     String sqlType = SQL_TYPES.get(classType);
-    Logger.getLogger("EntityColumnDefinitionFactory").info("__BUILD__:" + classType + " " + sqlType);
 
     Column columnAnnotation = field.getAnnotation(Column.class);
     if (columnAnnotation != null) {
