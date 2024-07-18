@@ -124,7 +124,7 @@ class TestEntityTest {
         );
 
     for (TestEntity entity : DATA) {
-      Assertions.assertFalse(results.contains(entity));
+      Assertions.assertTrue(results.contains(entity));
     }
     connection.close();
   }
