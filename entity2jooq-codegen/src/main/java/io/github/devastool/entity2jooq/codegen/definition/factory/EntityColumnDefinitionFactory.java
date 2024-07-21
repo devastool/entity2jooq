@@ -35,8 +35,12 @@ import org.jooq.meta.TableDefinition;
  * @author Andrey_Yurzanov
  * @since 0.0.1
  */
-public class EntityColumnDefinitionFactory {
+public class EntityColumnDefinitionFactory extends ContextableFactory{
   private final Map<Class<?>, String> SQL_TYPES = initTypes();
+
+  public EntityColumnDefinitionFactory(FactoryContext<?> context) {
+    super(context);
+  }
 
   /**
    * Builds new instance of {@link EntityColumnDefinition}.
@@ -66,10 +70,10 @@ public class EntityColumnDefinitionFactory {
     }
 
     SchemaDefinition schema = table.getSchema();
-    var strategyInstance = NamingStrategy.getInstance(strategyClass);
+    var strategy = (NamingStrategy) getContext().getInstance(strategyClass);
     EntityDataTypeDefinition type = new EntityDataTypeDefinition(schema, classType, sqlType);
     return Optional.of(
-        new EntityColumnDefinition(table, strategyInstance.resolve(name), type)
+        new EntityColumnDefinition(table, strategy.resolve(name), type)
     );
   }
 

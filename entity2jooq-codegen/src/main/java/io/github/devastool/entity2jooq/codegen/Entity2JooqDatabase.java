@@ -18,6 +18,7 @@ package io.github.devastool.entity2jooq.codegen;
 
 import static io.github.devastool.entity2jooq.codegen.filesystem.ExtFileVisitor.CLASS_FILE_EXT;
 
+import io.github.devastool.entity2jooq.codegen.definition.factory.StrategyContext;
 import io.github.devastool.entity2jooq.codegen.definition.factory.EntityColumnDefinitionFactory;
 import io.github.devastool.entity2jooq.codegen.definition.factory.EntitySchemaDefinitionFactory;
 import io.github.devastool.entity2jooq.codegen.definition.factory.EntityTableDefinitionFactory;
@@ -58,11 +59,12 @@ import org.jooq.meta.UDTDefinition;
  */
 public class Entity2JooqDatabase extends AbstractDatabase {
   private final List<Class<?>> entities = new ArrayList<>();
+  private final StrategyContext strategyContext = new StrategyContext();
 
-  private final EntityColumnDefinitionFactory columnFactory = new EntityColumnDefinitionFactory();
-  private final EntitySchemaDefinitionFactory schemaFactory = new EntitySchemaDefinitionFactory();
+  private final EntityColumnDefinitionFactory columnFactory = new EntityColumnDefinitionFactory(strategyContext);
+  private final EntitySchemaDefinitionFactory schemaFactory = new EntitySchemaDefinitionFactory(strategyContext);
   private final EntityTableDefinitionFactory tableFactory =
-      new EntityTableDefinitionFactory(schemaFactory, columnFactory);
+      new EntityTableDefinitionFactory(strategyContext, schemaFactory, columnFactory);
 
   private static final String CLASSES_PROPERTY_KEY = "classes";
   private static final String TEST_CLASSES_PROPERTY_KEY = "testClasses";

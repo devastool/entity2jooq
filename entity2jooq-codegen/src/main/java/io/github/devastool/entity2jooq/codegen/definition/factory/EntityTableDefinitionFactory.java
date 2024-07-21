@@ -32,7 +32,7 @@ import org.jooq.meta.Database;
  * @author Andrey_Yurzanov
  * @since 0.0.1
  */
-public class EntityTableDefinitionFactory {
+public class EntityTableDefinitionFactory extends ContextableFactory{
   private final EntitySchemaDefinitionFactory schemaFactory;
   private final EntityColumnDefinitionFactory columnFactory;
 
@@ -43,9 +43,11 @@ public class EntityTableDefinitionFactory {
    * @param columnFactory instance of {@link EntityColumnDefinitionFactory}
    */
   public EntityTableDefinitionFactory(
+      FactoryContext<?> context,
       EntitySchemaDefinitionFactory schemaFactory,
       EntityColumnDefinitionFactory columnFactory
   ) {
+    super(context);
     this.schemaFactory = schemaFactory;
     this.columnFactory = columnFactory;
   }
@@ -62,7 +64,7 @@ public class EntityTableDefinitionFactory {
       Optional<EntitySchemaDefinition> schema = schemaFactory.build(type, database);
       if (schema.isPresent()) {
         String name = tableAnnotation.value();
-        NamingStrategy strategy = NamingStrategy.getInstance(tableAnnotation.naming());
+        var strategy = (NamingStrategy) getContext().getInstance(tableAnnotation.naming());
         if (name.isEmpty()) {
           name = strategy.resolve(type.getSimpleName());
         }

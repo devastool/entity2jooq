@@ -28,7 +28,12 @@ import org.jooq.meta.Database;
  * @author Andrey_Yurzanov
  * @since 0.0.1
  */
-public class EntitySchemaDefinitionFactory {
+public class EntitySchemaDefinitionFactory extends ContextableFactory{
+
+  public EntitySchemaDefinitionFactory(FactoryContext<?> context) {
+    super(context);
+  }
+
   /**
    * Builds new instance of {@link EntitySchemaDefinition}.
    *
@@ -46,7 +51,7 @@ public class EntitySchemaDefinitionFactory {
       schemaName = getLastPackageName(type.getPackage());
     }
 
-    NamingStrategy strategy = NamingStrategy.getInstance(strategyClass);
+    var strategy = (NamingStrategy) getContext().getInstance(strategyClass);
     return Optional.of(new EntitySchemaDefinition(database, strategy.resolve(schemaName)));
   }
 
