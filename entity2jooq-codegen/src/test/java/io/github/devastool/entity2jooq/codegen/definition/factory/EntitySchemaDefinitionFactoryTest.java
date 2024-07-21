@@ -28,7 +28,7 @@ import org.junit.jupiter.api.Test;
  * @author Andrey_Yurzanov
  */
 class EntitySchemaDefinitionFactoryTest {
-  private final EntitySchemaDefinitionFactory factory = new EntitySchemaDefinitionFactory();
+  private final EntitySchemaDefinitionFactory factory = new EntitySchemaDefinitionFactory(new StrategyContext());
   private static final String TEST_SCHEMA = "test_schema";
   private static final String PACKAGE_NAME = "factory";
 

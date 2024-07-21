@@ -29,8 +29,9 @@ import org.junit.jupiter.api.Test;
  */
 class EntityTableDefinitionFactoryTest {
   private final EntityTableDefinitionFactory factory = new EntityTableDefinitionFactory(
-      new EntitySchemaDefinitionFactory(),
-      new EntityColumnDefinitionFactory()
+      new StrategyContext(),
+      new EntitySchemaDefinitionFactory(new StrategyContext()),
+      new EntityColumnDefinitionFactory(new StrategyContext())
   );
   private static final String TEST_TABLE = "test_table";
   private static final String CLASS_NAME = "test_entity_without_table_name";
@@ -60,8 +61,13 @@ class EntityTableDefinitionFactoryTest {
   }
 
   @Table(TEST_TABLE)
-  static class TestEntity {}
+  static class TestEntity {
+  }
+
   @Table
-  static class TestEntityWithoutTableName {}
-  static class TestEntityWithoutAnnotation {}
+  static class TestEntityWithoutTableName {
+  }
+
+  static class TestEntityWithoutAnnotation {
+  }
 }
