@@ -18,7 +18,6 @@ package io.github.devastool.entity2jooq.codegen.definition.factory;
 
 import io.github.devastool.entity2jooq.annotation.Table;
 import io.github.devastool.entity2jooq.annotation.naming.NamingStrategy;
-import io.github.devastool.entity2jooq.annotation.naming.SnakeCaseStrategy;
 import io.github.devastool.entity2jooq.codegen.definition.EntitySchemaDefinition;
 import io.github.devastool.entity2jooq.codegen.definition.EntityTableDefinition;
 import java.lang.reflect.Field;
@@ -63,7 +62,7 @@ public class EntityTableDefinitionFactory {
       Optional<EntitySchemaDefinition> schema = schemaFactory.build(type, database);
       if (schema.isPresent()) {
         String name = tableAnnotation.value();
-        NamingStrategy strategy = new SnakeCaseStrategy(); // TODO. Use tableAnnotation.naming()
+        NamingStrategy strategy = NamingStrategy.getInstance(tableAnnotation.naming());
         if (name.isEmpty()) {
           name = strategy.resolve(type.getSimpleName());
         }

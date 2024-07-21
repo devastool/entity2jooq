@@ -18,7 +18,6 @@ package io.github.devastool.entity2jooq.codegen.definition.factory;
 
 import io.github.devastool.entity2jooq.annotation.Schema;
 import io.github.devastool.entity2jooq.annotation.naming.NamingStrategy;
-import io.github.devastool.entity2jooq.annotation.naming.SnakeCaseStrategy;
 import io.github.devastool.entity2jooq.codegen.definition.EntitySchemaDefinition;
 import java.util.Optional;
 import org.jooq.meta.Database;
@@ -39,13 +38,15 @@ public class EntitySchemaDefinitionFactory {
   public Optional<EntitySchemaDefinition> build(Class<?> type, Database database) {
     String schemaName;
     Schema schemaAnnotation = type.getAnnotation(Schema.class);
+    Class<? extends NamingStrategy> strategyClass = null;
     if (schemaAnnotation != null && !schemaAnnotation.value().isEmpty()) {
       schemaName = schemaAnnotation.value();
+      strategyClass = schemaAnnotation.naming();
     } else {
       schemaName = getLastPackageName(type.getPackage());
     }
 
-    NamingStrategy strategy = new SnakeCaseStrategy(); // TODO. Use schemaAnnotation.naming()
+    NamingStrategy strategy = NamingStrategy.getInstance(strategyClass);
     return Optional.of(new EntitySchemaDefinition(database, strategy.resolve(schemaName)));
   }
 

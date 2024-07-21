@@ -18,7 +18,6 @@ package io.github.devastool.entity2jooq.codegen.definition.factory;
 
 import io.github.devastool.entity2jooq.annotation.Column;
 import io.github.devastool.entity2jooq.annotation.naming.NamingStrategy;
-import io.github.devastool.entity2jooq.annotation.naming.SnakeCaseStrategy;
 import io.github.devastool.entity2jooq.codegen.definition.EntityColumnDefinition;
 import io.github.devastool.entity2jooq.codegen.definition.EntityDataTypeDefinition;
 import java.lang.reflect.Field;
@@ -51,6 +50,7 @@ public class EntityColumnDefinitionFactory {
     String sqlType = SQL_TYPES.get(classType);
 
     Column columnAnnotation = field.getAnnotation(Column.class);
+    Class<? extends NamingStrategy> strategyClass = null;
     if (columnAnnotation != null) {
       String definedName = columnAnnotation.value();
       if (definedName != null && !definedName.isEmpty()) {
@@ -61,13 +61,15 @@ public class EntityColumnDefinitionFactory {
       if (definedName != null && !definedType.isEmpty()) {
         sqlType = definedType;
       }
+
+      strategyClass = columnAnnotation.naming();
     }
 
     SchemaDefinition schema = table.getSchema();
-    NamingStrategy strategy = new SnakeCaseStrategy(); // TODO. Use columnAnnotation.naming()
+    var strategyInstance = NamingStrategy.getInstance(strategyClass);
     EntityDataTypeDefinition type = new EntityDataTypeDefinition(schema, classType, sqlType);
     return Optional.of(
-        new EntityColumnDefinition(table, strategy.resolve(name), type)
+        new EntityColumnDefinition(table, strategyInstance.resolve(name), type)
     );
   }
 
