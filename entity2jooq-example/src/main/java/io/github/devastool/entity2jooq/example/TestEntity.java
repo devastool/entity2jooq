@@ -19,7 +19,6 @@ package io.github.devastool.entity2jooq.example;
 import io.github.devastool.entity2jooq.annotation.Column;
 import io.github.devastool.entity2jooq.annotation.Schema;
 import io.github.devastool.entity2jooq.annotation.Table;
-import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.Objects;
 

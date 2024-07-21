@@ -16,9 +16,9 @@
 
 package io.github.devastool.entity2jooq.example;
 
-import static io.github.devastool.entity2jooq.codegen.Tables.TEST_ENTITY;
 
-import io.github.devastool.entity2jooq.codegen.DefaultCatalog;
+import static org.jooq.generated.tables.TestEntity.TEST_ENTITY;
+
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
@@ -33,6 +33,7 @@ import org.jooq.InsertValuesStep3;
 import org.jooq.Record;
 import org.jooq.Table;
 import org.jooq.UpdateConditionStep;
+import org.jooq.generated.DefaultCatalog;
 import org.jooq.impl.DSL;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
