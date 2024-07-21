@@ -19,6 +19,7 @@ package io.github.devastool.entity2jooq.codegen;
 import static io.github.devastool.entity2jooq.codegen.filesystem.ExtFileVisitor.CLASS_FILE_EXT;
 
 import io.github.devastool.entity2jooq.codegen.definition.factory.EntityColumnDefinitionFactory;
+import io.github.devastool.entity2jooq.codegen.definition.factory.EntityDataTypeDefinitionFactory;
 import io.github.devastool.entity2jooq.codegen.definition.factory.EntitySchemaDefinitionFactory;
 import io.github.devastool.entity2jooq.codegen.definition.factory.EntityTableDefinitionFactory;
 import io.github.devastool.entity2jooq.codegen.filesystem.ExtFileVisitor;
@@ -59,7 +60,9 @@ import org.jooq.meta.UDTDefinition;
 public class Entity2JooqDatabase extends AbstractDatabase {
   private final List<Class<?>> entities = new ArrayList<>();
 
-  private final EntityColumnDefinitionFactory columnFactory = new EntityColumnDefinitionFactory();
+  private final EntityDataTypeDefinitionFactory typeFactory = new EntityDataTypeDefinitionFactory();
+  private final EntityColumnDefinitionFactory columnFactory =
+      new EntityColumnDefinitionFactory(typeFactory);
   private final EntitySchemaDefinitionFactory schemaFactory = new EntitySchemaDefinitionFactory();
   private final EntityTableDefinitionFactory tableFactory =
       new EntityTableDefinitionFactory(schemaFactory, columnFactory);

@@ -16,6 +16,8 @@
 
 package io.github.devastool.entity2jooq.codegen;
 
+import io.github.devastool.entity2jooq.codegen.definition.EntityDataTypeDefinition;
+import java.util.Objects;
 import org.jooq.codegen.GeneratorStrategy.Mode;
 import org.jooq.codegen.JavaGenerator;
 import org.jooq.codegen.JavaWriter;
@@ -47,7 +49,9 @@ public class Entity2JooqJavaGenerator extends JavaGenerator {
 
   @Override
   protected String getJavaTypeReference(Database db, DataTypeDefinition type) {
-    // TODO. Use ((EntityDataTypeDefinition) type).getJavaTypeReference()
+    if (Objects.equals(EntityDataTypeDefinition.class, type.getClass())) {
+      return ((EntityDataTypeDefinition) type).getJavaTypeReference();
+    }
     return super.getJavaTypeReference(db, type);
   }
 

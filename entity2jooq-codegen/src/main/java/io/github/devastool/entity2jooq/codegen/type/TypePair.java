@@ -14,32 +14,44 @@
  *    limitations under the License.
  */
 
-package io.github.devastool.entity2jooq.annotation.type;
+package io.github.devastool.entity2jooq.codegen.type;
 
 /**
- * Mapping between SQL and Java types.
+ * Pair of SQL type and Java type.
  *
  * @author Andrey_Yurzanov
  * @since 0.0.1
  */
-public interface TypeMapper {
-  /**
-   * Returns Java type by dialect and SQL type.
-   *
-   * @param dialect SQL dialect
-   * @param sqlType SQL type
-   * @return Java type
-   * @throws NoSuchTypeException when th type is not found
-   */
-  Class<?> getType(String dialect, String sqlType) throws NoSuchTypeException;
+public class TypePair {
+  private final Class<?> type;
+  private final String sqlType;
 
   /**
-   * Returns SQL type by dialect and Java type.
+   * Constructs new instance of {@link TypePair}.
    *
-   * @param dialect SQL dialect
    * @param type    Java type
-   * @return SQL type
-   * @throws NoSuchTypeException when the type is not found
+   * @param sqlType SQL type
    */
-  String getSqlType(String dialect, Class<?> type) throws NoSuchTypeException;
+  public TypePair(Class<?> type, String sqlType) {
+    this.type = type;
+    this.sqlType = sqlType;
+  }
+
+  /**
+   * Returns Java type.
+   *
+   * @return Java type
+   */
+  public Class<?> getType() {
+    return type;
+  }
+
+  /**
+   * Returns SQL type.
+   *
+   * @return SQL type
+   */
+  public String getSqlType() {
+    return sqlType;
+  }
 }
