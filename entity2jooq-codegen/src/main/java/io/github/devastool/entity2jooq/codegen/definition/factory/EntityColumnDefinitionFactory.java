@@ -18,6 +18,7 @@ package io.github.devastool.entity2jooq.codegen.definition.factory;
 
 import io.github.devastool.entity2jooq.annotation.Column;
 import io.github.devastool.entity2jooq.annotation.naming.NamingStrategy;
+import io.github.devastool.entity2jooq.annotation.naming.SnakeCaseStrategy;
 import io.github.devastool.entity2jooq.codegen.definition.EntityColumnDefinition;
 import io.github.devastool.entity2jooq.codegen.definition.EntityDataTypeDefinition;
 import java.lang.reflect.Field;
@@ -35,10 +36,15 @@ import org.jooq.meta.TableDefinition;
  * @author Andrey_Yurzanov
  * @since 0.0.1
  */
-public class EntityColumnDefinitionFactory extends ContextableFactory{
+public class EntityColumnDefinitionFactory extends ContextableFactory {
   private final Map<Class<?>, String> SQL_TYPES = initTypes();
 
-  public EntityColumnDefinitionFactory(FactoryContext<?> context) {
+  /**
+   * Constructor.
+   *
+   * @param context args for factory.
+   */
+  public EntityColumnDefinitionFactory(FactoryContext context) {
     super(context);
   }
 
@@ -54,7 +60,7 @@ public class EntityColumnDefinitionFactory extends ContextableFactory{
     String sqlType = SQL_TYPES.get(classType);
 
     Column columnAnnotation = field.getAnnotation(Column.class);
-    Class<? extends NamingStrategy> strategyClass = null;
+    Class<? extends NamingStrategy> strategyClass = SnakeCaseStrategy.class;
     if (columnAnnotation != null) {
       String definedName = columnAnnotation.value();
       if (definedName != null && !definedName.isEmpty()) {

@@ -18,10 +18,10 @@ package io.github.devastool.entity2jooq.codegen;
 
 import static io.github.devastool.entity2jooq.codegen.filesystem.ExtFileVisitor.CLASS_FILE_EXT;
 
-import io.github.devastool.entity2jooq.codegen.definition.factory.StrategyContext;
 import io.github.devastool.entity2jooq.codegen.definition.factory.EntityColumnDefinitionFactory;
 import io.github.devastool.entity2jooq.codegen.definition.factory.EntitySchemaDefinitionFactory;
 import io.github.devastool.entity2jooq.codegen.definition.factory.EntityTableDefinitionFactory;
+import io.github.devastool.entity2jooq.codegen.definition.factory.FactoryContext;
 import io.github.devastool.entity2jooq.codegen.filesystem.ExtFileVisitor;
 import io.github.devastool.entity2jooq.codegen.filesystem.PathClassLoader;
 import java.nio.file.Files;
@@ -59,12 +59,14 @@ import org.jooq.meta.UDTDefinition;
  */
 public class Entity2JooqDatabase extends AbstractDatabase {
   private final List<Class<?>> entities = new ArrayList<>();
-  private final StrategyContext strategyContext = new StrategyContext();
+  private final FactoryContext factoryContext = new FactoryContext();
 
-  private final EntityColumnDefinitionFactory columnFactory = new EntityColumnDefinitionFactory(strategyContext);
-  private final EntitySchemaDefinitionFactory schemaFactory = new EntitySchemaDefinitionFactory(strategyContext);
+  private final EntityColumnDefinitionFactory columnFactory = new EntityColumnDefinitionFactory(
+      factoryContext);
+  private final EntitySchemaDefinitionFactory schemaFactory = new EntitySchemaDefinitionFactory(
+      factoryContext);
   private final EntityTableDefinitionFactory tableFactory =
-      new EntityTableDefinitionFactory(strategyContext, schemaFactory, columnFactory);
+      new EntityTableDefinitionFactory(factoryContext, schemaFactory, columnFactory);
 
   private static final String CLASSES_PROPERTY_KEY = "classes";
   private static final String TEST_CLASSES_PROPERTY_KEY = "testClasses";

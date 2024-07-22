@@ -32,7 +32,7 @@ import org.jooq.meta.Database;
  * @author Andrey_Yurzanov
  * @since 0.0.1
  */
-public class EntityTableDefinitionFactory extends ContextableFactory{
+public class EntityTableDefinitionFactory extends ContextableFactory {
   private final EntitySchemaDefinitionFactory schemaFactory;
   private final EntityColumnDefinitionFactory columnFactory;
 
@@ -43,7 +43,7 @@ public class EntityTableDefinitionFactory extends ContextableFactory{
    * @param columnFactory instance of {@link EntityColumnDefinitionFactory}
    */
   public EntityTableDefinitionFactory(
-      FactoryContext<?> context,
+      FactoryContext context,
       EntitySchemaDefinitionFactory schemaFactory,
       EntityColumnDefinitionFactory columnFactory
   ) {

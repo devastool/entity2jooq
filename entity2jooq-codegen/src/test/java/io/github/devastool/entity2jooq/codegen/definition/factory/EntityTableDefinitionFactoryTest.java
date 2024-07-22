@@ -29,9 +29,9 @@ import org.junit.jupiter.api.Test;
  */
 class EntityTableDefinitionFactoryTest {
   private final EntityTableDefinitionFactory factory = new EntityTableDefinitionFactory(
-      new StrategyContext(),
-      new EntitySchemaDefinitionFactory(new StrategyContext()),
-      new EntityColumnDefinitionFactory(new StrategyContext())
+      new FactoryContext(),
+      new EntitySchemaDefinitionFactory(new FactoryContext()),
+      new EntityColumnDefinitionFactory(new FactoryContext())
   );
   private static final String TEST_TABLE = "test_table";
   private static final String CLASS_NAME = "test_entity_without_table_name";

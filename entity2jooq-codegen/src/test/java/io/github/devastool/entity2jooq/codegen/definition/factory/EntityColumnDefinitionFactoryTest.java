@@ -33,7 +33,8 @@ import org.junit.jupiter.api.Test;
  * @author Andrey_Yurzanov
  */
 class EntityColumnDefinitionFactoryTest {
-  private final EntityColumnDefinitionFactory factory = new EntityColumnDefinitionFactory(new StrategyContext());
+  private final EntityColumnDefinitionFactory factory = new EntityColumnDefinitionFactory(
+      new FactoryContext());
   private static final String ENTITY_ID = "entity_id";
   private static final EntityTableDefinition TABLE_DEFINITION = new EntityTableDefinition(
       new EntitySchemaDefinition(new Entity2JooqDatabase(), "test_schema"),
@@ -78,10 +79,12 @@ class EntityColumnDefinitionFactoryTest {
     @Column(ENTITY_ID)
     private Integer id;
   }
+
   static class TestEntityWithoutColumnName {
     @Column
     private Integer id;
   }
+
   static class TestEntityWithoutAnnotation {
     private Integer id;
   }
