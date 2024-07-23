@@ -25,7 +25,7 @@ import org.jooq.meta.jaxb.Target;
  * Java code generator configuration.
  *
  * @author Andrey_Yurzanov
- * @since 0.0.1
+ * @since 1.0.0
  */
 public class Generate {
 //  private String dialect; TODO. Add dialect configuration, by default autodetect

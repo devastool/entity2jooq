@@ -27,7 +27,7 @@ import org.jooq.meta.SchemaDefinition;
  * The factory for {@link EntityDataTypeDefinition} building.
  *
  * @author Andrey_Yurzanov
- * @since 0.0.1
+ * @since 1.0.0
  */
 public class EntityDataTypeDefinitionFactory {
   private static final RouteTypeMapper route = new RouteTypeMapper();

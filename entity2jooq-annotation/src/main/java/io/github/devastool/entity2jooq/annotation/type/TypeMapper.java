@@ -20,7 +20,7 @@ package io.github.devastool.entity2jooq.annotation.type;
  * Mapping between SQL and Java types.
  *
  * @author Andrey_Yurzanov
- * @since 0.0.1
+ * @since 1.0.0
  */
 public interface TypeMapper {
   /**

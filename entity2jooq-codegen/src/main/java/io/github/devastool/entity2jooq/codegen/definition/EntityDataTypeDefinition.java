@@ -25,7 +25,7 @@ import org.jooq.meta.SchemaDefinition;
  * Meta-information about type of {@link EntityColumnDefinition}.
  *
  * @author Andrey_Yurzanov
- * @since 0.0.1
+ * @since 1.0.0
  */
 public class EntityDataTypeDefinition extends DefaultDataTypeDefinition {
   private static final String JAVA_TYPE_REFERENCE_TEMPLATE =

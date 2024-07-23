@@ -28,7 +28,7 @@ import java.lang.annotation.Target;
  * Type of the column.
  *
  * @author Andrey_Yurzanov
- * @since 0.0.1
+ * @since 1.0.0
  */
 @Documented
 @Repeatable(Types.class)
@@ -50,7 +50,7 @@ public @interface Type {
    * Container of {@link Type} annotations.
    *
    * @author Andrey_Yurzanov
-   * @since 0.0.1
+   * @since 1.0.0
    */
   @Documented
   @Target(ElementType.FIELD)

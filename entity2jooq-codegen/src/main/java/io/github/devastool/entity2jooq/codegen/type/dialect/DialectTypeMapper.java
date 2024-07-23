@@ -26,7 +26,7 @@ import java.util.Set;
  * Implementation of {@link TypeMapper} for mapping type of concrete SQL dialect.
  *
  * @author Andrey_Yurzanov
- * @since 0.0.1
+ * @since 1.0.0
  */
 public abstract class DialectTypeMapper implements TypeMapper {
   private final String dialect;

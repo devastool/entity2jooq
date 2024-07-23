@@ -30,7 +30,7 @@ import java.util.Set;
  * Implementation of {@link DialectTypeMapper} for mapping type of Default dialect.
  *
  * @author Andrey_Yurzanov
- * @since 0.0.1
+ * @since 1.0.0
  */
 public class DefaultTypeMapper extends DialectTypeMapper {
   private static final String DIALECT = "";

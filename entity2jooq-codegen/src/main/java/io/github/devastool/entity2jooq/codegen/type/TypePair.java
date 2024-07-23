@@ -20,7 +20,7 @@ package io.github.devastool.entity2jooq.codegen.type;
  * Pair of SQL type and Java type.
  *
  * @author Andrey_Yurzanov
- * @since 0.0.1
+ * @since 1.0.0
  */
 public class TypePair {
   private final Class<?> type;

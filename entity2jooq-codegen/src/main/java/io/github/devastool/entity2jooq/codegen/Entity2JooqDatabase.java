@@ -55,7 +55,7 @@ import org.jooq.meta.UDTDefinition;
  * annotations.
  *
  * @author Andrey_Yurzanov
- * @since 0.0.1
+ * @since 1.0.0
  */
 public class Entity2JooqDatabase extends AbstractDatabase {
   private final List<Class<?>> entities = new ArrayList<>();

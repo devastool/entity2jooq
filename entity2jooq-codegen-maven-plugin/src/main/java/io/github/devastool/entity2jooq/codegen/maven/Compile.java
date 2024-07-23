@@ -29,7 +29,7 @@ import org.apache.maven.project.MavenProject;
  * Java code compiler configuration.
  *
  * @author Andrey_Yurzanov
- * @since 0.0.1
+ * @since 1.0.0
  */
 public class Compile {
   private String target;

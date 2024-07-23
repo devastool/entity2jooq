@@ -24,7 +24,7 @@ import org.jooq.meta.SchemaDefinition;
  * {@link io.github.devastool.entity2jooq.annotation.Schema}.
  *
  * @author Andrey_Yurzanov
- * @since 0.0.1
+ * @since 1.0.0
  */
 public class EntitySchemaDefinition extends SchemaDefinition {
   /**

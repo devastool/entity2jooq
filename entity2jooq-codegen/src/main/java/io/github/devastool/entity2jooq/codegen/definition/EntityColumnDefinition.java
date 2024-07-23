@@ -25,7 +25,7 @@ import org.jooq.meta.TableDefinition;
  * {@link io.github.devastool.entity2jooq.annotation.Column}.
  *
  * @author Andrey_Yurzanov
- * @since 0.0.1
+ * @since 1.0.0
  */
 public class EntityColumnDefinition extends DefaultColumnDefinition {
   /**

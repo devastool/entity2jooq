@@ -31,7 +31,7 @@ import org.jooq.meta.Database;
  * The factory for {@link EntityTableDefinition} building.
  *
  * @author Andrey_Yurzanov
- * @since 0.0.1
+ * @since 1.0.0
  */
 public class EntityTableDefinitionFactory {
   private final EntitySchemaDefinitionFactory schemaFactory;

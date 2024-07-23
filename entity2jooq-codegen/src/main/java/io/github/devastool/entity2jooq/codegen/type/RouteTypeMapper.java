@@ -26,7 +26,7 @@ import java.util.Map;
  * Implementation of {@link TypeMapper} for routing between dialects.
  *
  * @author Andrey_Yurzanov
- * @since 0.0.1
+ * @since 1.0.0
  */
 public class RouteTypeMapper implements TypeMapper {
   private final Map<String, TypeMapper> dialects = new HashMap<>();

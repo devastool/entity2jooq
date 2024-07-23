@@ -22,7 +22,7 @@ import java.util.NoSuchElementException;
  * An exception throws when the type is not found.
  *
  * @author Andrey_Yurzanov
- * @since 0.0.1
+ * @since 1.0.0
  */
 public class NoSuchTypeException extends NoSuchElementException {
   /**

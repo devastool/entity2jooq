@@ -29,7 +29,7 @@ import java.lang.annotation.Target;
 /**
  * The column of marked field.
  *
- * @since 0.0.1
+ * @since 1.0.0
  * @author Andrey_Yurzanov
  */
 @Documented
@@ -56,7 +56,7 @@ public @interface Column {
    * Container of {@link Column} annotations.
    *
    * @author Andrey_Yurzanov
-   * @since 0.0.1
+   * @since 1.0.0
    */
   @Documented
   @Target(ElementType.FIELD)

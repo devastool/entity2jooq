@@ -19,7 +19,7 @@ package io.github.devastool.entity2jooq.annotation.naming;
 /**
  * A Naming strategy for a data extraction.
  *
- * @since 0.0.1
+ * @since 1.0.0
  * @author Andrey_Yurzanov
  */
 public interface NamingStrategy {

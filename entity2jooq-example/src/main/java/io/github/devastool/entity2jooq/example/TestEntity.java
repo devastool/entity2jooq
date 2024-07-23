@@ -25,7 +25,7 @@ import java.util.Objects;
 /**
  * Example entity, see tests.
  *
- * @since 0.0.1
+ * @since 1.0.0
  * @author Andrey_Yurzanov
  */
 @Table

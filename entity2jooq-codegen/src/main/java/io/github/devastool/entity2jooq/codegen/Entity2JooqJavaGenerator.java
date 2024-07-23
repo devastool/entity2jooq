@@ -28,7 +28,7 @@ import org.jooq.meta.TableDefinition;
 /**
  * Generator of Java source code by annotations.
  *
- * @since 0.0.1
+ * @since 1.0.0
  * @author Andrey_Yurzanov
  */
 public class Entity2JooqJavaGenerator extends JavaGenerator {
