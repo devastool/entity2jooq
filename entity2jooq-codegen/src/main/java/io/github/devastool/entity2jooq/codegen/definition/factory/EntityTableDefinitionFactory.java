@@ -23,6 +23,7 @@ import io.github.devastool.entity2jooq.codegen.definition.EntitySchemaDefinition
 import io.github.devastool.entity2jooq.codegen.definition.EntityTableDefinition;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Objects;
 import java.util.Optional;
 import org.jooq.meta.ColumnDefinition;
 import org.jooq.meta.Database;
@@ -36,6 +37,8 @@ import org.jooq.meta.Database;
 public class EntityTableDefinitionFactory {
   private final EntitySchemaDefinitionFactory schemaFactory;
   private final EntityColumnDefinitionFactory columnFactory;
+
+  private static final String OTHER_TYPE = "OTHER";
 
   /**
    * Constructs new instance of {@link EntityTableDefinitionFactory}.
@@ -70,14 +73,44 @@ public class EntityTableDefinitionFactory {
 
         ArrayList<ColumnDefinition> columns = new ArrayList<>();
         EntityTableDefinition table = new EntityTableDefinition(schema.get(), name, columns);
-        for (Field field : type.getDeclaredFields()) {
-          columnFactory
-              .build(field, table)
-              .ifPresent(columns::add);
-        }
+        accumulateColumnDefinition(type, table);
+
         return Optional.of(table);
       }
     }
     return Optional.empty();
+  }
+
+  // Recursively accumulate column definitions
+  private void accumulateColumnDefinition(Class<?> type, EntityTableDefinition table) {
+    if (type == null) {
+      return;
+    }
+    var columns = table.getColumns();
+
+    for (Field field : type.getDeclaredFields()) {
+      var columnDefinition = columnFactory
+          .build(field, table)
+          .orElseThrow();
+      var columnType = columnDefinition
+          .getDefinedType()
+          .getType();
+
+      boolean exists = columns
+          .stream()
+          .anyMatch(column -> Objects.equals(column.getName(), columnDefinition.getName()));
+
+      if (exists) {
+        throw new IllegalArgumentException(
+            "Column " + columnDefinition.getName() + " already exists. Use @Annotations"
+        );
+      }
+
+      if (OTHER_TYPE.equals(columnType)) {
+        accumulateColumnDefinition(field.getType(), table);
+      } else {
+        columns.add(columnDefinition);
+      }
+    }
   }
 }

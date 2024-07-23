@@ -25,8 +25,8 @@ import java.util.Objects;
 /**
  * Example entity, see tests.
  *
- * @since 0.0.1
  * @author Andrey_Yurzanov
+ * @since 0.0.1
  */
 @Table
 @Schema("test_schema")
@@ -36,14 +36,16 @@ public class TestEntity {
   @Column(value = "entity_name", type = "varchar")
   private String name;
   private Timestamp insertTime;
+  private TestEntityInfo info;
 
   public TestEntity() {
   }
 
-  public TestEntity(Integer id, String name, Timestamp insertTime) {
+  public TestEntity(Integer id, String name, Timestamp insertTime, TestEntityInfo info) {
     this.id = id;
     this.name = name;
     this.insertTime = insertTime;
+    this.info = info;
   }
 
   public Integer getId() {
@@ -68,6 +70,14 @@ public class TestEntity {
 
   public void setInsertTime(Timestamp insertTime) {
     this.insertTime = insertTime;
+  }
+
+  public TestEntityInfo getInfo() {
+    return info;
+  }
+
+  public void setInfo(TestEntityInfo info) {
+    this.info = info;
   }
 
   @Override
