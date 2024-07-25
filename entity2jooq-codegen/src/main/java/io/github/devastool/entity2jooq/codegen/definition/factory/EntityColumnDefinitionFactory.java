@@ -16,16 +16,22 @@
 
 package io.github.devastool.entity2jooq.codegen.definition.factory;
 
+import io.github.devastool.entity2jooq.annotation.AttributeOverride;
+import io.github.devastool.entity2jooq.annotation.AttributeOverrides;
 import io.github.devastool.entity2jooq.annotation.Column;
+import io.github.devastool.entity2jooq.annotation.Embedded;
 import io.github.devastool.entity2jooq.annotation.naming.NamingStrategy;
 import io.github.devastool.entity2jooq.annotation.naming.SnakeCaseStrategy;
 import io.github.devastool.entity2jooq.codegen.definition.EntityColumnDefinition;
 import io.github.devastool.entity2jooq.codegen.definition.EntityDataTypeDefinition;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import org.apache.commons.lang3.StringUtils;
 import org.jooq.impl.SQLDataType;
 import org.jooq.meta.SchemaDefinition;
 import org.jooq.meta.TableDefinition;
@@ -38,6 +44,7 @@ import org.jooq.meta.TableDefinition;
  */
 public class EntityColumnDefinitionFactory {
   private final Map<Class<?>, String> SQL_TYPES = initTypes();
+  public static final String SEPARATOR = "_";
 
   /**
    * Builds new instance of {@link EntityColumnDefinition}.
@@ -45,21 +52,33 @@ public class EntityColumnDefinitionFactory {
    * @param field entity field, annotation {@link Column} is optional
    * @param table meta-information about table
    */
-  public Optional<EntityColumnDefinition> build(Field field, TableDefinition table) {
+  public Optional<EntityColumnDefinition> build(
+      Field field,
+      Annotation[] annotations,
+      TableDefinition table
+  ) {
     String name = field.getName();
     Class<?> classType = field.getType();
     String sqlType = SQL_TYPES.get(classType);
 
     Column columnAnnotation = field.getAnnotation(Column.class);
-    if (columnAnnotation != null) {
-      String definedName = columnAnnotation.value();
-      if (definedName != null && !definedName.isEmpty()) {
-        name = definedName;
-      }
+    var embedded = (Embedded) findAnnotation(annotations, Embedded.class);
+    var overrideColumn = getOverrideColumn(annotations, name);
 
-      String definedType = columnAnnotation.type();
-      if (definedName != null && !definedType.isEmpty()) {
-        sqlType = definedType;
+    if (columnAnnotation != null) {
+      name = replaceIfNotEmpty(columnAnnotation.value(), name);
+      sqlType = replaceIfNotEmpty(columnAnnotation.type(), sqlType);
+    }
+
+    if (overrideColumn != null) {
+      name = replaceIfNotEmpty(overrideColumn.value(), name);
+      sqlType = replaceIfNotEmpty(overrideColumn.type(), sqlType);
+    }
+
+    if (embedded != null) {
+      var prefix = embedded.prefix();
+      if (StringUtils.isNotEmpty(prefix)) {
+        name = String.join(SEPARATOR, prefix, name);
       }
     }
 
@@ -88,5 +107,44 @@ public class EntityColumnDefinitionFactory {
     types.put(SQLDataType.LOCALDATETIME.getType(), SQLDataType.LOCALDATETIME.getTypeName());
 
     return Collections.unmodifiableMap(types);
+  }
+
+  private <T extends Annotation> Annotation findAnnotation(
+      Annotation[] annotations,
+      Class<T> annotationClass
+  ) {
+    for (Annotation annotation : annotations) {
+      if (annotationClass.isInstance(annotation)) {
+        return annotation;
+      }
+    }
+    return null;
+  }
+
+  private Column getOverrideColumn(Annotation[] annotations, String name) {
+    var columnOverride = (AttributeOverride) findAnnotation(annotations, AttributeOverride.class);
+    if (columnOverride != null) {
+      if (Objects.equals(columnOverride.name(), name)) {
+        return columnOverride.column();
+      }
+    }
+
+    var columnOverrides = (AttributeOverrides) findAnnotation(annotations,
+        AttributeOverrides.class);
+    if (columnOverrides != null) {
+      for (AttributeOverride override : columnOverrides.value()) {
+        if (Objects.equals(override.name(), name)) {
+          return override.column();
+        }
+      }
+    }
+    return null;
+  }
+
+  private String replaceIfNotEmpty(String newValue, String currentValue) {
+    if (StringUtils.isNoneEmpty(newValue)) {
+      currentValue = newValue;
+    }
+    return currentValue;
   }
 }

@@ -16,15 +16,19 @@
 
 package io.github.devastool.entity2jooq.codegen.definition.factory;
 
+import io.github.devastool.entity2jooq.annotation.Embeddable;
 import io.github.devastool.entity2jooq.annotation.Table;
 import io.github.devastool.entity2jooq.annotation.naming.NamingStrategy;
 import io.github.devastool.entity2jooq.annotation.naming.SnakeCaseStrategy;
+import io.github.devastool.entity2jooq.codegen.ClassTypeWrapper;
 import io.github.devastool.entity2jooq.codegen.definition.EntitySchemaDefinition;
 import io.github.devastool.entity2jooq.codegen.definition.EntityTableDefinition;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Stack;
 import org.jooq.meta.ColumnDefinition;
 import org.jooq.meta.Database;
 
@@ -81,35 +85,47 @@ public class EntityTableDefinitionFactory {
     return Optional.empty();
   }
 
-  // Recursively accumulate column definitions
+  // Accumulate column definitions
   private void accumulateColumnDefinition(Class<?> type, EntityTableDefinition table) {
     if (type == null) {
       return;
     }
+
     var columns = table.getColumns();
+    Stack<ClassTypeWrapper> stack = new Stack<>();
+    stack.push(new ClassTypeWrapper(type, new Annotation[0]));
 
-    for (Field field : type.getDeclaredFields()) {
-      var columnDefinition = columnFactory
-          .build(field, table)
-          .orElseThrow();
-      var columnType = columnDefinition
-          .getDefinedType()
-          .getType();
+    while (!stack.isEmpty()) {
+      var currentType = stack.pop();
 
-      boolean exists = columns
-          .stream()
-          .anyMatch(column -> Objects.equals(column.getName(), columnDefinition.getName()));
+      for (Field field : currentType.getDeclaredFields()) {
+        var columnDefinition = columnFactory
+            .build(field, currentType.getAnnotations(), table)
+            .orElseThrow();
+        var columnType = columnDefinition
+            .getDefinedType()
+            .getType();
 
-      if (exists) {
-        throw new IllegalArgumentException(
-            "Column " + columnDefinition.getName() + " already exists. Use @Annotations"
-        );
-      }
+        if (OTHER_TYPE.equals(columnType)) {
+          if (field.getType().isAnnotationPresent(Embeddable.class)) {
+            stack.push(new ClassTypeWrapper(field.getType(), field.getDeclaredAnnotations()));
+          }
+        } else {
 
-      if (OTHER_TYPE.equals(columnType)) {
-        accumulateColumnDefinition(field.getType(), table);
-      } else {
-        columns.add(columnDefinition);
+          boolean exists = columns
+              .stream()
+              .anyMatch(column -> Objects.equals(column.getName(), columnDefinition.getName()));
+
+          if (exists) {
+            throw new IllegalArgumentException(
+                "Column "
+                    + columnDefinition.getName()
+                    + " already exists. Use @AttributeOverrides or @Embedded"
+            );
+          }
+
+          columns.add(columnDefinition);
+        }
       }
     }
   }

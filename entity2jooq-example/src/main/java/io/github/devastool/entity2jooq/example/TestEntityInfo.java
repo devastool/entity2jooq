@@ -2,6 +2,7 @@
 package io.github.devastool.entity2jooq.example;
 
 import io.github.devastool.entity2jooq.annotation.Column;
+import io.github.devastool.entity2jooq.annotation.Embeddable;
 import java.util.Objects;
 
 /**
@@ -10,6 +11,7 @@ import java.util.Objects;
  * @author Sergey_Konovalov
  * @since 0.0.1
  */
+@Embeddable
 public class TestEntityInfo {
   @Column("entity_version")
   private String version;

@@ -21,6 +21,7 @@ import io.github.devastool.entity2jooq.codegen.Entity2JooqDatabase;
 import io.github.devastool.entity2jooq.codegen.definition.EntityColumnDefinition;
 import io.github.devastool.entity2jooq.codegen.definition.EntitySchemaDefinition;
 import io.github.devastool.entity2jooq.codegen.definition.EntityTableDefinition;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Optional;
@@ -44,7 +45,7 @@ class EntityColumnDefinitionFactoryTest {
   @Test
   void buildSuccessTest() {
     for (Field field : TestEntity.class.getDeclaredFields()) {
-      Optional<EntityColumnDefinition> built = factory.build(field, TABLE_DEFINITION);
+      Optional<EntityColumnDefinition> built = factory.build(field, new Annotation[0], TABLE_DEFINITION);
       Assertions.assertTrue(built.isPresent());
 
       EntityColumnDefinition definition = built.orElseThrow();
@@ -55,7 +56,7 @@ class EntityColumnDefinitionFactoryTest {
   @Test
   void buildWithoutColumnNameSuccessTest() {
     for (Field field : TestEntityWithoutColumnName.class.getDeclaredFields()) {
-      Optional<EntityColumnDefinition> built = factory.build(field, TABLE_DEFINITION);
+      Optional<EntityColumnDefinition> built = factory.build(field, new Annotation[0], TABLE_DEFINITION);
       Assertions.assertTrue(built.isPresent());
 
       EntityColumnDefinition definition = built.orElseThrow();
@@ -66,7 +67,7 @@ class EntityColumnDefinitionFactoryTest {
   @Test
   void buildWithoutAnnotationSuccessTest() {
     for (Field field : TestEntityWithoutAnnotation.class.getDeclaredFields()) {
-      Optional<EntityColumnDefinition> built = factory.build(field, TABLE_DEFINITION);
+      Optional<EntityColumnDefinition> built = factory.build(field, new Annotation[0], TABLE_DEFINITION);
       Assertions.assertTrue(built.isPresent());
 
       EntityColumnDefinition definition = built.orElseThrow();
