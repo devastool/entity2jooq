@@ -20,24 +20,27 @@ import io.github.devastool.entity2jooq.annotation.Column;
 import io.github.devastool.entity2jooq.annotation.naming.NamingStrategy;
 import io.github.devastool.entity2jooq.annotation.naming.SnakeCaseStrategy;
 import io.github.devastool.entity2jooq.codegen.definition.EntityColumnDefinition;
-import io.github.devastool.entity2jooq.codegen.definition.EntityDataTypeDefinition;
 import java.lang.reflect.Field;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
-import org.jooq.impl.SQLDataType;
-import org.jooq.meta.SchemaDefinition;
 import org.jooq.meta.TableDefinition;
 
 /**
  * The factory for {@link EntityColumnDefinition} building.
  *
  * @author Andrey_Yurzanov
- * @since 0.0.1
+ * @since 1.0.0
  */
 public class EntityColumnDefinitionFactory {
-  private final Map<Class<?>, String> SQL_TYPES = initTypes();
+  private final EntityDataTypeDefinitionFactory typeFactory;
+
+  /**
+   * Constructs new instance of {@link EntityColumnDefinitionFactory}.
+   *
+   * @param typeFactory instance of {@link EntityDataTypeDefinitionFactory}
+   */
+  public EntityColumnDefinitionFactory(EntityDataTypeDefinitionFactory typeFactory) {
+    this.typeFactory = typeFactory;
+  }
 
   /**
    * Builds new instance of {@link EntityColumnDefinition}.
@@ -47,46 +50,21 @@ public class EntityColumnDefinitionFactory {
    */
   public Optional<EntityColumnDefinition> build(Field field, TableDefinition table) {
     String name = field.getName();
-    Class<?> classType = field.getType();
-    String sqlType = SQL_TYPES.get(classType);
-
     Column columnAnnotation = field.getAnnotation(Column.class);
     if (columnAnnotation != null) {
       String definedName = columnAnnotation.value();
       if (definedName != null && !definedName.isEmpty()) {
         name = definedName;
       }
-
-      String definedType = columnAnnotation.type();
-      if (definedName != null && !definedType.isEmpty()) {
-        sqlType = definedType;
-      }
     }
 
-    SchemaDefinition schema = table.getSchema();
     NamingStrategy strategy = new SnakeCaseStrategy(); // TODO. Use columnAnnotation.naming()
-    EntityDataTypeDefinition type = new EntityDataTypeDefinition(schema, classType, sqlType);
     return Optional.of(
-        new EntityColumnDefinition(table, strategy.resolve(name), type)
+        new EntityColumnDefinition(
+            table,
+            strategy.resolve(name),
+            typeFactory.build(table.getSchema(), field)
+        )
     );
-  }
-
-  private static Map<Class<?>, String> initTypes() { // TODO. Use columnAnnotation.typeMapper()
-    Map<Class<?>, String> types = new HashMap<>();
-    types.put(SQLDataType.BIGINT.getType(), SQLDataType.BIGINT.getTypeName());
-    types.put(SQLDataType.VARCHAR.getType(), SQLDataType.VARCHAR.getTypeName());
-    types.put(SQLDataType.BOOLEAN.getType(), SQLDataType.BOOLEAN.getTypeName());
-    types.put(SQLDataType.TINYINT.getType(), SQLDataType.TINYINT.getTypeName());
-    types.put(SQLDataType.SMALLINT.getType(), SQLDataType.SMALLINT.getTypeName());
-    types.put(SQLDataType.INTEGER.getType(), SQLDataType.INTEGER.getTypeName());
-    types.put(SQLDataType.BIGINT.getType(), SQLDataType.BIGINT.getTypeName());
-    types.put(SQLDataType.DATE.getType(), SQLDataType.DATE.getTypeName());
-    types.put(SQLDataType.TIMESTAMP.getType(), SQLDataType.TIMESTAMP.getTypeName());
-    types.put(SQLDataType.TIME.getType(), SQLDataType.TIME.getTypeName());
-    types.put(SQLDataType.LOCALDATE.getType(), SQLDataType.LOCALDATE.getTypeName());
-    types.put(SQLDataType.LOCALTIME.getType(), SQLDataType.LOCALTIME.getTypeName());
-    types.put(SQLDataType.LOCALDATETIME.getType(), SQLDataType.LOCALDATETIME.getTypeName());
-
-    return Collections.unmodifiableMap(types);
   }
 }

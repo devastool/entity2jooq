@@ -47,7 +47,7 @@ import org.jooq.meta.jaxb.Property;
 /**
  * Maven plugin for code generating.
  *
- * @since 0.0.1
+ * @since 1.0.0
  * @author Andrey_Yurzanov
  */
 @Mojo(

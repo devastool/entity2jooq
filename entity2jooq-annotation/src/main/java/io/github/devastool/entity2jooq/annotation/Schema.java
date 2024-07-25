@@ -27,7 +27,7 @@ import java.lang.annotation.Target;
 /**
  * The schema of marked entity.
  *
- * @since 0.0.1
+ * @since 1.0.0
  * @author Andrey_Yurzanov
  */
 @Documented

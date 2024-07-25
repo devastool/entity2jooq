@@ -17,6 +17,7 @@
 package io.github.devastool.entity2jooq.codegen.definition;
 
 import org.jooq.impl.DSL;
+import org.jooq.meta.Database;
 import org.jooq.meta.DefaultDataTypeDefinition;
 import org.jooq.meta.SchemaDefinition;
 
@@ -24,9 +25,12 @@ import org.jooq.meta.SchemaDefinition;
  * Meta-information about type of {@link EntityColumnDefinition}.
  *
  * @author Andrey_Yurzanov
- * @since 0.0.1
+ * @since 1.0.0
  */
 public class EntityDataTypeDefinition extends DefaultDataTypeDefinition {
+  private static final String JAVA_TYPE_REFERENCE_TEMPLATE =
+      "new org.jooq.impl.DefaultDataType(org.jooq.SQLDialect.%s, %s.class, \"%s\")";
+
   /**
    * Constructs new instance of {@link EntityDataTypeDefinition}.
    *
@@ -48,6 +52,21 @@ public class EntityDataTypeDefinition extends DefaultDataTypeDefinition {
         null,
         null,
         typeJava.getCanonicalName()
+    );
+  }
+
+  /**
+   * Returns reference of the Java type.
+   *
+   * @return Java type reference
+   */
+  public String getJavaTypeReference() {
+    Database database = getDatabase();
+    return String.format(
+        JAVA_TYPE_REFERENCE_TEMPLATE,
+        database.getDialect(),
+        getJavaType(),
+        getType()
     );
   }
 }
