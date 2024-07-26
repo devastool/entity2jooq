@@ -16,16 +16,13 @@
 
 package io.github.devastool.entity2jooq.codegen;
 
-import static io.github.devastool.entity2jooq.codegen.filesystem.ExtFileVisitor.CLASS_FILE_EXT;
-
 import io.github.devastool.entity2jooq.codegen.definition.factory.EntityColumnDefinitionFactory;
 import io.github.devastool.entity2jooq.codegen.definition.factory.EntityDataTypeDefinitionFactory;
 import io.github.devastool.entity2jooq.codegen.definition.factory.EntitySchemaDefinitionFactory;
 import io.github.devastool.entity2jooq.codegen.definition.factory.EntityTableDefinitionFactory;
-import io.github.devastool.entity2jooq.codegen.filesystem.ExtFileVisitor;
-import io.github.devastool.entity2jooq.codegen.filesystem.PathClassLoader;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import io.github.devastool.entity2jooq.codegen.filesystem.classload.PathClassLoader;
+import io.github.devastool.entity2jooq.codegen.filesystem.classload.PathClassLoaderContext;
+import io.github.devastool.entity2jooq.codegen.filesystem.classload.PathClassLoaderContextElement;
 import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -58,17 +55,27 @@ import org.jooq.meta.UDTDefinition;
  * @since 1.0.0
  */
 public class Entity2JooqDatabase extends AbstractDatabase {
-  private final List<Class<?>> entities = new ArrayList<>();
+  private final List<Class<?>> entities;
+  private final EntitySchemaDefinitionFactory schemaFactory;
+  private final EntityTableDefinitionFactory tableFactory;
 
-  private final EntityDataTypeDefinitionFactory typeFactory = new EntityDataTypeDefinitionFactory();
-  private final EntityColumnDefinitionFactory columnFactory =
-      new EntityColumnDefinitionFactory(typeFactory);
-  private final EntitySchemaDefinitionFactory schemaFactory = new EntitySchemaDefinitionFactory();
-  private final EntityTableDefinitionFactory tableFactory =
-      new EntityTableDefinitionFactory(schemaFactory, columnFactory);
-
+  private static final String CLASSPATH_PROPERTY_KEY = "classpath";
   private static final String CLASSES_PROPERTY_KEY = "classes";
   private static final String TEST_CLASSES_PROPERTY_KEY = "testClasses";
+
+  /**
+   * Constructs new instance of {@link Entity2JooqDatabase}.
+   */
+  public Entity2JooqDatabase() {
+    super();
+
+    entities = new ArrayList<>();
+    schemaFactory = new EntitySchemaDefinitionFactory();
+    tableFactory = new EntityTableDefinitionFactory(
+        schemaFactory,
+        new EntityColumnDefinitionFactory(new EntityDataTypeDefinitionFactory())
+    );
+  }
 
   @Override
   protected DSLContext create0() {
@@ -163,30 +170,25 @@ public class Entity2JooqDatabase extends AbstractDatabase {
     if (entities.isEmpty()) {
       Properties properties = getProperties();
 
-      List<Path> paths = new ArrayList<>();
+      PathClassLoaderContext context = new PathClassLoaderContext();
+      String classpath = properties.getProperty(CLASSPATH_PROPERTY_KEY);
+      if (classpath != null && !classpath.isEmpty()) {
+        context.addClasspath(classpath);
+      }
+
       String classes = properties.getProperty(CLASSES_PROPERTY_KEY);
       if (classes != null && !classes.isEmpty()) {
-        paths.add(Paths.get(classes));
+        context.addRoot(Paths.get(classes));
       }
 
       String testClasses = properties.getProperty(TEST_CLASSES_PROPERTY_KEY);
       if (testClasses != null && !testClasses.isEmpty()) {
-        paths.add(Paths.get(testClasses));
+        context.addRoot(Paths.get(testClasses));
       }
 
-      try {
-        PathClassLoader loader = new PathClassLoader();
-
-        for (Path root : paths) {
-          ExtFileVisitor visitor = new ExtFileVisitor(CLASS_FILE_EXT);
-          Files.walkFileTree(root, visitor);
-
-          for (Path classPath : visitor.getFiltered()) {
-            Class<?> type = loader.loadClass(root, classPath);
-            if (type != null) {
-              entities.add(type);
-            }
-          }
+      try (PathClassLoader loader = new PathClassLoader(context)) {
+        for (PathClassLoaderContextElement element : context) {
+          entities.add(loader.loadClass(element));
         }
       } catch (Exception exception) {
         throw new RuntimeException(exception);
