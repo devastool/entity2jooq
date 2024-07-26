@@ -14,11 +14,9 @@
  *    limitations under the License.
  */
 
-package io.github.devastool.entity2jooq.annotation;
+package io.github.devastool.entity2jooq.annotation.type;
 
-import io.github.devastool.entity2jooq.annotation.Column.Columns;
-import io.github.devastool.entity2jooq.annotation.naming.NamingStrategy;
-import io.github.devastool.entity2jooq.annotation.naming.SnakeCaseStrategy;
+import io.github.devastool.entity2jooq.annotation.type.Type.Types;
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Repeatable;
@@ -27,33 +25,29 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * The column of marked field.
+ * Type of the column.
  *
- * @since 1.0.0
  * @author Andrey_Yurzanov
+ * @since 1.0.0
  */
 @Documented
-@Repeatable(Columns.class)
+@Repeatable(Types.class)
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Column {
+public @interface Type {
   /**
-   * Name of the column.
+   * Name of SQL type.
    */
   String value() default "";
 
-  /**
-   * SQL type.
-   */
-  String type() default "";
+//  TODO. release-2.0.0
+//  /**
+//   * Mapping between SQL and Java types.
+//   */
+//  Class<? extends TypeMapper> mapper() default TypeMapper.class;
 
   /**
-   * Naming strategy for column name resolving. By default {@link SnakeCaseStrategy}.
-   */
-  Class<? extends NamingStrategy> naming() default SnakeCaseStrategy.class;
-
-  /**
-   * Container of {@link Column} annotations.
+   * Container of {@link Type} annotations.
    *
    * @author Andrey_Yurzanov
    * @since 1.0.0
@@ -61,10 +55,10 @@ public @interface Column {
   @Documented
   @Target(ElementType.FIELD)
   @Retention(RetentionPolicy.RUNTIME)
-  @interface Columns {
+  @interface Types {
     /**
-     * Set of {@link Column} annotations.
+     * Set of {@link Type} annotations.
      */
-    Column[] value();
+    Type[] value();
   }
 }

@@ -23,28 +23,31 @@ import io.github.devastool.entity2jooq.annotation.Embedded;
 import io.github.devastool.entity2jooq.annotation.naming.NamingStrategy;
 import io.github.devastool.entity2jooq.annotation.naming.SnakeCaseStrategy;
 import io.github.devastool.entity2jooq.codegen.definition.EntityColumnDefinition;
-import io.github.devastool.entity2jooq.codegen.definition.EntityDataTypeDefinition;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import org.apache.commons.lang3.StringUtils;
-import org.jooq.impl.SQLDataType;
-import org.jooq.meta.SchemaDefinition;
 import org.jooq.meta.TableDefinition;
 
 /**
  * The factory for {@link EntityColumnDefinition} building.
  *
  * @author Andrey_Yurzanov
- * @since 0.0.1
+ * @since 1.0.0
  */
 public class EntityColumnDefinitionFactory {
-  private final Map<Class<?>, String> SQL_TYPES = initTypes();
+  private final EntityDataTypeDefinitionFactory typeFactory;
   public static final String SEPARATOR = "_";
+
+  /**
+   * Constructs new instance of {@link EntityColumnDefinitionFactory}.
+   *
+   * @param typeFactory instance of {@link EntityDataTypeDefinitionFactory}
+   */
+  public EntityColumnDefinitionFactory(EntityDataTypeDefinitionFactory typeFactory) {
+    this.typeFactory = typeFactory;
+  }
 
   /**
    * Builds new instance of {@link EntityColumnDefinition}.
@@ -58,21 +61,15 @@ public class EntityColumnDefinitionFactory {
       TableDefinition table
   ) {
     String name = field.getName();
-    Class<?> classType = field.getType();
-    String sqlType = SQL_TYPES.get(classType);
-
     Column columnAnnotation = field.getAnnotation(Column.class);
     var embedded = (Embedded) findAnnotation(annotations, Embedded.class);
     var overrideColumn = getOverrideColumn(annotations, name);
 
-    if (columnAnnotation != null) {
-      name = replaceIfNotEmpty(columnAnnotation.value(), name);
-      sqlType = replaceIfNotEmpty(columnAnnotation.type(), sqlType);
-    }
-
     if (overrideColumn != null) {
-      name = replaceIfNotEmpty(overrideColumn.value(), name);
-      sqlType = replaceIfNotEmpty(overrideColumn.type(), sqlType);
+      name = replaceNameIfNotEmpty(overrideColumn.value(), name);
+    }
+    else if (columnAnnotation != null) {
+      name = replaceNameIfNotEmpty(columnAnnotation.value(), name);
     }
 
     if (embedded != null) {
@@ -82,31 +79,14 @@ public class EntityColumnDefinitionFactory {
       }
     }
 
-    SchemaDefinition schema = table.getSchema();
     NamingStrategy strategy = new SnakeCaseStrategy(); // TODO. Use columnAnnotation.naming()
-    EntityDataTypeDefinition type = new EntityDataTypeDefinition(schema, classType, sqlType);
     return Optional.of(
-        new EntityColumnDefinition(table, strategy.resolve(name), type)
+        new EntityColumnDefinition(
+            table,
+            strategy.resolve(name),
+            typeFactory.build(table.getSchema(), field)
+        )
     );
-  }
-
-  private static Map<Class<?>, String> initTypes() { // TODO. Use columnAnnotation.typeMapper()
-    Map<Class<?>, String> types = new HashMap<>();
-    types.put(SQLDataType.BIGINT.getType(), SQLDataType.BIGINT.getTypeName());
-    types.put(SQLDataType.VARCHAR.getType(), SQLDataType.VARCHAR.getTypeName());
-    types.put(SQLDataType.BOOLEAN.getType(), SQLDataType.BOOLEAN.getTypeName());
-    types.put(SQLDataType.TINYINT.getType(), SQLDataType.TINYINT.getTypeName());
-    types.put(SQLDataType.SMALLINT.getType(), SQLDataType.SMALLINT.getTypeName());
-    types.put(SQLDataType.INTEGER.getType(), SQLDataType.INTEGER.getTypeName());
-    types.put(SQLDataType.BIGINT.getType(), SQLDataType.BIGINT.getTypeName());
-    types.put(SQLDataType.DATE.getType(), SQLDataType.DATE.getTypeName());
-    types.put(SQLDataType.TIMESTAMP.getType(), SQLDataType.TIMESTAMP.getTypeName());
-    types.put(SQLDataType.TIME.getType(), SQLDataType.TIME.getTypeName());
-    types.put(SQLDataType.LOCALDATE.getType(), SQLDataType.LOCALDATE.getTypeName());
-    types.put(SQLDataType.LOCALTIME.getType(), SQLDataType.LOCALTIME.getTypeName());
-    types.put(SQLDataType.LOCALDATETIME.getType(), SQLDataType.LOCALDATETIME.getTypeName());
-
-    return Collections.unmodifiableMap(types);
   }
 
   private <T extends Annotation> Annotation findAnnotation(
@@ -129,8 +109,7 @@ public class EntityColumnDefinitionFactory {
       }
     }
 
-    var columnOverrides = (AttributeOverrides) findAnnotation(annotations,
-        AttributeOverrides.class);
+    var columnOverrides = (AttributeOverrides) findAnnotation(annotations, AttributeOverrides.class);
     if (columnOverrides != null) {
       for (AttributeOverride override : columnOverrides.value()) {
         if (Objects.equals(override.name(), name)) {
@@ -141,10 +120,10 @@ public class EntityColumnDefinitionFactory {
     return null;
   }
 
-  private String replaceIfNotEmpty(String newValue, String currentValue) {
-    if (StringUtils.isNoneEmpty(newValue)) {
-      currentValue = newValue;
+  private String replaceNameIfNotEmpty(String value, String name) {
+    if (StringUtils.isNotEmpty(value)) {
+      name = value;
     }
-    return currentValue;
+    return name;
   }
 }

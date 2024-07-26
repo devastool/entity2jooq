@@ -34,7 +34,8 @@ import org.junit.jupiter.api.Test;
  * @author Andrey_Yurzanov
  */
 class EntityColumnDefinitionFactoryTest {
-  private final EntityColumnDefinitionFactory factory = new EntityColumnDefinitionFactory();
+  private final EntityColumnDefinitionFactory factory =
+      new EntityColumnDefinitionFactory(new EntityDataTypeDefinitionFactory());
   private static final String ENTITY_ID = "entity_id";
   private static final EntityTableDefinition TABLE_DEFINITION = new EntityTableDefinition(
       new EntitySchemaDefinition(new Entity2JooqDatabase(), "test_schema"),

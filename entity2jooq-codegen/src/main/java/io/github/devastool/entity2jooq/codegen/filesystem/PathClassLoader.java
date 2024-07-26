@@ -24,7 +24,7 @@ import java.nio.file.Path;
 /**
  * Classes loader by paths.
  *
- * @since 0.0.1
+ * @since 1.0.0
  * @author Andrey_Yurzanov
  */
 public class PathClassLoader extends ClassLoader {

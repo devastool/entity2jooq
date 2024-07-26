@@ -20,7 +20,7 @@ import io.github.devastool.entity2jooq.annotation.Embeddable;
 import io.github.devastool.entity2jooq.annotation.Table;
 import io.github.devastool.entity2jooq.annotation.naming.NamingStrategy;
 import io.github.devastool.entity2jooq.annotation.naming.SnakeCaseStrategy;
-import io.github.devastool.entity2jooq.codegen.ClassTypeWrapper;
+import io.github.devastool.entity2jooq.codegen.definition.FieldPair;
 import io.github.devastool.entity2jooq.codegen.definition.EntitySchemaDefinition;
 import io.github.devastool.entity2jooq.codegen.definition.EntityTableDefinition;
 import java.lang.annotation.Annotation;
@@ -36,13 +36,11 @@ import org.jooq.meta.Database;
  * The factory for {@link EntityTableDefinition} building.
  *
  * @author Andrey_Yurzanov
- * @since 0.0.1
+ * @since 1.0.0
  */
 public class EntityTableDefinitionFactory {
   private final EntitySchemaDefinitionFactory schemaFactory;
   private final EntityColumnDefinitionFactory columnFactory;
-
-  private static final String OTHER_TYPE = "OTHER";
 
   /**
    * Constructs new instance of {@link EntityTableDefinitionFactory}.
@@ -85,32 +83,25 @@ public class EntityTableDefinitionFactory {
     return Optional.empty();
   }
 
-  // Accumulate column definitions
   private void accumulateColumnDefinition(Class<?> type, EntityTableDefinition table) {
     if (type == null) {
       return;
     }
 
     var columns = table.getColumns();
-    Stack<ClassTypeWrapper> stack = new Stack<>();
-    stack.push(new ClassTypeWrapper(type, new Annotation[0]));
+    Stack<FieldPair> stack = new Stack<>();
+    stack.push(new FieldPair(type, new Annotation[]{}));
 
     while (!stack.isEmpty()) {
-      var currentType = stack.pop();
+      var currentField = stack.pop();
 
-      for (Field field : currentType.getDeclaredFields()) {
-        var columnDefinition = columnFactory
-            .build(field, currentType.getAnnotations(), table)
-            .orElseThrow();
-        var columnType = columnDefinition
-            .getDefinedType()
-            .getType();
-
-        if (OTHER_TYPE.equals(columnType)) {
-          if (field.getType().isAnnotationPresent(Embeddable.class)) {
-            stack.push(new ClassTypeWrapper(field.getType(), field.getDeclaredAnnotations()));
-          }
+      for (Field field : currentField.getDeclaredFields()) {
+        if (field.getType().isAnnotationPresent(Embeddable.class)) {
+            stack.push(new FieldPair(field.getType(), field.getDeclaredAnnotations()));
         } else {
+          var columnDefinition = columnFactory
+              .build(field, currentField.getAnnotations(), table)
+              .orElseThrow();
 
           boolean exists = columns
               .stream()

@@ -16,30 +16,27 @@
 
 package io.github.devastool.entity2jooq.codegen.definition;
 
-import org.jooq.meta.DataTypeDefinition;
-import org.jooq.meta.DefaultColumnDefinition;
-import org.jooq.meta.TableDefinition;
+import io.github.devastool.entity2jooq.codegen.Entity2JooqDatabase;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
- * Meta-information about column by annotation
- * {@link io.github.devastool.entity2jooq.annotation.Column}.
+ * Tests of {@link EntityDataTypeDefinition}.
  *
  * @author Andrey_Yurzanov
- * @since 1.0.0
  */
-public class EntityColumnDefinition extends DefaultColumnDefinition {
-  /**
-   * Constructs new instance of {@link EntityColumnDefinition}.
-   *
-   * @param table meta-information about column table
-   * @param name  name of the column
-   * @param type  type of the column
-   */
-  public EntityColumnDefinition(
-      TableDefinition table,
-      String name,
-      DataTypeDefinition type
-  ) {
-    super(table, name, 0, type, false, "");
+class EntityDataTypeDefinitionTest {
+  private static final String EXPECTED =
+      "new org.jooq.impl.DefaultDataType(org.jooq.SQLDialect.DEFAULT, java.lang.String.class, \"varchar\")";
+
+  @Test
+  void getJavaTypeReferenceSuccessTest() {
+    EntityDataTypeDefinition definition = new EntityDataTypeDefinition(
+        new EntitySchemaDefinition(new Entity2JooqDatabase(), "test_schema"),
+        String.class,
+        "varchar"
+    );
+
+    Assertions.assertEquals(EXPECTED, definition.getJavaTypeReference());
   }
 }

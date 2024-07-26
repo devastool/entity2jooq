@@ -25,14 +25,15 @@ import org.jooq.meta.jaxb.Target;
  * Java code generator configuration.
  *
  * @author Andrey_Yurzanov
- * @since 0.0.1
+ * @since 1.0.0
  */
 public class Generate {
+//  private String dialect; TODO. Add dialect configuration, by default autodetect
   private String className;
   private String packageName;
   private String target;
 
-  private static final String DEFAULT_PACKAGE_NAME = "io.github.devastool.entity2jooq.codegen";
+  private static final String DEFAULT_PACKAGE_NAME = "org.jooq.generated";
   private static final String DEFAULT_TARGET = "/generated-sources/jooq";
 
   public String getPackageName() {

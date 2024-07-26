@@ -29,7 +29,7 @@ import java.lang.annotation.Target;
 /**
  * The table of marked entity.
  *
- * @since 0.0.1
+ * @since 1.0.0
  * @author Andrey_Yurzanov
  */
 @Documented
@@ -51,7 +51,7 @@ public @interface Table {
    * Container of {@link Table} annotations.
    *
    * @author Andrey_Yurzanov
-   * @since 0.0.1
+   * @since 1.0.0
    */
   @Documented
   @Target(ElementType.TYPE)

@@ -16,12 +16,10 @@
 
 package io.github.devastool.entity2jooq.example;
 
-import static io.github.devastool.entity2jooq.codegen.test_schema.tables.TestEntity.TEST_ENTITY;
+import static org.jooq.generated.test_schema.tables.TestEntity.TEST_ENTITY;
 
-import io.github.devastool.entity2jooq.codegen.DefaultCatalog;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,6 +32,7 @@ import org.jooq.InsertValuesStep4;
 import org.jooq.Record;
 import org.jooq.Table;
 import org.jooq.UpdateConditionStep;
+import org.jooq.generated.DefaultCatalog;
 import org.jooq.impl.DSL;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
@@ -54,9 +53,9 @@ class TestEntityTest {
   private static final String DB_URL = "jdbc:h2:mem:db1;DB_CLOSE_DELAY=-1;DATABASE_TO_UPPER=false";
   private static final TestEntityInfo entityInfo = new TestEntityInfo("1");
   private static final List<TestEntity> DATA = Arrays.asList(
-      new TestEntity(1, "TestEntity1", Timestamp.valueOf(LocalDateTime.now()), entityInfo),
-      new TestEntity(2, "TestEntity2", Timestamp.valueOf(LocalDateTime.now()), entityInfo),
-      new TestEntity(3, "TestEntity3", Timestamp.valueOf(LocalDateTime.now()), entityInfo)
+      new TestEntity(1, "TestEntity1", LocalDateTime.now(), entityInfo),
+      new TestEntity(2, "TestEntity2", LocalDateTime.now(), entityInfo),
+      new TestEntity(3, "TestEntity3", LocalDateTime.now(), entityInfo)
   );
 
   @BeforeAll
@@ -92,7 +91,7 @@ class TestEntityTest {
     Connection connection = pool.getConnection();
     DSLContext context = DSL.using(connection);
 
-    InsertValuesStep4<Record, Integer, String, Timestamp, String> insert = context
+    InsertValuesStep4<Record, Integer, String, LocalDateTime, String> insert = context
         .insertInto(TEST_ENTITY)
         .columns(
             TEST_ENTITY.ID,
@@ -156,7 +155,6 @@ class TestEntityTest {
               .update(TEST_ENTITY)
               .set(TEST_ENTITY.ENTITY_NAME, entity.getName())
               .set(TEST_ENTITY.INSERT_TIME, entity.getInsertTime())
-              .set(TEST_ENTITY.ENTITY_VERSION, entity.getInfo().getVersion())
               .where(TEST_ENTITY.ID.eq(entity.getId()))
       );
     }
