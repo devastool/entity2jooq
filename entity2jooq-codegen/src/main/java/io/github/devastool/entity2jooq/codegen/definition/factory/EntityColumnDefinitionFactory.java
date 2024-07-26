@@ -17,8 +17,9 @@
 package io.github.devastool.entity2jooq.codegen.definition.factory;
 
 import io.github.devastool.entity2jooq.annotation.Column;
+import io.github.devastool.entity2jooq.annotation.Schema;
+import io.github.devastool.entity2jooq.annotation.Table;
 import io.github.devastool.entity2jooq.annotation.naming.NamingStrategy;
-import io.github.devastool.entity2jooq.annotation.naming.SnakeCaseStrategy;
 import io.github.devastool.entity2jooq.codegen.definition.EntityColumnDefinition;
 import java.lang.reflect.Field;
 import java.util.Optional;
@@ -30,15 +31,20 @@ import org.jooq.meta.TableDefinition;
  * @author Andrey_Yurzanov
  * @since 1.0.0
  */
-public class EntityColumnDefinitionFactory {
+public class EntityColumnDefinitionFactory extends ContextableFactory {
   private final EntityDataTypeDefinitionFactory typeFactory;
 
   /**
    * Constructs new instance of {@link EntityColumnDefinitionFactory}.
    *
    * @param typeFactory instance of {@link EntityDataTypeDefinitionFactory}
+   * @param context instance of {@link FactoryContext}
    */
-  public EntityColumnDefinitionFactory(EntityDataTypeDefinitionFactory typeFactory) {
+  public EntityColumnDefinitionFactory(
+      EntityDataTypeDefinitionFactory typeFactory,
+      FactoryContext context
+  ) {
+    super(context);
     this.typeFactory = typeFactory;
   }
 
@@ -47,8 +53,9 @@ public class EntityColumnDefinitionFactory {
    *
    * @param field entity field, annotation {@link Column} is optional
    * @param table meta-information about table
+   * @param type entity class
    */
-  public Optional<EntityColumnDefinition> build(Field field, TableDefinition table) {
+  public Optional<EntityColumnDefinition> build(Field field, TableDefinition table, Class<?> type) {
     String name = field.getName();
     Column columnAnnotation = field.getAnnotation(Column.class);
     if (columnAnnotation != null) {
@@ -58,7 +65,7 @@ public class EntityColumnDefinitionFactory {
       }
     }
 
-    NamingStrategy strategy = new SnakeCaseStrategy(); // TODO. Use columnAnnotation.naming()
+    var strategy = getNamingStrategy(type, columnAnnotation);
     return Optional.of(
         new EntityColumnDefinition(
             table,
@@ -66,5 +73,20 @@ public class EntityColumnDefinitionFactory {
             typeFactory.build(table.getSchema(), field)
         )
     );
+  }
+
+  // if columnAnnotation present return naming strategy from it naming parameter, else
+  // return naming strategy of schema annotation if present or table annotation.
+  private NamingStrategy getNamingStrategy(Class<?> type, Column columnAnnotation) {
+    Class<? extends NamingStrategy> strategy;
+    var schema = type.getAnnotation(Schema.class);
+    if (columnAnnotation != null) {
+      strategy = columnAnnotation.naming();
+    } else if (schema != null) {
+      strategy = schema.naming();
+    } else {
+      strategy = type.getAnnotation(Table.class).naming();
+    }
+    return getContext().getInstance(strategy);
   }
 }

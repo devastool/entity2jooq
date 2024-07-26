@@ -22,6 +22,7 @@ import io.github.devastool.entity2jooq.codegen.definition.factory.EntityColumnDe
 import io.github.devastool.entity2jooq.codegen.definition.factory.EntityDataTypeDefinitionFactory;
 import io.github.devastool.entity2jooq.codegen.definition.factory.EntitySchemaDefinitionFactory;
 import io.github.devastool.entity2jooq.codegen.definition.factory.EntityTableDefinitionFactory;
+import io.github.devastool.entity2jooq.codegen.definition.factory.FactoryContext;
 import io.github.devastool.entity2jooq.codegen.filesystem.ExtFileVisitor;
 import io.github.devastool.entity2jooq.codegen.filesystem.PathClassLoader;
 import java.nio.file.Files;
@@ -41,6 +42,7 @@ import org.jooq.meta.ArrayDefinition;
 import org.jooq.meta.CatalogDefinition;
 import org.jooq.meta.Database;
 import org.jooq.meta.DefaultRelations;
+import org.jooq.meta.Definition;
 import org.jooq.meta.DomainDefinition;
 import org.jooq.meta.EnumDefinition;
 import org.jooq.meta.PackageDefinition;
@@ -60,12 +62,14 @@ import org.jooq.meta.UDTDefinition;
 public class Entity2JooqDatabase extends AbstractDatabase {
   private final List<Class<?>> entities = new ArrayList<>();
 
+  private final FactoryContext context = new FactoryContext();
   private final EntityDataTypeDefinitionFactory typeFactory = new EntityDataTypeDefinitionFactory();
   private final EntityColumnDefinitionFactory columnFactory =
-      new EntityColumnDefinitionFactory(typeFactory);
-  private final EntitySchemaDefinitionFactory schemaFactory = new EntitySchemaDefinitionFactory();
+      new EntityColumnDefinitionFactory(typeFactory, context);
+  private final EntitySchemaDefinitionFactory schemaFactory =
+      new EntitySchemaDefinitionFactory(context);
   private final EntityTableDefinitionFactory tableFactory =
-      new EntityTableDefinitionFactory(schemaFactory, columnFactory);
+      new EntityTableDefinitionFactory(schemaFactory, columnFactory, context);
 
   private static final String CLASSES_PROPERTY_KEY = "classes";
   private static final String TEST_CLASSES_PROPERTY_KEY = "testClasses";
@@ -100,14 +104,10 @@ public class Entity2JooqDatabase extends AbstractDatabase {
 
   @Override
   protected List<SchemaDefinition> getSchemata0() throws SQLException {
-    init();
-
     // Build schemas by entities
-    return entities
+    return getTables0()
         .stream()
-        .map(type -> schemaFactory.build(type, this))
-        .filter(Optional::isPresent)
-        .map(Optional::get)
+        .map(Definition::getSchema)
         .distinct()
         .collect(Collectors.toList());
   }

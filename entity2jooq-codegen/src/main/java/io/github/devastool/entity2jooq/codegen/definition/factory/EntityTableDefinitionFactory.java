@@ -17,7 +17,6 @@
 package io.github.devastool.entity2jooq.codegen.definition.factory;
 
 import io.github.devastool.entity2jooq.annotation.Table;
-import io.github.devastool.entity2jooq.annotation.naming.NamingStrategy;
 import io.github.devastool.entity2jooq.codegen.definition.EntitySchemaDefinition;
 import io.github.devastool.entity2jooq.codegen.definition.EntityTableDefinition;
 import java.lang.reflect.Field;
@@ -32,7 +31,7 @@ import org.jooq.meta.Database;
  * @author Andrey_Yurzanov
  * @since 1.0.0
  */
-public class EntityTableDefinitionFactory {
+public class EntityTableDefinitionFactory extends ContextableFactory {
   private final EntitySchemaDefinitionFactory schemaFactory;
   private final EntityColumnDefinitionFactory columnFactory;
 
@@ -44,8 +43,10 @@ public class EntityTableDefinitionFactory {
    */
   public EntityTableDefinitionFactory(
       EntitySchemaDefinitionFactory schemaFactory,
-      EntityColumnDefinitionFactory columnFactory
+      EntityColumnDefinitionFactory columnFactory,
+      FactoryContext context
   ) {
+    super(context);
     this.schemaFactory = schemaFactory;
     this.columnFactory = columnFactory;
   }
@@ -62,7 +63,7 @@ public class EntityTableDefinitionFactory {
       Optional<EntitySchemaDefinition> schema = schemaFactory.build(type, database);
       if (schema.isPresent()) {
         String name = tableAnnotation.value();
-        NamingStrategy strategy = NamingStrategy.getInstance(tableAnnotation.naming());
+        var strategy = getContext().getInstance(tableAnnotation.naming());
         if (name.isEmpty()) {
           name = strategy.resolve(type.getSimpleName());
         }
@@ -71,7 +72,7 @@ public class EntityTableDefinitionFactory {
         EntityTableDefinition table = new EntityTableDefinition(schema.get(), name, columns);
         for (Field field : type.getDeclaredFields()) {
           columnFactory
-              .build(field, table)
+              .build(field, table, type)
               .ifPresent(columns::add);
         }
         return Optional.of(table);
