@@ -16,6 +16,8 @@
 
 package io.github.devastool.entity2jooq.example;
 
+import io.github.devastool.entity2jooq.annotation.AttributeOverride;
+import io.github.devastool.entity2jooq.annotation.AttributeOverrides;
 import io.github.devastool.entity2jooq.annotation.Column;
 import io.github.devastool.entity2jooq.annotation.Schema;
 import io.github.devastool.entity2jooq.annotation.Table;
@@ -37,13 +39,21 @@ public class TestEntity {
   private String name;
   private LocalDateTime insertTime;
 
+  private TestEntityInfo info;
+
+  @AttributeOverrides({
+      @AttributeOverride(name = "version", column = @Column("other_version")),
+  })
+  private TestEntityInfo otherInfo;
+
   public TestEntity() {
   }
 
-  public TestEntity(Integer id, String name, LocalDateTime insertTime) {
+  public TestEntity(Integer id, String name, LocalDateTime insertTime, TestEntityInfo info) {
     this.id = id;
     this.name = name;
     this.insertTime = insertTime;
+    this.info = info;
   }
 
   public Integer getId() {
@@ -68,6 +78,14 @@ public class TestEntity {
 
   public void setInsertTime(LocalDateTime insertTime) {
     this.insertTime = insertTime;
+  }
+
+  public TestEntityInfo getInfo() {
+    return info;
+  }
+
+  public void setInfo(TestEntityInfo info) {
+    this.info = info;
   }
 
   @Override

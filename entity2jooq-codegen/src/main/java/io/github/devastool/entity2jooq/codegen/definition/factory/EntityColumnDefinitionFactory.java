@@ -16,12 +16,18 @@
 
 package io.github.devastool.entity2jooq.codegen.definition.factory;
 
+import io.github.devastool.entity2jooq.annotation.AttributeOverride;
+import io.github.devastool.entity2jooq.annotation.AttributeOverrides;
 import io.github.devastool.entity2jooq.annotation.Column;
+import io.github.devastool.entity2jooq.annotation.Embedded;
 import io.github.devastool.entity2jooq.annotation.naming.NamingStrategy;
 import io.github.devastool.entity2jooq.annotation.naming.SnakeCaseStrategy;
 import io.github.devastool.entity2jooq.codegen.definition.EntityColumnDefinition;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.util.Objects;
 import java.util.Optional;
+import org.apache.commons.lang3.StringUtils;
 import org.jooq.meta.TableDefinition;
 
 /**
@@ -32,6 +38,7 @@ import org.jooq.meta.TableDefinition;
  */
 public class EntityColumnDefinitionFactory {
   private final EntityDataTypeDefinitionFactory typeFactory;
+  public static final String SEPARATOR = "_";
 
   /**
    * Constructs new instance of {@link EntityColumnDefinitionFactory}.
@@ -48,13 +55,27 @@ public class EntityColumnDefinitionFactory {
    * @param field entity field, annotation {@link Column} is optional
    * @param table meta-information about table
    */
-  public Optional<EntityColumnDefinition> build(Field field, TableDefinition table) {
+  public Optional<EntityColumnDefinition> build(
+      Field field,
+      Annotation[] annotations,
+      TableDefinition table
+  ) {
     String name = field.getName();
     Column columnAnnotation = field.getAnnotation(Column.class);
-    if (columnAnnotation != null) {
-      String definedName = columnAnnotation.value();
-      if (definedName != null && !definedName.isEmpty()) {
-        name = definedName;
+    var embedded = (Embedded) findAnnotation(annotations, Embedded.class);
+    var overrideColumn = getOverrideColumn(annotations, name);
+
+    if (overrideColumn != null) {
+      name = replaceNameIfNotEmpty(overrideColumn.value(), name);
+    }
+    else if (columnAnnotation != null) {
+      name = replaceNameIfNotEmpty(columnAnnotation.value(), name);
+    }
+
+    if (embedded != null) {
+      var prefix = embedded.prefix();
+      if (StringUtils.isNotEmpty(prefix)) {
+        name = String.join(SEPARATOR, prefix, name);
       }
     }
 
@@ -66,5 +87,43 @@ public class EntityColumnDefinitionFactory {
             typeFactory.build(table.getSchema(), field)
         )
     );
+  }
+
+  private <T extends Annotation> Annotation findAnnotation(
+      Annotation[] annotations,
+      Class<T> annotationClass
+  ) {
+    for (Annotation annotation : annotations) {
+      if (annotationClass.isInstance(annotation)) {
+        return annotation;
+      }
+    }
+    return null;
+  }
+
+  private Column getOverrideColumn(Annotation[] annotations, String name) {
+    var columnOverride = (AttributeOverride) findAnnotation(annotations, AttributeOverride.class);
+    if (columnOverride != null) {
+      if (Objects.equals(columnOverride.name(), name)) {
+        return columnOverride.column();
+      }
+    }
+
+    var columnOverrides = (AttributeOverrides) findAnnotation(annotations, AttributeOverrides.class);
+    if (columnOverrides != null) {
+      for (AttributeOverride override : columnOverrides.value()) {
+        if (Objects.equals(override.name(), name)) {
+          return override.column();
+        }
+      }
+    }
+    return null;
+  }
+
+  private String replaceNameIfNotEmpty(String value, String name) {
+    if (StringUtils.isNotEmpty(value)) {
+      name = value;
+    }
+    return name;
   }
 }

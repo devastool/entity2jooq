@@ -16,8 +16,7 @@
 
 package io.github.devastool.entity2jooq.example;
 
-
-import static org.jooq.generated.tables.TestEntity.TEST_ENTITY;
+import static org.jooq.generated.test_schema.tables.TestEntity.TEST_ENTITY;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -29,7 +28,7 @@ import java.util.stream.Collectors;
 import org.h2.jdbcx.JdbcConnectionPool;
 import org.jooq.DSLContext;
 import org.jooq.DeleteConditionStep;
-import org.jooq.InsertValuesStep3;
+import org.jooq.InsertValuesStep4;
 import org.jooq.Record;
 import org.jooq.Table;
 import org.jooq.UpdateConditionStep;
@@ -52,10 +51,11 @@ import org.junit.jupiter.api.TestMethodOrder;
 class TestEntityTest {
   private static JdbcConnectionPool pool;
   private static final String DB_URL = "jdbc:h2:mem:db1;DB_CLOSE_DELAY=-1;DATABASE_TO_UPPER=false";
+  private static final TestEntityInfo entityInfo = new TestEntityInfo("1");
   private static final List<TestEntity> DATA = Arrays.asList(
-      new TestEntity(1, "TestEntity1", LocalDateTime.now()),
-      new TestEntity(2, "TestEntity2", LocalDateTime.now()),
-      new TestEntity(3, "TestEntity3", LocalDateTime.now())
+      new TestEntity(1, "TestEntity1", LocalDateTime.now(), entityInfo),
+      new TestEntity(2, "TestEntity2", LocalDateTime.now(), entityInfo),
+      new TestEntity(3, "TestEntity3", LocalDateTime.now(), entityInfo)
   );
 
   @BeforeAll
@@ -74,6 +74,7 @@ class TestEntityTest {
         .column(TEST_ENTITY.ID)
         .column(TEST_ENTITY.ENTITY_NAME)
         .column(TEST_ENTITY.INSERT_TIME)
+        .column(TEST_ENTITY.ENTITY_VERSION)
         .execute();
 
     connection.close();
@@ -90,12 +91,22 @@ class TestEntityTest {
     Connection connection = pool.getConnection();
     DSLContext context = DSL.using(connection);
 
-    InsertValuesStep3<Record, Integer, String, LocalDateTime> insert = context
+    InsertValuesStep4<Record, Integer, String, LocalDateTime, String> insert = context
         .insertInto(TEST_ENTITY)
-        .columns(TEST_ENTITY.ID, TEST_ENTITY.ENTITY_NAME, TEST_ENTITY.INSERT_TIME);
+        .columns(
+            TEST_ENTITY.ID,
+            TEST_ENTITY.ENTITY_NAME,
+            TEST_ENTITY.INSERT_TIME,
+            TEST_ENTITY.ENTITY_VERSION
+        );
 
     for (TestEntity entity : DATA) {
-      insert.values(entity.getId(), entity.getName(), entity.getInsertTime());
+      insert.values(
+          entity.getId(),
+          entity.getName(),
+          entity.getInsertTime(),
+          entity.getInfo().getVersion()
+      );
     }
     Assertions.assertDoesNotThrow(insert::execute);
 
@@ -112,14 +123,16 @@ class TestEntityTest {
         .select(
             TEST_ENTITY.ID,
             TEST_ENTITY.ENTITY_NAME,
-            TEST_ENTITY.INSERT_TIME
+            TEST_ENTITY.INSERT_TIME,
+            TEST_ENTITY.ENTITY_VERSION
         )
         .from(TEST_ENTITY)
         .fetch(
             records -> new TestEntity(
                 records.get(TEST_ENTITY.ID),
                 records.get(TEST_ENTITY.ENTITY_NAME),
-                records.get(TEST_ENTITY.INSERT_TIME)
+                records.get(TEST_ENTITY.INSERT_TIME),
+                new TestEntityInfo(records.get(TEST_ENTITY.ENTITY_VERSION))
             )
         );
 
