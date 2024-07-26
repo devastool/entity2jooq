@@ -20,7 +20,7 @@ package io.github.devastool.entity2jooq.annotation.naming;
  * Implementation of {@link NamingStrategy} for a data extraction. The name represents in the form
  * of snake_case.
  *
- * @since 0.0.1
+ * @since 1.0.0
  * @author Andrey_Yurzanov
  */
 public class SnakeCaseStrategy implements NamingStrategy {

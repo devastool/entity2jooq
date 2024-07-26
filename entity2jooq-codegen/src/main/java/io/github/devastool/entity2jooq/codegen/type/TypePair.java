@@ -14,26 +14,44 @@
  *    limitations under the License.
  */
 
-package io.github.devastool.entity2jooq.codegen.definition;
-
-import org.jooq.meta.Database;
-import org.jooq.meta.SchemaDefinition;
+package io.github.devastool.entity2jooq.codegen.type;
 
 /**
- * Meta-information about schema by annotation
- * {@link io.github.devastool.entity2jooq.annotation.Schema}.
+ * Pair of SQL type and Java type.
  *
  * @author Andrey_Yurzanov
  * @since 1.0.0
  */
-public class EntitySchemaDefinition extends SchemaDefinition {
+public class TypePair {
+  private final Class<?> type;
+  private final String sqlType;
+
   /**
-   * Constructs new instance of {@link EntitySchemaDefinition}.
+   * Constructs new instance of {@link TypePair}.
    *
-   * @param database meta-information provider
-   * @param name     name of the schema
+   * @param type    Java type
+   * @param sqlType SQL type
    */
-  public EntitySchemaDefinition(Database database, String name) {
-    super(database, name, "");
+  public TypePair(Class<?> type, String sqlType) {
+    this.type = type;
+    this.sqlType = sqlType;
+  }
+
+  /**
+   * Returns Java type.
+   *
+   * @return Java type
+   */
+  public Class<?> getType() {
+    return type;
+  }
+
+  /**
+   * Returns SQL type.
+   *
+   * @return SQL type
+   */
+  public String getSqlType() {
+    return sqlType;
   }
 }

@@ -16,12 +16,11 @@
 
 package io.github.devastool.entity2jooq.example;
 
-import static io.github.devastool.entity2jooq.codegen.Tables.TEST_ENTITY;
 
-import io.github.devastool.entity2jooq.codegen.DefaultCatalog;
+import static org.jooq.generated.tables.TestEntity.TEST_ENTITY;
+
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,6 +33,7 @@ import org.jooq.InsertValuesStep3;
 import org.jooq.Record;
 import org.jooq.Table;
 import org.jooq.UpdateConditionStep;
+import org.jooq.generated.DefaultCatalog;
 import org.jooq.impl.DSL;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
@@ -53,9 +53,9 @@ class TestEntityTest {
   private static JdbcConnectionPool pool;
   private static final String DB_URL = "jdbc:h2:mem:db1;DB_CLOSE_DELAY=-1;DATABASE_TO_UPPER=false";
   private static final List<TestEntity> DATA = Arrays.asList(
-      new TestEntity(1, "TestEntity1", Timestamp.valueOf(LocalDateTime.now())),
-      new TestEntity(2, "TestEntity2", Timestamp.valueOf(LocalDateTime.now())),
-      new TestEntity(3, "TestEntity3", Timestamp.valueOf(LocalDateTime.now()))
+      new TestEntity(1, "TestEntity1", LocalDateTime.now()),
+      new TestEntity(2, "TestEntity2", LocalDateTime.now()),
+      new TestEntity(3, "TestEntity3", LocalDateTime.now())
   );
 
   @BeforeAll
@@ -90,7 +90,7 @@ class TestEntityTest {
     Connection connection = pool.getConnection();
     DSLContext context = DSL.using(connection);
 
-    InsertValuesStep3<Record, Integer, String, Timestamp> insert = context
+    InsertValuesStep3<Record, Integer, String, LocalDateTime> insert = context
         .insertInto(TEST_ENTITY)
         .columns(TEST_ENTITY.ID, TEST_ENTITY.ENTITY_NAME, TEST_ENTITY.INSERT_TIME);
 

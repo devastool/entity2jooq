@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
  * Files visitor with filtering by file extension.
  *
  * @author Andrey_Yurzanov
- * @since 0.0.1
+ * @since 1.0.0
  */
 public class ExtFileVisitor implements FileVisitor<Path> {
   private final String ext;

@@ -26,7 +26,7 @@ import javax.tools.SimpleJavaFileObject;
  * Simple realization of {@link JavaFileObject} for source code loading by path.
  *
  * @author Andrey_Yurzanov
- * @since 0.0.1
+ * @since 1.0.0
  */
 public class PathJavaFileObject extends SimpleJavaFileObject {
   private final Path path;

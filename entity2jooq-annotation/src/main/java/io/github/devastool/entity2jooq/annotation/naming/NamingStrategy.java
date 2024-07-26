@@ -16,42 +16,13 @@
 
 package io.github.devastool.entity2jooq.annotation.naming;
 
-import java.util.HashMap;
-import java.util.Map;
-
 /**
  * A Naming strategy for a data extraction.
  *
+ * @since 1.0.0
  * @author Andrey_Yurzanov
- * @since 0.0.1
  */
 public interface NamingStrategy {
-  /**
-   * Cache of strategy instances.
-   */
-  Map<Class<?>, NamingStrategy> CACHE = new HashMap<>();
-
-  /**
-   * Getting instance of naming strategy.
-   *
-   * @param namingStrategy Class of naming strategy.
-   * @return NamingStrategy implementation.
-   */
-  static NamingStrategy getInstance(Class<? extends NamingStrategy> namingStrategy) {
-    if (namingStrategy != null) {
-      if (CACHE.containsKey(namingStrategy)) {
-        return CACHE.get(namingStrategy);
-      } else {
-        try {
-          CACHE.put(namingStrategy, namingStrategy.getConstructor().newInstance());
-        } catch (Exception e) {
-          throw new RuntimeException(e);
-        }
-      }
-    }
-    return new SnakeCaseStrategy();
-  }
-
   /**
    * Getting the name for the data extraction.
    *

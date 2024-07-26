@@ -19,13 +19,13 @@ package io.github.devastool.entity2jooq.example;
 import io.github.devastool.entity2jooq.annotation.Column;
 import io.github.devastool.entity2jooq.annotation.Schema;
 import io.github.devastool.entity2jooq.annotation.Table;
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 /**
  * Example entity, see tests.
  *
- * @since 0.0.1
+ * @since 1.0.0
  * @author Andrey_Yurzanov
  */
 @Table
@@ -35,12 +35,12 @@ public class TestEntity {
   private Integer id;
   @Column(value = "entity_name", type = "varchar")
   private String name;
-  private Timestamp insertTime;
+  private LocalDateTime insertTime;
 
   public TestEntity() {
   }
 
-  public TestEntity(Integer id, String name, Timestamp insertTime) {
+  public TestEntity(Integer id, String name, LocalDateTime insertTime) {
     this.id = id;
     this.name = name;
     this.insertTime = insertTime;
@@ -62,11 +62,11 @@ public class TestEntity {
     this.name = name;
   }
 
-  public Timestamp getInsertTime() {
+  public LocalDateTime getInsertTime() {
     return insertTime;
   }
 
-  public void setInsertTime(Timestamp insertTime) {
+  public void setInsertTime(LocalDateTime insertTime) {
     this.insertTime = insertTime;
   }
 

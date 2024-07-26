@@ -30,7 +30,7 @@ import org.junit.jupiter.api.Test;
 class EntityTableDefinitionFactoryTest {
   private final EntityTableDefinitionFactory factory = new EntityTableDefinitionFactory(
       new EntitySchemaDefinitionFactory(),
-      new EntityColumnDefinitionFactory()
+      new EntityColumnDefinitionFactory(new EntityDataTypeDefinitionFactory())
   );
   private static final String TEST_TABLE = "test_table";
   private static final String CLASS_NAME = "test_entity_without_table_name";

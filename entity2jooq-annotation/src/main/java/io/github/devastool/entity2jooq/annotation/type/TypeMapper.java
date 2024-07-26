@@ -14,26 +14,32 @@
  *    limitations under the License.
  */
 
-package io.github.devastool.entity2jooq.codegen.definition;
-
-import org.jooq.meta.Database;
-import org.jooq.meta.SchemaDefinition;
+package io.github.devastool.entity2jooq.annotation.type;
 
 /**
- * Meta-information about schema by annotation
- * {@link io.github.devastool.entity2jooq.annotation.Schema}.
+ * Mapping between SQL and Java types.
  *
  * @author Andrey_Yurzanov
  * @since 1.0.0
  */
-public class EntitySchemaDefinition extends SchemaDefinition {
+public interface TypeMapper {
   /**
-   * Constructs new instance of {@link EntitySchemaDefinition}.
+   * Returns Java type by dialect and SQL type.
    *
-   * @param database meta-information provider
-   * @param name     name of the schema
+   * @param dialect SQL dialect
+   * @param sqlType SQL type
+   * @return Java type
+   * @throws NoSuchTypeException when th type is not found
    */
-  public EntitySchemaDefinition(Database database, String name) {
-    super(database, name, "");
-  }
+  Class<?> getType(String dialect, String sqlType) throws NoSuchTypeException;
+
+  /**
+   * Returns SQL type by dialect and Java type.
+   *
+   * @param dialect SQL dialect
+   * @param type    Java type
+   * @return SQL type
+   * @throws NoSuchTypeException when the type is not found
+   */
+  String getSqlType(String dialect, Class<?> type) throws NoSuchTypeException;
 }
