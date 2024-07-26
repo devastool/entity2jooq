@@ -18,6 +18,7 @@ package io.github.devastool.entity2jooq.codegen.definition.factory;
 
 import io.github.devastool.entity2jooq.annotation.Column;
 import io.github.devastool.entity2jooq.annotation.Table;
+import io.github.devastool.entity2jooq.annotation.naming.SnakeCaseStrategy;
 import io.github.devastool.entity2jooq.codegen.Entity2JooqDatabase;
 import io.github.devastool.entity2jooq.codegen.definition.EntityColumnDefinition;
 import io.github.devastool.entity2jooq.codegen.definition.EntitySchemaDefinition;
@@ -40,13 +41,14 @@ class EntityColumnDefinitionFactoryTest {
   private static final EntityTableDefinition TABLE_DEFINITION = new EntityTableDefinition(
       new EntitySchemaDefinition(new Entity2JooqDatabase(), "test_schema"),
       "test_table",
-      new ArrayList<>()
+      new ArrayList<>(),
+      SnakeCaseStrategy.class
   );
 
   @Test
   void buildSuccessTest() {
     for (Field field : TestEntity.class.getDeclaredFields()) {
-      Optional<EntityColumnDefinition> built = factory.build(field, TABLE_DEFINITION, TestEntity.class);
+      Optional<EntityColumnDefinition> built = factory.build(field, TABLE_DEFINITION);
       Assertions.assertTrue(built.isPresent());
 
       EntityColumnDefinition definition = built.orElseThrow();
@@ -57,7 +59,7 @@ class EntityColumnDefinitionFactoryTest {
   @Test
   void buildWithoutColumnNameSuccessTest() {
     for (Field field : TestEntityWithoutColumnName.class.getDeclaredFields()) {
-      Optional<EntityColumnDefinition> built = factory.build(field, TABLE_DEFINITION, TestEntityWithoutColumnName.class);
+      Optional<EntityColumnDefinition> built = factory.build(field, TABLE_DEFINITION);
       Assertions.assertTrue(built.isPresent());
 
       EntityColumnDefinition definition = built.orElseThrow();
@@ -68,7 +70,7 @@ class EntityColumnDefinitionFactoryTest {
   @Test
   void buildWithTableAnnotationSuccessTest() {
     for (Field field : TestEntityWithTableAnnotation.class.getDeclaredFields()) {
-      Optional<EntityColumnDefinition> built = factory.build(field, TABLE_DEFINITION, TestEntityWithTableAnnotation.class);
+      Optional<EntityColumnDefinition> built = factory.build(field, TABLE_DEFINITION);
       Assertions.assertTrue(built.isPresent());
 
       EntityColumnDefinition definition = built.orElseThrow();

@@ -40,7 +40,7 @@ public abstract class ContextableFactory {
   /**
    * Getter
    *
-   * @return context.
+   * @return instance of {@link FactoryContext }.
    */
   public FactoryContext getContext() {
     return context;

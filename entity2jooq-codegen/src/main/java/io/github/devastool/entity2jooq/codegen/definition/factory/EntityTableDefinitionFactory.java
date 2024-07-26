@@ -69,10 +69,15 @@ public class EntityTableDefinitionFactory extends ContextableFactory {
         }
 
         ArrayList<ColumnDefinition> columns = new ArrayList<>();
-        EntityTableDefinition table = new EntityTableDefinition(schema.get(), name, columns);
+        EntityTableDefinition table = new EntityTableDefinition(
+            schema.get(),
+            name,
+            columns,
+            tableAnnotation.naming()
+        );
         for (Field field : type.getDeclaredFields()) {
           columnFactory
-              .build(field, table, type)
+              .build(field, table)
               .ifPresent(columns::add);
         }
         return Optional.of(table);
