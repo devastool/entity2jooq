@@ -52,6 +52,11 @@ public class EntityTableDefinition extends AbstractTableDefinition {
     this.strategy = strategy;
   }
 
+  /**
+   * Getter
+   *
+   * @return naming strategy for table, instance of {@link NamingStrategy}
+   */
   public Class<? extends NamingStrategy> getStrategy() {
     return strategy;
   }

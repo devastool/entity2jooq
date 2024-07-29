@@ -32,7 +32,7 @@ import org.jooq.meta.Database;
 public class EntitySchemaDefinitionFactory extends ContextableFactory {
 
   /**
-   * Constructs new instance of {@link EntityColumnDefinitionFactory}.
+   * Constructs new instance of {@link EntitySchemaDefinitionFactory}.
    *
    * @param context instance of {@link FactoryContext}
    */
@@ -43,8 +43,8 @@ public class EntitySchemaDefinitionFactory extends ContextableFactory {
   /**
    * Builds new instance of {@link EntitySchemaDefinition}.
    *
-   * @param type           entity class, annotation {@link Schema} is optional
-   * @param database       meta-information provider
+   * @param type     entity class, annotation {@link Schema} is optional
+   * @param database meta-information provider
    */
   public Optional<EntitySchemaDefinition> build(Class<?> type, Database database) {
     var schemaName = getSchemaName(type);
@@ -61,6 +61,7 @@ public class EntitySchemaDefinitionFactory extends ContextableFactory {
     }
     return name;
   }
+
   // Return schema name from Schema annotation value parameter if it not empty, else return
   // package name of class as schema name.
   private String getSchemaName(Class<?> type) {
@@ -71,6 +72,7 @@ public class EntitySchemaDefinitionFactory extends ContextableFactory {
       return getLastPackageName(type.getPackage());
     }
   }
+
   // if Schema is present return instance of strategy from annotation naming parameter,
   // else return strategy from Table annotation naming parameter.
   private NamingStrategy getNamingStrategy(Class<?> type) {

@@ -56,7 +56,8 @@ public class FactoryContext {
    */
   private <T> T createInstance(Class<T> type, Object[] args) {
     try {
-      var argsTypes = Arrays.stream(args)
+      var argsTypes = Arrays
+          .stream(args)
           .map(Object::getClass)
           .toArray(Class[]::new);
       return type.getConstructor(argsTypes).newInstance(args);
