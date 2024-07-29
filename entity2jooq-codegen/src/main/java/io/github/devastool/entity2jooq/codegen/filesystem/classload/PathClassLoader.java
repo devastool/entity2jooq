@@ -28,6 +28,8 @@ import java.util.Optional;
 public class PathClassLoader extends URLClassLoader {
   private final PathClassLoaderContext context;
 
+  private static final int DEFINE_CLASS_OFFSET = 0;
+
   /**
    * Constructs new instance of {@link PathClassLoader}.
    *
@@ -53,7 +55,7 @@ public class PathClassLoader extends URLClassLoader {
     if (defined == null) {
       try {
         byte[] classData = element.getClassData();
-        defined = defineClass(className, classData, 0, classData.length);
+        defined = defineClass(className, classData, DEFINE_CLASS_OFFSET, classData.length);
         resolveClass(defined);
       } catch (Exception exception) {
         throw new ClassNotFoundException(
