@@ -26,9 +26,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Objects;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -39,7 +40,7 @@ import java.util.Optional;
  */
 public class PathClassLoaderContext implements Iterable<PathClassLoaderContextElement> {
   private final List<URL> classpath;
-  private final List<PathClassLoaderContextElement> elements;
+  private final Map<String, PathClassLoaderContextElement> elements;
 
   private static final String CLASSPATH_SEPARATOR = File.pathSeparator;
 
@@ -48,7 +49,7 @@ public class PathClassLoaderContext implements Iterable<PathClassLoaderContextEl
    */
   public PathClassLoaderContext() {
     classpath = new ArrayList<>();
-    elements = new ArrayList<>();
+    elements = new HashMap<>();
   }
 
   /**
@@ -81,9 +82,10 @@ public class PathClassLoaderContext implements Iterable<PathClassLoaderContextEl
       ExtFileVisitor visitor = new ExtFileVisitor(CLASS_FILE_EXT);
       Files.walkFileTree(root, visitor);
 
-      elements.addAll(
-          visitor.getFiltered(path -> new PathClassLoaderContextElement(root, path))
-      );
+      var filtered = visitor.getFiltered(path -> new PathClassLoaderContextElement(root, path));
+      for (PathClassLoaderContextElement element : filtered) {
+        elements.put(element.getCanonicalClassName(), element);
+      }
     } catch (IOException exception) {
       throw new RuntimeException(
           String.join("Loading error of files by path: [", root.toString(), "]"),
@@ -99,12 +101,7 @@ public class PathClassLoaderContext implements Iterable<PathClassLoaderContextEl
    * @return element of path information or empty container
    */
   public Optional<PathClassLoaderContextElement> getElement(String name) {
-    for (PathClassLoaderContextElement element : elements) {
-      if (Objects.equals(name, element.getSimpleClassName())) {
-        return Optional.of(element);
-      }
-    }
-    return Optional.empty();
+    return Optional.ofNullable(elements.get(name));
   }
 
   /**
@@ -118,6 +115,8 @@ public class PathClassLoaderContext implements Iterable<PathClassLoaderContextEl
 
   @Override
   public Iterator<PathClassLoaderContextElement> iterator() {
-    return elements.iterator();
+    return elements
+        .values()
+        .iterator();
   }
 }

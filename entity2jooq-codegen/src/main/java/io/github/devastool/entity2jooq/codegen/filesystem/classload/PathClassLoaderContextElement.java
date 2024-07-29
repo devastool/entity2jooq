@@ -21,6 +21,7 @@ import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Objects;
 
 /**
  * Information about path of class file.
@@ -68,6 +69,7 @@ public class PathClassLoaderContextElement {
    */
   public String getSimpleClassName() {
     return classFile
+        .getFileName()
         .toString()
         .replace(FILE_EXTENSION, EMPTY);
   }
@@ -84,6 +86,23 @@ public class PathClassLoaderContextElement {
     } catch (IOException exception) {
       throw new RuntimeException(exception);
     }
+  }
+
+  @Override
+  public boolean equals(Object other) {
+    if (this == other) {
+      return true;
+    }
+    if (other == null || getClass() != other.getClass()) {
+      return false;
+    }
+    PathClassLoaderContextElement that = (PathClassLoaderContextElement) other;
+    return Objects.equals(classFile, that.classFile);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(classFile);
   }
 
   // Returns path's separator of current os
