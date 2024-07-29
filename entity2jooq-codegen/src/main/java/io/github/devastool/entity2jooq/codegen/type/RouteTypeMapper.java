@@ -38,6 +38,10 @@ public class RouteTypeMapper implements TypeMapper {
     DefaultTypeMapper defaultMapper = new DefaultTypeMapper();
     dialects.put(defaultMapper.getDialect(), defaultMapper);
 
+//    TODO. Postgres dialect
+//    PostgresTypeMapper postgresMapper = new PostgresTypeMapper();
+//    dialects.put(postgresMapper.getDialect(), postgresMapper);
+
 //    TODO. CUBRID dialect
 //    CubridTypeMapper cubridMapper = new CubridTypeMapper();
 //    dialects.put(cubridMapper.getDialect(), cubridMapper);

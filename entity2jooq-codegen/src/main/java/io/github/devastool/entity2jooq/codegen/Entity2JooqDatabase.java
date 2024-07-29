@@ -21,8 +21,8 @@ import io.github.devastool.entity2jooq.codegen.definition.factory.EntityDataType
 import io.github.devastool.entity2jooq.codegen.definition.factory.EntitySchemaDefinitionFactory;
 import io.github.devastool.entity2jooq.codegen.definition.factory.EntityTableDefinitionFactory;
 import io.github.devastool.entity2jooq.codegen.filesystem.classload.PathClassLoader;
-import io.github.devastool.entity2jooq.codegen.filesystem.classload.PathClassLoaderContext;
-import io.github.devastool.entity2jooq.codegen.filesystem.classload.PathClassLoaderContextElement;
+import io.github.devastool.entity2jooq.codegen.filesystem.classload.ClassLoaderContext;
+import io.github.devastool.entity2jooq.codegen.filesystem.classload.ClassFile;
 import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -170,7 +170,7 @@ public class Entity2JooqDatabase extends AbstractDatabase {
     if (entities.isEmpty()) {
       Properties properties = getProperties();
 
-      PathClassLoaderContext context = new PathClassLoaderContext();
+      ClassLoaderContext context = new ClassLoaderContext();
       String classpath = properties.getProperty(CLASSPATH_PROPERTY_KEY);
       if (classpath != null && !classpath.isEmpty()) {
         context.addClasspath(classpath);
@@ -187,7 +187,7 @@ public class Entity2JooqDatabase extends AbstractDatabase {
       }
 
       try (PathClassLoader loader = new PathClassLoader(context)) {
-        for (PathClassLoaderContextElement element : context) {
+        for (ClassFile element : context) {
           entities.add(loader.loadClass(element));
         }
       } catch (Exception exception) {

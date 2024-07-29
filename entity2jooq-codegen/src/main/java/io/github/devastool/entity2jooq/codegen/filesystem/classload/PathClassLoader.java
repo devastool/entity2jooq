@@ -26,7 +26,7 @@ import java.util.Optional;
  * @since 1.0.0
  */
 public class PathClassLoader extends URLClassLoader {
-  private final PathClassLoaderContext context;
+  private final ClassLoaderContext context;
 
   private static final int DEFINE_CLASS_OFFSET = 0;
 
@@ -35,20 +35,20 @@ public class PathClassLoader extends URLClassLoader {
    *
    * @param context loader context
    */
-  public PathClassLoader(PathClassLoaderContext context) {
+  public PathClassLoader(ClassLoaderContext context) {
     super(context.getClasspath(), Thread.currentThread().getContextClassLoader());
 
     this.context = context;
   }
 
   /**
-   * Loads class by path description {@link PathClassLoaderContextElement}.
+   * Loads class by path description {@link ClassFile}.
    *
    * @param element path description
    * @return loaded class
    * @throws ClassNotFoundException when class is not found
    */
-  public Class<?> loadClass(PathClassLoaderContextElement element) throws ClassNotFoundException {
+  public Class<?> loadClass(ClassFile element) throws ClassNotFoundException {
     String className = element.getCanonicalClassName();
 
     Class<?> defined = findLoadedClass(className);
@@ -69,9 +69,9 @@ public class PathClassLoader extends URLClassLoader {
 
   @Override
   public Class<?> loadClass(String name) throws ClassNotFoundException {
-    Optional<PathClassLoaderContextElement> element = context.getElement(name);
-    if (element.isPresent()) {
-      return loadClass(element.get());
+    Optional<ClassFile> classFile = context.getClassFile(name);
+    if (classFile.isPresent()) {
+      return loadClass(classFile.get());
     }
 
     try {

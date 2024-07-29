@@ -29,7 +29,7 @@ import java.util.Objects;
  * @author Andrey_Yurzanov
  * @since 1.0.0
  */
-public class PathClassLoaderContextElement {
+public class ClassFile {
   private final Path root;
   private final Path classFile;
 
@@ -39,12 +39,12 @@ public class PathClassLoaderContextElement {
   private static final String PATH_SEPARATOR = getPathSeparator();
 
   /**
-   * Constructs new instance of {@link PathClassLoaderContextElement}.
+   * Constructs new instance of {@link ClassFile}.
    *
    * @param root      directory that containing this element
    * @param classFile path to class file
    */
-  public PathClassLoaderContextElement(Path root, Path classFile) {
+  public ClassFile(Path root, Path classFile) {
     this.root = root;
     this.classFile = classFile;
   }
@@ -59,18 +59,6 @@ public class PathClassLoaderContextElement {
         .relativize(classFile)
         .toString()
         .replace(PATH_SEPARATOR, PACKAGE_SEPARATOR)
-        .replace(FILE_EXTENSION, EMPTY);
-  }
-
-  /**
-   * Returns simple name of the class, example: 'MyClass'.
-   *
-   * @return simple name of the class
-   */
-  public String getSimpleClassName() {
-    return classFile
-        .getFileName()
-        .toString()
         .replace(FILE_EXTENSION, EMPTY);
   }
 
@@ -96,7 +84,7 @@ public class PathClassLoaderContextElement {
     if (other == null || getClass() != other.getClass()) {
       return false;
     }
-    PathClassLoaderContextElement that = (PathClassLoaderContextElement) other;
+    ClassFile that = (ClassFile) other;
     return Objects.equals(classFile, that.classFile);
   }
 
