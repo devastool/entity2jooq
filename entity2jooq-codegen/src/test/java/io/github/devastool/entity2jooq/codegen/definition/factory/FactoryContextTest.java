@@ -26,7 +26,6 @@ import org.junit.jupiter.api.Test;
  * @author Evgeniy_Gerasimov
  */
 class FactoryContextTest {
-
   private final FactoryContext factoryContext = new FactoryContext();
 
   @Test
