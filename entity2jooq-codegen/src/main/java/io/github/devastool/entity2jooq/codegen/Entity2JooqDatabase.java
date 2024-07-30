@@ -20,6 +20,7 @@ import io.github.devastool.entity2jooq.codegen.definition.factory.EntityColumnDe
 import io.github.devastool.entity2jooq.codegen.definition.factory.EntityDataTypeDefinitionFactory;
 import io.github.devastool.entity2jooq.codegen.definition.factory.EntitySchemaDefinitionFactory;
 import io.github.devastool.entity2jooq.codegen.definition.factory.EntityTableDefinitionFactory;
+import io.github.devastool.entity2jooq.codegen.definition.factory.FactoryContext;
 import io.github.devastool.entity2jooq.codegen.filesystem.classload.PathClassLoader;
 import io.github.devastool.entity2jooq.codegen.filesystem.classload.ClassLoaderContext;
 import io.github.devastool.entity2jooq.codegen.filesystem.classload.ClassFile;
@@ -38,6 +39,7 @@ import org.jooq.meta.ArrayDefinition;
 import org.jooq.meta.CatalogDefinition;
 import org.jooq.meta.Database;
 import org.jooq.meta.DefaultRelations;
+import org.jooq.meta.Definition;
 import org.jooq.meta.DomainDefinition;
 import org.jooq.meta.EnumDefinition;
 import org.jooq.meta.PackageDefinition;
@@ -56,7 +58,6 @@ import org.jooq.meta.UDTDefinition;
  */
 public class Entity2JooqDatabase extends AbstractDatabase {
   private final List<Class<?>> entities;
-  private final EntitySchemaDefinitionFactory schemaFactory;
   private final EntityTableDefinitionFactory tableFactory;
 
   private static final String CLASSPATH_PROPERTY_KEY = "classpath";
@@ -68,12 +69,14 @@ public class Entity2JooqDatabase extends AbstractDatabase {
    */
   public Entity2JooqDatabase() {
     super();
-
     entities = new ArrayList<>();
-    schemaFactory = new EntitySchemaDefinitionFactory();
+
+    FactoryContext context = new FactoryContext();
+    EntitySchemaDefinitionFactory schemaFactory = new EntitySchemaDefinitionFactory(context);
     tableFactory = new EntityTableDefinitionFactory(
         schemaFactory,
-        new EntityColumnDefinitionFactory(new EntityDataTypeDefinitionFactory())
+        new EntityColumnDefinitionFactory(new EntityDataTypeDefinitionFactory(), context),
+        context
     );
   }
 
@@ -107,14 +110,10 @@ public class Entity2JooqDatabase extends AbstractDatabase {
 
   @Override
   protected List<SchemaDefinition> getSchemata0() throws SQLException {
-    init();
-
     // Build schemas by entities
-    return entities
+    return getTables0()
         .stream()
-        .map(type -> schemaFactory.build(type, this))
-        .filter(Optional::isPresent)
-        .map(Optional::get)
+        .map(Definition::getSchema)
         .distinct()
         .collect(Collectors.toList());
   }
