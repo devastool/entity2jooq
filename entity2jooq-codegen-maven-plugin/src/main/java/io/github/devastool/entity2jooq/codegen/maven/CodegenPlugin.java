@@ -93,8 +93,10 @@ public class CodegenPlugin extends AbstractMojo {
       manager.setLocation(StandardLocation.CLASS_PATH, compile.getClasspathFiles());
 
       Collection<PathJavaFileObject> sourceCodes = visitor.getFiltered(PathJavaFileObject::new);
-      CompilationTask task = compiler.getTask(null, manager, null, null, null, sourceCodes);
-      task.call();
+      if (!sourceCodes.isEmpty()) {
+        CompilationTask task = compiler.getTask(null, manager, null, null, null, sourceCodes);
+        task.call();
+      }
     } catch (Exception exception) {
       throw new RuntimeException(exception);
     }
