@@ -17,8 +17,6 @@
 package io.github.devastool.entity2jooq.codegen.definition.factory;
 
 import io.github.devastool.entity2jooq.annotation.Table;
-import io.github.devastool.entity2jooq.annotation.naming.NamingStrategy;
-import io.github.devastool.entity2jooq.annotation.naming.SnakeCaseStrategy;
 import io.github.devastool.entity2jooq.codegen.definition.EntitySchemaDefinition;
 import io.github.devastool.entity2jooq.codegen.definition.EntityTableDefinition;
 import java.lang.reflect.Field;
@@ -33,7 +31,7 @@ import org.jooq.meta.Database;
  * @author Andrey_Yurzanov
  * @since 1.0.0
  */
-public class EntityTableDefinitionFactory {
+public class EntityTableDefinitionFactory extends ContextableFactory {
   private final EntitySchemaDefinitionFactory schemaFactory;
   private final EntityColumnDefinitionFactory columnFactory;
 
@@ -45,8 +43,10 @@ public class EntityTableDefinitionFactory {
    */
   public EntityTableDefinitionFactory(
       EntitySchemaDefinitionFactory schemaFactory,
-      EntityColumnDefinitionFactory columnFactory
+      EntityColumnDefinitionFactory columnFactory,
+      FactoryContext context
   ) {
+    super(context);
     this.schemaFactory = schemaFactory;
     this.columnFactory = columnFactory;
   }
@@ -63,13 +63,18 @@ public class EntityTableDefinitionFactory {
       Optional<EntitySchemaDefinition> schema = schemaFactory.build(type, database);
       if (schema.isPresent()) {
         String name = tableAnnotation.value();
-        NamingStrategy strategy = new SnakeCaseStrategy(); // TODO. Use tableAnnotation.naming()
+        var strategy = getContext().getInstance(tableAnnotation.naming());
         if (name.isEmpty()) {
           name = strategy.resolve(type.getSimpleName());
         }
 
         ArrayList<ColumnDefinition> columns = new ArrayList<>();
-        EntityTableDefinition table = new EntityTableDefinition(schema.get(), name, columns);
+        EntityTableDefinition table = new EntityTableDefinition(
+            schema.get(),
+            name,
+            columns,
+            tableAnnotation.naming()
+        );
         for (Field field : type.getDeclaredFields()) {
           columnFactory
               .build(field, table)

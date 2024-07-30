@@ -17,6 +17,8 @@
 package io.github.devastool.entity2jooq.codegen.definition.factory;
 
 import io.github.devastool.entity2jooq.annotation.Column;
+import io.github.devastool.entity2jooq.annotation.Table;
+import io.github.devastool.entity2jooq.annotation.naming.SnakeCaseStrategy;
 import io.github.devastool.entity2jooq.codegen.Entity2JooqDatabase;
 import io.github.devastool.entity2jooq.codegen.definition.EntityColumnDefinition;
 import io.github.devastool.entity2jooq.codegen.definition.EntitySchemaDefinition;
@@ -34,12 +36,13 @@ import org.junit.jupiter.api.Test;
  */
 class EntityColumnDefinitionFactoryTest {
   private final EntityColumnDefinitionFactory factory =
-      new EntityColumnDefinitionFactory(new EntityDataTypeDefinitionFactory());
+      new EntityColumnDefinitionFactory(new EntityDataTypeDefinitionFactory(), new FactoryContext());
   private static final String ENTITY_ID = "entity_id";
   private static final EntityTableDefinition TABLE_DEFINITION = new EntityTableDefinition(
       new EntitySchemaDefinition(new Entity2JooqDatabase(), "test_schema"),
       "test_table",
-      new ArrayList<>()
+      new ArrayList<>(),
+      SnakeCaseStrategy.class
   );
 
   @Test
@@ -65,8 +68,8 @@ class EntityColumnDefinitionFactoryTest {
   }
 
   @Test
-  void buildWithoutAnnotationSuccessTest() {
-    for (Field field : TestEntityWithoutAnnotation.class.getDeclaredFields()) {
+  void buildWithTableAnnotationSuccessTest() {
+    for (Field field : TestEntityWithTableAnnotation.class.getDeclaredFields()) {
       Optional<EntityColumnDefinition> built = factory.build(field, TABLE_DEFINITION);
       Assertions.assertTrue(built.isPresent());
 
@@ -83,7 +86,8 @@ class EntityColumnDefinitionFactoryTest {
     @Column
     private Integer id;
   }
-  static class TestEntityWithoutAnnotation {
+  @Table
+  static class TestEntityWithTableAnnotation {
     private Integer id;
   }
 }
