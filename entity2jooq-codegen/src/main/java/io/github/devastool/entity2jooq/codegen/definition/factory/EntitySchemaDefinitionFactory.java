@@ -17,8 +17,8 @@
 package io.github.devastool.entity2jooq.codegen.definition.factory;
 
 import io.github.devastool.entity2jooq.annotation.Schema;
+import io.github.devastool.entity2jooq.annotation.Table;
 import io.github.devastool.entity2jooq.annotation.naming.NamingStrategy;
-import io.github.devastool.entity2jooq.annotation.naming.SnakeCaseStrategy;
 import io.github.devastool.entity2jooq.codegen.definition.EntitySchemaDefinition;
 import java.util.Optional;
 import org.jooq.meta.Database;
@@ -29,7 +29,17 @@ import org.jooq.meta.Database;
  * @author Andrey_Yurzanov
  * @since 1.0.0
  */
-public class EntitySchemaDefinitionFactory {
+public class EntitySchemaDefinitionFactory extends ContextableFactory {
+
+  /**
+   * Constructs new instance of {@link EntitySchemaDefinitionFactory}.
+   *
+   * @param context instance of {@link FactoryContext}
+   */
+  public EntitySchemaDefinitionFactory(FactoryContext context) {
+    super(context);
+  }
+
   /**
    * Builds new instance of {@link EntitySchemaDefinition}.
    *
@@ -37,15 +47,9 @@ public class EntitySchemaDefinitionFactory {
    * @param database meta-information provider
    */
   public Optional<EntitySchemaDefinition> build(Class<?> type, Database database) {
-    String schemaName;
-    Schema schemaAnnotation = type.getAnnotation(Schema.class);
-    if (schemaAnnotation != null && !schemaAnnotation.value().isEmpty()) {
-      schemaName = schemaAnnotation.value();
-    } else {
-      schemaName = getLastPackageName(type.getPackage());
-    }
+    var schemaName = getSchemaName(type);
+    var strategy = getNamingStrategy(type);
 
-    NamingStrategy strategy = new SnakeCaseStrategy(); // TODO. Use schemaAnnotation.naming()
     return Optional.of(new EntitySchemaDefinition(database, strategy.resolve(schemaName)));
   }
 
@@ -56,5 +60,26 @@ public class EntitySchemaDefinitionFactory {
       return name.substring(index + 1);
     }
     return name;
+  }
+
+  // Return schema name from Schema annotation value parameter if it not empty, else return
+  // package name of class as schema name.
+  private String getSchemaName(Class<?> type) {
+    var schemaAnnotation = type.getAnnotation(Schema.class);
+    if (schemaAnnotation != null && !schemaAnnotation.value().isEmpty()) {
+      return schemaAnnotation.value();
+    } else {
+      return getLastPackageName(type.getPackage());
+    }
+  }
+
+  // if Schema is present return instance of strategy from annotation naming parameter,
+  // else return strategy from Table annotation naming parameter.
+  private NamingStrategy getNamingStrategy(Class<?> type) {
+    var schemaAnnotation = type.getAnnotation(Schema.class);
+    if (schemaAnnotation != null) {
+      return getContext().getInstance(schemaAnnotation.naming());
+    }
+    return getContext().getInstance(type.getAnnotation(Table.class).naming());
   }
 }

@@ -17,6 +17,7 @@
 package io.github.devastool.entity2jooq.codegen.definition.factory;
 
 import io.github.devastool.entity2jooq.annotation.Schema;
+import io.github.devastool.entity2jooq.annotation.Table;
 import io.github.devastool.entity2jooq.codegen.definition.EntitySchemaDefinition;
 import java.util.Optional;
 import org.junit.jupiter.api.Assertions;
@@ -28,7 +29,7 @@ import org.junit.jupiter.api.Test;
  * @author Andrey_Yurzanov
  */
 class EntitySchemaDefinitionFactoryTest {
-  private final EntitySchemaDefinitionFactory factory = new EntitySchemaDefinitionFactory();
+  private final EntitySchemaDefinitionFactory factory = new EntitySchemaDefinitionFactory(new FactoryContext());
   private static final String TEST_SCHEMA = "test_schema";
   private static final String PACKAGE_NAME = "factory";
 
@@ -42,8 +43,8 @@ class EntitySchemaDefinitionFactoryTest {
   }
 
   @Test
-  void buildWithoutAnnotationSuccessTest() {
-    Optional<EntitySchemaDefinition> built = factory.build(TestEntityWithoutAnnotation.class, null);
+  void buildWithTableAnnotationSuccessTest() {
+    Optional<EntitySchemaDefinition> built = factory.build(TestEntityWithTableAnnotation.class, null);
     Assertions.assertTrue(built.isPresent());
 
     EntitySchemaDefinition definition = built.orElseThrow();
@@ -52,5 +53,6 @@ class EntitySchemaDefinitionFactoryTest {
 
   @Schema(value = TEST_SCHEMA)
   static final class TestEntity {}
-  static final class TestEntityWithoutAnnotation {}
+  @Table
+  static final class TestEntityWithTableAnnotation {}
 }
