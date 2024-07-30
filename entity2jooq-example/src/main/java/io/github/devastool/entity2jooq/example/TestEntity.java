@@ -30,7 +30,7 @@ import java.util.Objects;
  */
 @Table
 @Schema("test_schema")
-public class TestEntity {
+public class TestEntity extends TestEntityParent {
   @Column
   private Integer id;
   @Column(value = "entity_name", type = "varchar")

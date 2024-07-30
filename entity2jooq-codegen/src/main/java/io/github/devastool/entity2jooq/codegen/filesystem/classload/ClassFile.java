@@ -14,59 +14,83 @@
  *    limitations under the License.
  */
 
-package io.github.devastool.entity2jooq.codegen.filesystem;
+package io.github.devastool.entity2jooq.codegen.filesystem.classload;
 
+import java.io.IOException;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Objects;
 
 /**
- * Classes loader by paths.
+ * Information about path of class file.
  *
- * @since 1.0.0
  * @author Andrey_Yurzanov
+ * @since 1.0.0
  */
-public class PathClassLoader extends ClassLoader {
+public class ClassFile {
+  private final Path root;
+  private final Path classFile;
+
   private static final String EMPTY = "";
   private static final String PACKAGE_SEPARATOR = ".";
   private static final String FILE_EXTENSION = ".class";
   private static final String PATH_SEPARATOR = getPathSeparator();
 
   /**
-   * Constructs new instance of class loader.
+   * Constructs new instance of {@link ClassFile}.
+   *
+   * @param root      directory that containing this element
+   * @param classFile path to class file
    */
-  public PathClassLoader() {
-    super(Thread.currentThread().getContextClassLoader());
+  public ClassFile(Path root, Path classFile) {
+    this.root = root;
+    this.classFile = classFile;
   }
 
   /**
-   * Loads class by path.
+   * Returns full name of the class, example: 'my.package.MyClass'.
    *
-   * @param root      path without name of the file and package
-   * @param classFile path of the class's file
-   * @return loaded class
-   * @throws ClassNotFoundException when class not found
+   * @return full name of the class
    */
-  public Class<?> loadClass(Path root, Path classFile) throws ClassNotFoundException {
-    try {
-      String className = root
+  public String getCanonicalClassName() {
+    return root
         .relativize(classFile)
         .toString()
         .replace(PATH_SEPARATOR, PACKAGE_SEPARATOR)
         .replace(FILE_EXTENSION, EMPTY);
+  }
 
-      byte[] classData = Files.readAllBytes(classFile);
-      Class<?> defined = defineClass(className, classData, 0, classData.length);
-      resolveClass(defined);
-
-      return defined;
-    } catch (Exception exception) {
-      throw new ClassNotFoundException(
-        String.join("", "Loading error of class [", classFile.toString(), "]"),
-        exception
-      );
+  /**
+   * Returns data of the class.
+   *
+   * @return data of the class
+   * @throws RuntimeException when loading of data fails
+   */
+  public byte[] getClassData() throws RuntimeException {
+    try {
+      return Files.readAllBytes(classFile);
+    } catch (IOException exception) {
+      throw new RuntimeException(exception);
     }
+  }
+
+  @Override
+  public boolean equals(Object other) {
+    if (this == other) {
+      return true;
+    }
+    if (other == null || getClass() != other.getClass()) {
+      return false;
+    }
+    ClassFile that = (ClassFile) other;
+    return Objects.equals(classFile, that.classFile);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(classFile);
   }
 
   // Returns path's separator of current os
