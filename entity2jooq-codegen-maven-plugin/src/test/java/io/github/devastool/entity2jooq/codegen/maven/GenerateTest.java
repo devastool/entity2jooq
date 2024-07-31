@@ -61,10 +61,13 @@ class GenerateTest {
     generate.setTarget(TARGET);
 
     generate.init(new MavenProject());
-    Assertions.assertEquals(DIALECT, generate.getDialect());
-    Assertions.assertEquals(CLASS_NAME, generate.getClassName());
-    Assertions.assertEquals(PACKAGE_NAME, generate.getPackageName());
-    Assertions.assertEquals(TARGET, generate.getTarget());
+    Assertions.assertAll(
+        "Assertions of default values",
+        () -> Assertions.assertEquals(DIALECT, generate.getDialect()),
+        () -> Assertions.assertEquals(CLASS_NAME, generate.getClassName()),
+        () -> Assertions.assertEquals(PACKAGE_NAME, generate.getPackageName()),
+        () -> Assertions.assertEquals(TARGET, generate.getTarget())
+    );
   }
 
   @Test
