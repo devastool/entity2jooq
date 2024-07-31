@@ -32,7 +32,6 @@ import org.jooq.meta.SchemaDefinition;
  */
 public class EntityTableDefinition extends AbstractTableDefinition {
   private final List<ColumnDefinition> columns;
-  private final Class<? extends NamingStrategy> strategy;
 
   /**
    * Constructs new instance of {@link EntityTableDefinition}.
@@ -44,21 +43,10 @@ public class EntityTableDefinition extends AbstractTableDefinition {
   public EntityTableDefinition(
       SchemaDefinition schema,
       String name,
-      List<ColumnDefinition> columns,
-      Class<? extends NamingStrategy> strategy
+      List<ColumnDefinition> columns
   ) {
     super(schema, name, "");
     this.columns = columns;
-    this.strategy = strategy;
-  }
-
-  /**
-   * Getter
-   *
-   * @return naming strategy for table, instance of {@link NamingStrategy}
-   */
-  public Class<? extends NamingStrategy> getStrategy() {
-    return strategy;
   }
 
   @Override

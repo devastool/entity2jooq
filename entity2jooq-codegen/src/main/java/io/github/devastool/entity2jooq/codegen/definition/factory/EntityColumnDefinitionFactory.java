@@ -16,12 +16,14 @@
 
 package io.github.devastool.entity2jooq.codegen.definition.factory;
 
+import static io.github.devastool.entity2jooq.codegen.properties.CodegenProperty.NAMING_STRATEGY;
+import static io.github.devastool.entity2jooq.codegen.properties.CodegenProperty.TABLE;
+
 import io.github.devastool.entity2jooq.annotation.Column;
 import io.github.devastool.entity2jooq.annotation.naming.NamingStrategy;
 import io.github.devastool.entity2jooq.codegen.definition.EntityColumnDefinition;
-import io.github.devastool.entity2jooq.codegen.definition.EntityTableDefinition;
+import io.github.devastool.entity2jooq.codegen.properties.CodegenProperties;
 import java.lang.reflect.Field;
-import java.util.Optional;
 
 /**
  * The factory for {@link EntityColumnDefinition} building.
@@ -29,7 +31,8 @@ import java.util.Optional;
  * @author Andrey_Yurzanov
  * @since 1.0.0
  */
-public class EntityColumnDefinitionFactory extends ContextableFactory {
+public class EntityColumnDefinitionFactory extends
+    DefinitionFactory<Field, EntityColumnDefinition> {
   private final EntityDataTypeDefinitionFactory typeFactory;
 
   /**
@@ -46,41 +49,27 @@ public class EntityColumnDefinitionFactory extends ContextableFactory {
     this.typeFactory = typeFactory;
   }
 
-  /**
-   * Builds new instance of {@link EntityColumnDefinition}.
-   *
-   * @param field entity field, annotation {@link Column} is optional
-   * @param table meta-information about table
-   */
-  public Optional<EntityColumnDefinition> build(Field field, EntityTableDefinition table) {
+  @Override
+  public EntityColumnDefinition build(Field field, CodegenProperties properties) {
     String name = field.getName();
-    Column columnAnnotation = field.getAnnotation(Column.class);
-    if (columnAnnotation != null) {
-      String definedName = columnAnnotation.value();
+    Class<? extends NamingStrategy> naming = properties.require(NAMING_STRATEGY);
+
+    Column annotation = field.getAnnotation(Column.class);
+    if (annotation != null) {
+      naming = annotation.naming();
+
+      String definedName = annotation.value();
       if (definedName != null && !definedName.isEmpty()) {
         name = definedName;
       }
     }
 
-    var strategy = getNamingStrategy(table, columnAnnotation);
-    return Optional.of(
-        new EntityColumnDefinition(
-            table,
-            strategy.resolve(name),
-            typeFactory.build(table.getSchema(), field)
-        )
+    FactoryContext context = getContext();
+    NamingStrategy strategy = context.getInstance(naming);
+    return new EntityColumnDefinition(
+        properties.require(TABLE),
+        strategy.resolve(name),
+        typeFactory.build(field, properties)
     );
-  }
-
-  // if columnAnnotation present return naming strategy from it naming parameter, else
-  // return naming strategy of table annotation.
-  private NamingStrategy getNamingStrategy(EntityTableDefinition table, Column columnAnnotation) {
-    Class<? extends NamingStrategy> strategy;
-    if (columnAnnotation != null) {
-      strategy = columnAnnotation.naming();
-    } else {
-      strategy = table.getStrategy();
-    }
-    return getContext().getInstance(strategy);
   }
 }

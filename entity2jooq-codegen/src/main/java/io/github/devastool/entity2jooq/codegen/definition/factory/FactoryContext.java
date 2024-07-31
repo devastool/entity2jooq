@@ -44,7 +44,7 @@ public class FactoryContext {
       throw new IllegalArgumentException("Type cannot be null");
     }
 
-    return (T) CACHE.computeIfAbsent(type, value -> createInstance(type, args));
+    return type.cast(CACHE.computeIfAbsent(type, value -> createInstance(type, args)));
   }
 
   /**
@@ -63,7 +63,8 @@ public class FactoryContext {
       return type.getConstructor(argsTypes).newInstance(args);
     } catch (Exception exception) {
       throw new RuntimeException(
-          String.format("Failed to create an instance of %s", type.getName()), exception
+          String.format("Failed to create an instance of %s", type.getName()),
+          exception
       );
     }
   }

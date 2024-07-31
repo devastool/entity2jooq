@@ -16,19 +16,26 @@
 
 package io.github.devastool.entity2jooq.codegen;
 
+import static io.github.devastool.entity2jooq.codegen.properties.CodegenProperty.CLASSES;
+import static io.github.devastool.entity2jooq.codegen.properties.CodegenProperty.CLASSPATH;
+import static io.github.devastool.entity2jooq.codegen.properties.CodegenProperty.DATABASE;
+import static io.github.devastool.entity2jooq.codegen.properties.CodegenProperty.DIALECT;
+import static io.github.devastool.entity2jooq.codegen.properties.CodegenProperty.TEST_CLASSES;
+
 import io.github.devastool.entity2jooq.codegen.definition.factory.EntityColumnDefinitionFactory;
 import io.github.devastool.entity2jooq.codegen.definition.factory.EntityDataTypeDefinitionFactory;
 import io.github.devastool.entity2jooq.codegen.definition.factory.EntitySchemaDefinitionFactory;
 import io.github.devastool.entity2jooq.codegen.definition.factory.EntityTableDefinitionFactory;
 import io.github.devastool.entity2jooq.codegen.definition.factory.FactoryContext;
-import io.github.devastool.entity2jooq.codegen.filesystem.classload.PathClassLoader;
-import io.github.devastool.entity2jooq.codegen.filesystem.classload.ClassLoaderContext;
 import io.github.devastool.entity2jooq.codegen.filesystem.classload.ClassFile;
+import io.github.devastool.entity2jooq.codegen.filesystem.classload.ClassLoaderContext;
+import io.github.devastool.entity2jooq.codegen.filesystem.classload.PathClassLoader;
+import io.github.devastool.entity2jooq.codegen.properties.CodegenProperties;
 import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
 import java.util.Properties;
 import java.util.stream.Collectors;
 import org.jooq.DSLContext;
@@ -60,24 +67,19 @@ public class Entity2JooqDatabase extends AbstractDatabase {
   private final List<Class<?>> entities;
   private final EntityTableDefinitionFactory tableFactory;
 
-  private static final String CLASSPATH_PROPERTY_KEY = "classpath";
-  private static final String CLASSES_PROPERTY_KEY = "classes";
-  private static final String TEST_CLASSES_PROPERTY_KEY = "testClasses";
-
   /**
    * Constructs new instance of {@link Entity2JooqDatabase}.
    */
   public Entity2JooqDatabase() {
     super();
-    entities = new ArrayList<>();
 
     FactoryContext context = new FactoryContext();
-    EntitySchemaDefinitionFactory schemaFactory = new EntitySchemaDefinitionFactory(context);
-    tableFactory = new EntityTableDefinitionFactory(
-        schemaFactory,
-        new EntityColumnDefinitionFactory(new EntityDataTypeDefinitionFactory(), context),
-        context
-    );
+    EntityDataTypeDefinitionFactory type = new EntityDataTypeDefinitionFactory(context);
+    EntitySchemaDefinitionFactory schemas = new EntitySchemaDefinitionFactory(context);
+    EntityColumnDefinitionFactory columns = new EntityColumnDefinitionFactory(type, context);
+
+    entities = new ArrayList<>();
+    tableFactory = new EntityTableDefinitionFactory(schemas, columns, context);
   }
 
   @Override
@@ -125,13 +127,10 @@ public class Entity2JooqDatabase extends AbstractDatabase {
 
   @Override
   protected List<TableDefinition> getTables0() throws SQLException {
-    init();
-
+    CodegenProperties properties = init();
     return entities
         .stream()
-        .map(type -> tableFactory.build(type, this))
-        .filter(Optional::isPresent)
-        .map(Optional::get)
+        .map(type -> tableFactory.build(type, properties))
         .collect(Collectors.toList());
   }
 
@@ -165,33 +164,39 @@ public class Entity2JooqDatabase extends AbstractDatabase {
     return new ArrayList<>();
   }
 
-  protected void init() {
+  protected CodegenProperties init() {
+    Properties pluginProperties = getProperties();
+
+    ClassLoaderContext context = new ClassLoaderContext();
+    String classpath = pluginProperties.getProperty(CLASSPATH.getName());
+    context.addClasspath(classpath);
+
+    String classes = pluginProperties.getProperty(CLASSES.getName());
+    context.addRoot(Paths.get(classes));
+
+    String testClasses = pluginProperties.getProperty(TEST_CLASSES.getName());
+    context.addRoot(Paths.get(testClasses));
+
     if (entities.isEmpty()) {
-      Properties properties = getProperties();
-
-      ClassLoaderContext context = new ClassLoaderContext();
-      String classpath = properties.getProperty(CLASSPATH_PROPERTY_KEY);
-      if (classpath != null && !classpath.isEmpty()) {
-        context.addClasspath(classpath);
-      }
-
-      String classes = properties.getProperty(CLASSES_PROPERTY_KEY);
-      if (classes != null && !classes.isEmpty()) {
-        context.addRoot(Paths.get(classes));
-      }
-
-      String testClasses = properties.getProperty(TEST_CLASSES_PROPERTY_KEY);
-      if (testClasses != null && !testClasses.isEmpty()) {
-        context.addRoot(Paths.get(testClasses));
-      }
-
       try (PathClassLoader loader = new PathClassLoader(context)) {
         for (ClassFile element : context) {
-          entities.add(loader.loadClass(element));
+          Class<?> loaded = loader.loadClass(element);
+          if (tableFactory.canBuild(loaded)) {
+            entities.add(loaded);
+          }
         }
       } catch (Exception exception) {
         throw new RuntimeException(exception);
       }
     }
+
+    String dialect = pluginProperties.getProperty(DIALECT.getName());
+    return new CodegenProperties(Map.of(
+        CLASSPATH, classpath,
+        CLASSES, classes,
+        TEST_CLASSES, testClasses,
+        DATABASE, this,
+        DIALECT, dialect
+    ));
   }
 }

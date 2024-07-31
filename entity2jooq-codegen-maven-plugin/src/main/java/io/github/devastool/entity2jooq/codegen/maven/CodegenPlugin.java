@@ -65,6 +65,7 @@ public class CodegenPlugin extends AbstractMojo {
   private Compile compile;
 
   private static final String CLASSPATH_SEPARATOR = File.pathSeparator;
+  private static final String DIALECT_PROPERTY_KEY = "dialect";
   private static final String CLASSPATH_PROPERTY_KEY = "classpath";
   private static final String CLASSES_PROPERTY_KEY = "classes";
   private static final String TEST_CLASSES_PROPERTY_KEY = "testClasses";
@@ -117,9 +118,13 @@ public class CodegenPlugin extends AbstractMojo {
     classpath.setKey(CLASSPATH_PROPERTY_KEY);
     classpath.setValue(String.join(CLASSPATH_SEPARATOR, compile.getClasspath()));
 
+    Property dialect = new Property();
+    dialect.setKey(DIALECT_PROPERTY_KEY);
+    dialect.setValue(generate.getDialect());
+
     Database database = new Database();
     database.setName(Entity2JooqDatabase.class.getCanonicalName());
-    database.setProperties(Arrays.asList(classes, testClasses, classpath));
+    database.setProperties(Arrays.asList(classes, testClasses, classpath, dialect));
     return database;
   }
 }
