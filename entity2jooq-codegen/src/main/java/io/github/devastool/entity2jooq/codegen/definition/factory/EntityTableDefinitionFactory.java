@@ -16,14 +16,20 @@
 
 package io.github.devastool.entity2jooq.codegen.definition.factory;
 
+import static io.github.devastool.entity2jooq.codegen.properties.CodegenProperty.NAMING_STRATEGY;
+import static io.github.devastool.entity2jooq.codegen.properties.CodegenProperty.SCHEMA;
+import static io.github.devastool.entity2jooq.codegen.properties.CodegenProperty.TABLE;
+
 import io.github.devastool.entity2jooq.annotation.Table;
+import io.github.devastool.entity2jooq.annotation.naming.NamingStrategy;
 import io.github.devastool.entity2jooq.codegen.definition.EntitySchemaDefinition;
 import io.github.devastool.entity2jooq.codegen.definition.EntityTableDefinition;
+import io.github.devastool.entity2jooq.codegen.properties.CodegenProperties;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.Optional;
+import java.util.Map;
+import java.util.Objects;
 import org.jooq.meta.ColumnDefinition;
-import org.jooq.meta.Database;
 
 /**
  * The factory for {@link EntityTableDefinition} building.
@@ -31,7 +37,8 @@ import org.jooq.meta.Database;
  * @author Andrey_Yurzanov
  * @since 1.0.0
  */
-public class EntityTableDefinitionFactory extends ContextableFactory {
+public class EntityTableDefinitionFactory
+    extends DefinitionFactory<Class<?>, EntityTableDefinition> {
   private final EntitySchemaDefinitionFactory schemaFactory;
   private final EntityColumnDefinitionFactory columnFactory;
 
@@ -51,38 +58,43 @@ public class EntityTableDefinitionFactory extends ContextableFactory {
     this.columnFactory = columnFactory;
   }
 
-  /**
-   * Builds new instance of {@link EntityTableDefinition}.
-   *
-   * @param type     entity class which has {@link Table} annotation
-   * @param database meta-information provider
-   */
-  public Optional<EntityTableDefinition> build(Class<?> type, Database database) {
-    Table tableAnnotation = type.getAnnotation(Table.class);
-    if (tableAnnotation != null) {
-      Optional<EntitySchemaDefinition> schema = schemaFactory.build(type, database);
-      if (schema.isPresent()) {
-        String name = tableAnnotation.value();
-        var strategy = getContext().getInstance(tableAnnotation.naming());
-        if (name.isEmpty()) {
-          name = strategy.resolve(type.getSimpleName());
-        }
+  @Override
+  public EntityTableDefinition build(Class<?> type, CodegenProperties properties) {
+    Table annotation = type.getAnnotation(Table.class);
+    if (annotation != null) {
+      String name = annotation.value();
 
-        ArrayList<ColumnDefinition> columns = new ArrayList<>();
-        EntityTableDefinition table = new EntityTableDefinition(
-            schema.get(),
-            name,
-            columns,
-            tableAnnotation.naming()
-        );
-        for (Field field : type.getDeclaredFields()) {
-          columnFactory
-              .build(field, table)
-              .ifPresent(columns::add);
-        }
-        return Optional.of(table);
+      Class<? extends NamingStrategy> naming = annotation.naming();
+      NamingStrategy strategy = getContext().getInstance(naming);
+      if (name.isEmpty()) {
+        name = strategy.resolve(type.getSimpleName());
       }
+
+      EntitySchemaDefinition schema = schemaFactory.build(
+          type,
+          new CodegenProperties(properties, Map.of(NAMING_STRATEGY, naming))
+      );
+      ArrayList<ColumnDefinition> columns = new ArrayList<>();
+      EntityTableDefinition table = new EntityTableDefinition(
+          schema,
+          name,
+          columns
+      );
+
+      CodegenProperties columnProperties = new CodegenProperties(
+          properties,
+          Map.of(TABLE, table, SCHEMA, schema, NAMING_STRATEGY, naming)
+      );
+      for (Field field : type.getDeclaredFields()) {
+        columns.add(columnFactory.build(field, columnProperties));
+      }
+      return table;
     }
-    return Optional.empty();
+    return null;
+  }
+
+  @Override
+  public boolean canBuild(Class<?> type) {
+    return Objects.nonNull(type.getAnnotation(Table.class));
   }
 }

@@ -19,6 +19,7 @@ package io.github.devastool.entity2jooq.example;
 import io.github.devastool.entity2jooq.annotation.Column;
 import io.github.devastool.entity2jooq.annotation.Schema;
 import io.github.devastool.entity2jooq.annotation.Table;
+import io.github.devastool.entity2jooq.annotation.type.Type;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
@@ -33,7 +34,8 @@ import java.util.Objects;
 public class TestEntity extends TestEntityParent {
   @Column
   private Integer id;
-  @Column(value = "entity_name", type = "varchar")
+  @Type("varchar")
+  @Column(value = "entity_name")
   private String name;
   private LocalDateTime insertTime;
 

@@ -16,25 +16,46 @@
 
 package io.github.devastool.entity2jooq.codegen.definition.factory;
 
+import io.github.devastool.entity2jooq.codegen.properties.CodegenProperties;
+
 /**
  * Abstract factory with custom context.
  *
  * @author Evgeniy_Gerasimov
  * @since 1.0.0
  */
-public abstract class ContextableFactory {
+public abstract class DefinitionFactory<T, R> {
   /**
    * Factory context.
    */
   private final FactoryContext context;
 
   /**
-   * Constructs new instance of {@link ContextableFactory}.
+   * Constructs new instance of {@link DefinitionFactory}.
    *
    * @param context contains custom settings.
    */
-  public ContextableFactory(FactoryContext context) {
+  public DefinitionFactory(FactoryContext context) {
     this.context = context;
+  }
+
+  /**
+   * Creates and returns new instance of {@link R}.
+   *
+   * @param data       required data for instance creating
+   * @param properties additional properties
+   * @return new instance of {@link R}
+   */
+  public abstract R build(T data, CodegenProperties properties);
+
+  /**
+   * Is it possible to create an instance of {@link R}.
+   *
+   * @param data required data for instance creating
+   * @return true if it is possible to create instance, otherwise false
+   */
+  public boolean canBuild(T data) {
+    return true;
   }
 
   /**

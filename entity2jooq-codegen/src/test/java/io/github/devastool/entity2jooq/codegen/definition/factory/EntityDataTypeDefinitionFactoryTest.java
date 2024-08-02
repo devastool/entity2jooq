@@ -21,6 +21,8 @@ import io.github.devastool.entity2jooq.annotation.type.Type;
 import io.github.devastool.entity2jooq.codegen.Entity2JooqDatabase;
 import io.github.devastool.entity2jooq.codegen.definition.EntityDataTypeDefinition;
 import io.github.devastool.entity2jooq.codegen.definition.EntitySchemaDefinition;
+import io.github.devastool.entity2jooq.codegen.properties.CodegenProperties;
+import io.github.devastool.entity2jooq.codegen.properties.CodegenProperty;
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -34,9 +36,16 @@ import org.junit.jupiter.api.Test;
  * @author Andrey_Yurzanov
  */
 class EntityDataTypeDefinitionFactoryTest {
-  private final EntityDataTypeDefinitionFactory factory = new EntityDataTypeDefinitionFactory();
+  private final EntityDataTypeDefinitionFactory factory =
+      new EntityDataTypeDefinitionFactory(new FactoryContext());
   private static final EntitySchemaDefinition SCHEMA_DEFINITION =
       new EntitySchemaDefinition(new Entity2JooqDatabase(), "test_schema");
+  private static final CodegenProperties PROPERTIES = new CodegenProperties(
+      Map.of(
+          CodegenProperty.DIALECT, "",
+          CodegenProperty.SCHEMA, SCHEMA_DEFINITION
+      )
+  );
 
   @Test
   void buildSuccessTest() {
@@ -48,7 +57,7 @@ class EntityDataTypeDefinitionFactoryTest {
 
     for (Field field : TestEntity.class.getDeclaredFields()) {
       EntityDataTypeDefinition definition =
-          Assertions.assertDoesNotThrow(() -> factory.build(SCHEMA_DEFINITION, field));
+          Assertions.assertDoesNotThrow(() -> factory.build(field, PROPERTIES));
 
       Assertions.assertEquals(types.get(field.getType()), definition.getType());
     }
@@ -64,7 +73,7 @@ class EntityDataTypeDefinitionFactoryTest {
 
     for (Field field : TestEntityWithoutType.class.getDeclaredFields()) {
       EntityDataTypeDefinition definition =
-          Assertions.assertDoesNotThrow(() -> factory.build(SCHEMA_DEFINITION, field));
+          Assertions.assertDoesNotThrow(() -> factory.build(field, PROPERTIES));
 
       Assertions.assertEquals(types.get(field.getType()), definition.getType());
     }
@@ -75,7 +84,7 @@ class EntityDataTypeDefinitionFactoryTest {
     for (Field field : TestEntityNotFoundType.class.getDeclaredFields()) {
       Assertions.assertThrows(
           NoSuchTypeException.class,
-          () -> factory.build(SCHEMA_DEFINITION, field)
+          () -> factory.build(field, PROPERTIES)
       );
     }
   }

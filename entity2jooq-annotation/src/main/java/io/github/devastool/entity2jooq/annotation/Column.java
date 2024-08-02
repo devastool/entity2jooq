@@ -43,11 +43,6 @@ public @interface Column {
   String value() default "";
 
   /**
-   * SQL type.
-   */
-  String type() default "";
-
-  /**
    * Naming strategy for column name resolving. By default {@link SnakeCaseStrategy}.
    */
   Class<? extends NamingStrategy> naming() default SnakeCaseStrategy.class;
