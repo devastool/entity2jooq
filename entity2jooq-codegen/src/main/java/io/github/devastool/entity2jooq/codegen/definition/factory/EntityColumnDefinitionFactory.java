@@ -16,17 +16,23 @@
 
 package io.github.devastool.entity2jooq.codegen.definition.factory;
 
-import io.github.devastool.entity2jooq.annotation.AttributeOverride;
-import io.github.devastool.entity2jooq.annotation.AttributeOverrides;
 import io.github.devastool.entity2jooq.annotation.Column;
+import io.github.devastool.entity2jooq.annotation.ColumnOverride;
+import io.github.devastool.entity2jooq.annotation.ColumnOverride.ColumnOverrides;
+import io.github.devastool.entity2jooq.annotation.Embeddable;
 import io.github.devastool.entity2jooq.annotation.Embedded;
 import io.github.devastool.entity2jooq.annotation.naming.NamingStrategy;
 import io.github.devastool.entity2jooq.annotation.naming.SnakeCaseStrategy;
 import io.github.devastool.entity2jooq.codegen.definition.EntityColumnDefinition;
+import io.github.devastool.entity2jooq.codegen.definition.EntityTableDefinition;
+import io.github.devastool.entity2jooq.codegen.definition.FieldPair;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import java.util.Stack;
 import org.apache.commons.lang3.StringUtils;
 import org.jooq.meta.TableDefinition;
 
@@ -67,8 +73,7 @@ public class EntityColumnDefinitionFactory {
 
     if (overrideColumn != null) {
       name = replaceNameIfNotEmpty(overrideColumn.value(), name);
-    }
-    else if (columnAnnotation != null) {
+    } else if (columnAnnotation != null) {
       name = replaceNameIfNotEmpty(columnAnnotation.value(), name);
     }
 
@@ -101,17 +106,12 @@ public class EntityColumnDefinitionFactory {
     return null;
   }
 
-  private Column getOverrideColumn(Annotation[] annotations, String name) {
-    var columnOverride = (AttributeOverride) findAnnotation(annotations, AttributeOverride.class);
-    if (columnOverride != null) {
-      if (Objects.equals(columnOverride.name(), name)) {
-        return columnOverride.column();
-      }
-    }
 
-    var columnOverrides = (AttributeOverrides) findAnnotation(annotations, AttributeOverrides.class);
+  private Column getOverrideColumn(Annotation[] annotations, String name) {
+    // todo попробовать одну
+    var columnOverrides = (ColumnOverrides) findAnnotation(annotations, ColumnOverrides.class);
     if (columnOverrides != null) {
-      for (AttributeOverride override : columnOverrides.value()) {
+      for (ColumnOverride override : columnOverrides.value()) {
         if (Objects.equals(override.name(), name)) {
           return override.column();
         }
@@ -125,5 +125,36 @@ public class EntityColumnDefinitionFactory {
       name = value;
     }
     return name;
+  }
+
+  private void accumulateColumnDefinition(Class<?> type, EntityTableDefinition table) {
+    var columns = table.getColumns();
+    Stack<FieldPair> stack = new Stack<>();
+    stack.push(new FieldPair(type, new Annotation[]{}));
+
+    while (!stack.isEmpty()) {
+      var currentField = stack.pop();
+      Set<String> columnNames = new HashSet<>();
+
+      for (Field field : currentField.getDeclaredFields()) {
+        // Todo
+        if (field.getType().isAnnotationPresent(Embeddable.class)) {
+          stack.push(new FieldPair(field.getType(), field.getDeclaredAnnotations()));
+        } else {
+          var columnDefinition = build(field, currentField.getAnnotations(), table).orElseThrow();
+          boolean exists = !columnNames.add(columnDefinition.getName());
+
+          if (exists) {
+            throw new IllegalArgumentException(
+                "Column "
+                    + columnDefinition.getName()
+                    + " already exists. Use @ColumnOverride or @Embedded"
+            );
+          }
+
+          columns.add(columnDefinition);
+        }
+      }
+    }
   }
 }

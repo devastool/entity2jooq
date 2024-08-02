@@ -15,6 +15,7 @@ import java.util.Objects;
 public class TestEntityInfo {
   @Column("entity_version")
   private String version;
+  private String address;
 
   public TestEntityInfo() {
   }

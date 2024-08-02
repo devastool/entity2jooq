@@ -16,18 +16,19 @@
 
 package io.github.devastool.entity2jooq.codegen.definition.factory;
 
-import io.github.devastool.entity2jooq.annotation.Embeddable;
+import io.github.devastool.entity2jooq.annotation.Embedded;
 import io.github.devastool.entity2jooq.annotation.Table;
 import io.github.devastool.entity2jooq.annotation.naming.NamingStrategy;
 import io.github.devastool.entity2jooq.annotation.naming.SnakeCaseStrategy;
-import io.github.devastool.entity2jooq.codegen.definition.FieldPair;
 import io.github.devastool.entity2jooq.codegen.definition.EntitySchemaDefinition;
 import io.github.devastool.entity2jooq.codegen.definition.EntityTableDefinition;
+import io.github.devastool.entity2jooq.codegen.definition.FieldPair;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.Objects;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 import java.util.Stack;
 import org.jooq.meta.ColumnDefinition;
 import org.jooq.meta.Database;
@@ -83,35 +84,34 @@ public class EntityTableDefinitionFactory {
     return Optional.empty();
   }
 
-  private void accumulateColumnDefinition(Class<?> type, EntityTableDefinition table) {
-    if (type == null) {
-      return;
-    }
 
+  private void accumulateField(final Class<?> type, final EntityTableDefinition table) {}()
+
+  private void accumulateColumnDefinition(Class<?> type, EntityTableDefinition table) {
     var columns = table.getColumns();
     Stack<FieldPair> stack = new Stack<>();
     stack.push(new FieldPair(type, new Annotation[]{}));
 
     while (!stack.isEmpty()) {
       var currentField = stack.pop();
+      Set<String> columnNames = new HashSet<>();
 
       for (Field field : currentField.getDeclaredFields()) {
-        if (field.getType().isAnnotationPresent(Embeddable.class)) {
+        // Todo
+        if (field.getType().isAnnotationPresent(Embedded.class)) {
             stack.push(new FieldPair(field.getType(), field.getDeclaredAnnotations()));
         } else {
           var columnDefinition = columnFactory
               .build(field, currentField.getAnnotations(), table)
               .orElseThrow();
 
-          boolean exists = columns
-              .stream()
-              .anyMatch(column -> Objects.equals(column.getName(), columnDefinition.getName()));
+          boolean exists = !columnNames.add(columnDefinition.getName());
 
           if (exists) {
             throw new IllegalArgumentException(
                 "Column "
                     + columnDefinition.getName()
-                    + " already exists. Use @AttributeOverrides or @Embedded"
+                    + " already exists. Use @ColumnOverride or @Embedded"
             );
           }
 
