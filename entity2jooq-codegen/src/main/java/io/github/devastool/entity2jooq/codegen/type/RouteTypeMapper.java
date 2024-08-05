@@ -38,41 +38,41 @@ public class RouteTypeMapper implements TypeMapper {
     DefaultTypeMapper defaultMapper = new DefaultTypeMapper();
     dialects.put(defaultMapper.getDialect(), defaultMapper);
 
-//    TODO. Postgres dialect
-//    PostgresTypeMapper postgresMapper = new PostgresTypeMapper();
-//    dialects.put(postgresMapper.getDialect(), postgresMapper);
+    //    TODO. Postgres dialect
+    //    PostgresTypeMapper postgresMapper = new PostgresTypeMapper();
+    //    dialects.put(postgresMapper.getDialect(), postgresMapper);
 
-//    TODO. CUBRID dialect
-//    CubridTypeMapper cubridMapper = new CubridTypeMapper();
-//    dialects.put(cubridMapper.getDialect(), cubridMapper);
+    //    TODO. CUBRID dialect
+    //    CubridTypeMapper cubridMapper = new CubridTypeMapper();
+    //    dialects.put(cubridMapper.getDialect(), cubridMapper);
 
-//    TODO. Derby dialect
-//    DerbyTypeMapper derbyMapper = new DerbyTypeMapper();
-//    dialects.put(derbyMapper.getDialect(), derbyMapper);
+    //    TODO. Derby dialect
+    //    DerbyTypeMapper derbyMapper = new DerbyTypeMapper();
+    //    dialects.put(derbyMapper.getDialect(), derbyMapper);
 
-//    TODO. Firebird dialect
-//    FirebirdTypeMapper firebirdMapper = new FirebirdTypeMapper();
-//    dialects.put(firebirdMapper.getDialect(), firebirdMapper);
+    //    TODO. Firebird dialect
+    //    FirebirdTypeMapper firebirdMapper = new FirebirdTypeMapper();
+    //    dialects.put(firebirdMapper.getDialect(), firebirdMapper);
 
-//    TODO. H2 dialect
-//    H2TypeMapper h2Mapper = new H2TypeMapper();
-//    dialects.put(h2Mapper.getDialect(), h2Mapper);
+    //    TODO. H2 dialect
+    //    H2TypeMapper h2Mapper = new H2TypeMapper();
+    //    dialects.put(h2Mapper.getDialect(), h2Mapper);
 
-//    TODO. HSQLDB dialect
-//    HSQLDBTypeMapper hsqldbMapper = new HSQLDBTypeMapper();
-//    dialects.put(hsqldbMapper.getDialect(), hsqldbMapper);
+    //    TODO. HSQLDB dialect
+    //    HSQLDBTypeMapper hsqldbMapper = new HSQLDBTypeMapper();
+    //    dialects.put(hsqldbMapper.getDialect(), hsqldbMapper);
 
-//    TODO. MariaDB dialect
-//    MariaDBTypeMapper mariaDBMapper = new MariaDBTypeMapper();
-//    dialects.put(mariaDBMapper.getDialect(), mariaDBMapper);
+    //    TODO. MariaDB dialect
+    //    MariaDBTypeMapper mariaDBMapper = new MariaDBTypeMapper();
+    //    dialects.put(mariaDBMapper.getDialect(), mariaDBMapper);
 
-//    TODO. MySQL dialect
-//    MySQLTypeMapper mySQLMapper = new MySQLTypeMapper();
-//    dialects.put(mySQLMapper.getDialect(), mySQLMapper);
+    //    TODO. MySQL dialect
+    //    MySQLTypeMapper mySQLMapper = new MySQLTypeMapper();
+    //    dialects.put(mySQLMapper.getDialect(), mySQLMapper);
 
-//    TODO. SQLite dialect
-//    SQLiteTypeMapper sqliteMapper = new SQLiteTypeMapper();
-//    dialects.put(sqliteMapper.getDialect(), sqliteMapper);
+    //    TODO. SQLite dialect
+    //    SQLiteTypeMapper sqliteMapper = new SQLiteTypeMapper();
+    //    dialects.put(sqliteMapper.getDialect(), sqliteMapper);
   }
 
   @Override

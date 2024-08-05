@@ -30,7 +30,7 @@ public class FactoryContext {
   /**
    * Cache of context instances.
    */
-  private final Map<Class<?>, Object> CACHE = new HashMap<>();
+  private static final Map<Class<?>, Object> CACHE = new HashMap<>();
 
   /**
    * Getting instance of naming strategy.

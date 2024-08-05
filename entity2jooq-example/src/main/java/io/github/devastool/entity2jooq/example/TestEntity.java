@@ -42,6 +42,12 @@ public class TestEntity extends TestEntityParent {
   public TestEntity() {
   }
 
+  /**
+   * Constructs new instance of {@link TestEntity}.
+   * @param id of new instance TestEntity
+   * @param name of new instance TestEntity
+   * @param insertTime of new instance TestEntity
+   */
   public TestEntity(Integer id, String name, LocalDateTime insertTime) {
     this.id = id;
     this.name = name;
