@@ -23,13 +23,13 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation to specify that a field or class is embedded.
+ * Annotation to specify that a class is embedded.
  *
  * @since 1.0.0
  * @author Sergey_Konovalov
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.FIELD, ElementType.TYPE})
+@Target({ElementType.TYPE})
 public @interface Embedded {
 }
