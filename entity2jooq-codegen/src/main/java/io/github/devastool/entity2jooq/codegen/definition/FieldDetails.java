@@ -72,8 +72,9 @@ public class FieldDetails {
   }
 
   /**
+   * Returns the parent field.
    *
-   * @return
+   * @return the parent field
    */
   public Field getParentField() {
     return parentfield;
