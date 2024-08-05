@@ -64,6 +64,9 @@ public class TestEntity extends TestEntityParent {
   private Boolean booleanField;
   private UUID uuidField;
 
+  /**
+   * Constructs new instance of {@link TestEntity}.
+   */
   public TestEntity() {
     shortField = getRandomShort();
     intField = (int) shortField;
@@ -85,6 +88,9 @@ public class TestEntity extends TestEntityParent {
     uuidField = UUID.randomUUID();
   }
 
+  /**
+   * Constructs new instance of {@link TestEntity}.
+   */
   public TestEntity(
       Short shortField,
       Integer intField,
@@ -278,24 +284,24 @@ public class TestEntity extends TestEntityParent {
       return false;
     }
     TestEntity entity = (TestEntity) other;
-    return Objects.equals(shortField, entity.shortField) &&
-        Objects.equals(intField, entity.intField) &&
-        Objects.equals(longField, entity.longField) &&
-        Objects.equals(bigDecimalField, entity.bigDecimalField) &&
-        Objects.equals(floatField, entity.floatField) &&
-        Objects.equals(doubleField, entity.doubleField) &&
-        Objects.equals(stringField, entity.stringField) &&
-        Objects.equals(localDateField, entity.localDateField) &&
-        Objects.equals(dateField, entity.dateField) &&
-        Objects.equals(sqlDateField, entity.sqlDateField) &&
-        Objects.equals(localTimeField, entity.localTimeField) &&
-        Objects.equals(timeField, entity.timeField) &&
-        Objects.equals(offsetTimeField, entity.offsetTimeField) &&
-        Objects.equals(localDateTimeField, entity.localDateTimeField) &&
-        Objects.equals(timestampField, entity.timestampField) &&
-        Objects.equals(offsetDateTimeField, entity.offsetDateTimeField) &&
-        Objects.equals(booleanField, entity.booleanField) &&
-        Objects.equals(uuidField, entity.uuidField);
+    return Objects.equals(shortField, entity.shortField)
+        && Objects.equals(intField, entity.intField)
+        && Objects.equals(longField, entity.longField)
+        && Objects.equals(bigDecimalField, entity.bigDecimalField)
+        && Objects.equals(floatField, entity.floatField)
+        && Objects.equals(doubleField, entity.doubleField)
+        && Objects.equals(stringField, entity.stringField)
+        && Objects.equals(localDateField, entity.localDateField)
+        && Objects.equals(dateField, entity.dateField)
+        && Objects.equals(sqlDateField, entity.sqlDateField)
+        && Objects.equals(localTimeField, entity.localTimeField)
+        && Objects.equals(timeField, entity.timeField)
+        && Objects.equals(offsetTimeField, entity.offsetTimeField)
+        && Objects.equals(localDateTimeField, entity.localDateTimeField)
+        && Objects.equals(timestampField, entity.timestampField)
+        && Objects.equals(offsetDateTimeField, entity.offsetDateTimeField)
+        && Objects.equals(booleanField, entity.booleanField)
+        && Objects.equals(uuidField, entity.uuidField);
   }
 
   @Override
