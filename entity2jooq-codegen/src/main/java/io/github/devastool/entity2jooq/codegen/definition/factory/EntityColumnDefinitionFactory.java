@@ -98,9 +98,7 @@ public class EntityColumnDefinitionFactory extends
         }
 
         Column column = fieldDetails.getField().getAnnotation(Column.class);
-        Column overrideColum = overrideColumns.get(
-            String.join(DOT, fieldNames).concat(DOT).concat(name)
-        );
+        Column overrideColum = overrideColumns.get(String.join(DOT, fieldNames) + DOT + name);
 
         if (overrideColum != null) {
           naming = overrideColum.naming();
