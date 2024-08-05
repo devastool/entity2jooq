@@ -19,6 +19,7 @@
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
+
   <parent>
     <groupId>io.github.devastool.entity2jooq</groupId>
     <artifactId>entity2jooq</artifactId>
@@ -31,67 +32,23 @@
     <maven.compiler.source>11</maven.compiler.source>
     <maven.compiler.target>11</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <jooq.version>3.12.2</jooq.version>
-    <junit-jupiter.version>5.10.0</junit-jupiter.version>
-    <h2.version>2.2.220</h2.version>
+    <maven-surefire-plugin.version>3.1.2</maven-surefire-plugin.version>
   </properties>
 
-  <dependencies>
-    <!-- Project modules -->
-    <dependency>
-      <groupId>io.github.devastool.entity2jooq</groupId>
-      <artifactId>entity2jooq-annotation</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-
-    <!-- Jooq -->
-    <dependency>
-      <groupId>org.jooq</groupId>
-      <artifactId>jooq</artifactId>
-      <version>${jooq.version}</version>
-    </dependency>
-
-    <!-- Tests -->
-    <dependency>
-      <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter-engine</artifactId>
-      <version>${junit-jupiter.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter-params</artifactId>
-      <version>${junit-jupiter.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.h2database</groupId>
-      <artifactId>h2</artifactId>
-      <version>${h2.version}</version>
-      <scope>test</scope>
-    </dependency>
-  </dependencies>
+  <modules>
+    <module>entity2jooq-example-postgres</module>
+  </modules>
+  <packaging>pom</packaging>
 
   <build>
-    <plugins>
-      <plugin>
-        <groupId>io.github.devastool.entity2jooq</groupId>
-        <artifactId>entity2jooq-codegen-maven-plugin</artifactId>
-        <version>${project.version}</version>
-
-        <executions>
-          <execution>
-            <goals>
-              <goal>entity2jooq-generate</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
-      </plugin>
-    </plugins>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>${maven-surefire-plugin.version}</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
   </build>
 </project>
