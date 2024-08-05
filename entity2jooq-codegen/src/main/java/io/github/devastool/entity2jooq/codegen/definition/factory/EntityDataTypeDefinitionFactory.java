@@ -54,15 +54,14 @@ public class EntityDataTypeDefinitionFactory
       sqlType = annotation.value();
     }
 
+    String dialect = properties.require(CodegenProperty.DIALECT);
     if (sqlType.isEmpty()) {
-      sqlType = route.getSqlType(
-          properties.require(CodegenProperty.DIALECT),
-          classType
-      );
+      sqlType = route.getSqlType(dialect, classType);
     }
     return new EntityDataTypeDefinition(
         properties.require(CodegenProperty.SCHEMA),
         classType,
+        dialect,
         sqlType
     );
   }

@@ -19,6 +19,7 @@ package io.github.devastool.entity2jooq.codegen.type;
 import io.github.devastool.entity2jooq.annotation.type.NoSuchTypeException;
 import io.github.devastool.entity2jooq.annotation.type.TypeMapper;
 import io.github.devastool.entity2jooq.codegen.type.dialect.DefaultTypeMapper;
+import io.github.devastool.entity2jooq.codegen.type.dialect.PostgresTypeMapper;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -38,9 +39,8 @@ public class RouteTypeMapper implements TypeMapper {
     DefaultTypeMapper defaultMapper = new DefaultTypeMapper();
     dialects.put(defaultMapper.getDialect(), defaultMapper);
 
-    //    TODO. Postgres dialect
-    //    PostgresTypeMapper postgresMapper = new PostgresTypeMapper();
-    //    dialects.put(postgresMapper.getDialect(), postgresMapper);
+    PostgresTypeMapper postgresMapper = new PostgresTypeMapper();
+    dialects.put(postgresMapper.getDialect(), postgresMapper);
 
     //    TODO. CUBRID dialect
     //    CubridTypeMapper cubridMapper = new CubridTypeMapper();
