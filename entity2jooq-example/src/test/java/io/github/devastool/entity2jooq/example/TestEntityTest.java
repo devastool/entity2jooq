@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
 import org.h2.jdbcx.JdbcConnectionPool;
 import org.jooq.DSLContext;
 import org.jooq.DeleteConditionStep;
-import org.jooq.InsertValuesStep4;
+import org.jooq.InsertValuesStep5;
 import org.jooq.Record;
 import org.jooq.Table;
 import org.jooq.UpdateConditionStep;
@@ -51,7 +51,8 @@ import org.junit.jupiter.api.TestMethodOrder;
 class TestEntityTest {
   private static JdbcConnectionPool pool;
   private static final String DB_URL = "jdbc:h2:mem:db1;DB_CLOSE_DELAY=-1;DATABASE_TO_UPPER=false";
-  private static final TestEntityInfo entityInfo = new TestEntityInfo("1");
+  private static final TestEntityLocation entityLocation = new TestEntityLocation("RIO");
+  private static final TestEntityInfo entityInfo = new TestEntityInfo("1", entityLocation);
   private static final List<TestEntity> DATA = Arrays.asList(
       new TestEntity(1, "TestEntity1", LocalDateTime.now(), entityInfo),
       new TestEntity(2, "TestEntity2", LocalDateTime.now(), entityInfo),
@@ -74,7 +75,8 @@ class TestEntityTest {
         .column(TEST_ENTITY.ID)
         .column(TEST_ENTITY.ENTITY_NAME)
         .column(TEST_ENTITY.INSERT_TIME)
-        .column(TEST_ENTITY.ENTITY_VERSION)
+        .column(TEST_ENTITY.CITY)
+        .column(TEST_ENTITY.INFO_ENTITY_VERSION)
         .execute();
 
     connection.close();
@@ -91,13 +93,14 @@ class TestEntityTest {
     Connection connection = pool.getConnection();
     DSLContext context = DSL.using(connection);
 
-    InsertValuesStep4<Record, Integer, String, LocalDateTime, String> insert = context
+    InsertValuesStep5<Record, Integer, String, LocalDateTime,String, String> insert = context
         .insertInto(TEST_ENTITY)
         .columns(
             TEST_ENTITY.ID,
             TEST_ENTITY.ENTITY_NAME,
             TEST_ENTITY.INSERT_TIME,
-            TEST_ENTITY.ENTITY_VERSION
+            TEST_ENTITY.CITY,
+            TEST_ENTITY.INFO_ENTITY_VERSION
         );
 
     for (TestEntity entity : DATA) {
@@ -105,6 +108,7 @@ class TestEntityTest {
           entity.getId(),
           entity.getName(),
           entity.getInsertTime(),
+          entity.getInfo().getLocation().getCountry(),
           entity.getInfo().getVersion()
       );
     }
@@ -124,7 +128,8 @@ class TestEntityTest {
             TEST_ENTITY.ID,
             TEST_ENTITY.ENTITY_NAME,
             TEST_ENTITY.INSERT_TIME,
-            TEST_ENTITY.ENTITY_VERSION
+            TEST_ENTITY.CITY,
+            TEST_ENTITY.INFO_ENTITY_VERSION
         )
         .from(TEST_ENTITY)
         .fetch(
@@ -132,7 +137,10 @@ class TestEntityTest {
                 records.get(TEST_ENTITY.ID),
                 records.get(TEST_ENTITY.ENTITY_NAME),
                 records.get(TEST_ENTITY.INSERT_TIME),
-                new TestEntityInfo(records.get(TEST_ENTITY.ENTITY_VERSION))
+                new TestEntityInfo(
+                    records.get(TEST_ENTITY.CITY),
+                    new TestEntityLocation(records.get(TEST_ENTITY.INFO_ENTITY_VERSION))
+                )
             )
         );
 
@@ -155,6 +163,8 @@ class TestEntityTest {
               .update(TEST_ENTITY)
               .set(TEST_ENTITY.ENTITY_NAME, entity.getName())
               .set(TEST_ENTITY.INSERT_TIME, entity.getInsertTime())
+              .set(TEST_ENTITY.CITY, "NY")
+              .set(TEST_ENTITY.INFO_ENTITY_VERSION, "2")
               .where(TEST_ENTITY.ID.eq(entity.getId()))
       );
     }

@@ -20,8 +20,8 @@ import io.github.devastool.entity2jooq.annotation.Column;
 import io.github.devastool.entity2jooq.annotation.ColumnOverride;
 import io.github.devastool.entity2jooq.annotation.Schema;
 import io.github.devastool.entity2jooq.annotation.Table;
+import io.github.devastool.entity2jooq.annotation.type.Type;
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.Objects;
 
 /**
@@ -32,20 +32,16 @@ import java.util.Objects;
  */
 @Table
 @Schema("test_schema")
-public class TestEntity {
+public class TestEntity extends TestEntityParent {
   @Column
   private Integer id;
-  @Column(value = "entity_name", type = "varchar")
+  @Type("varchar")
+  @Column(value = "entity_name")
   private String name;
   private LocalDateTime insertTime;
 
+  @ColumnOverride(name = "location.country", column = @Column("city"))
   private TestEntityInfo info;
-
-  @ColumnOverride(name = "address", column = @Column("other_address"))
-  @ColumnOverride(name = "version", column = @Column("other_version"))
-  private TestEntityInfo otherInfo;
-
-  private HashMap<String,String> test = new HashMap<>();
 
   public TestEntity() {
   }

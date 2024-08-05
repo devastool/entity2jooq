@@ -17,14 +17,20 @@
 package io.github.devastool.entity2jooq.codegen.definition.factory;
 
 import io.github.devastool.entity2jooq.annotation.Column;
+import io.github.devastool.entity2jooq.annotation.ColumnOverride;
+import io.github.devastool.entity2jooq.annotation.Embedded;
+import io.github.devastool.entity2jooq.annotation.Table;
+import io.github.devastool.entity2jooq.annotation.naming.SnakeCaseStrategy;
 import io.github.devastool.entity2jooq.codegen.Entity2JooqDatabase;
 import io.github.devastool.entity2jooq.codegen.definition.EntityColumnDefinition;
 import io.github.devastool.entity2jooq.codegen.definition.EntitySchemaDefinition;
 import io.github.devastool.entity2jooq.codegen.definition.EntityTableDefinition;
-import java.lang.annotation.Annotation;
+import io.github.devastool.entity2jooq.codegen.properties.CodegenProperties;
+import io.github.devastool.entity2jooq.codegen.properties.CodegenProperty;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.Optional;
+import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -34,45 +40,88 @@ import org.junit.jupiter.api.Test;
  * @author Andrey_Yurzanov
  */
 class EntityColumnDefinitionFactoryTest {
+  private final FactoryContext context = new FactoryContext();
   private final EntityColumnDefinitionFactory factory =
-      new EntityColumnDefinitionFactory(new EntityDataTypeDefinitionFactory());
+      new EntityColumnDefinitionFactory(new EntityDataTypeDefinitionFactory(context), context);
+
   private static final String ENTITY_ID = "entity_id";
+  private static final EntitySchemaDefinition SCHEMA_DEFINITION =
+      new EntitySchemaDefinition(new Entity2JooqDatabase(), "test_schema");
   private static final EntityTableDefinition TABLE_DEFINITION = new EntityTableDefinition(
       new EntitySchemaDefinition(new Entity2JooqDatabase(), "test_schema"),
       "test_table",
       new ArrayList<>()
   );
+  private static final CodegenProperties PROPERTIES = new CodegenProperties(
+      Map.of(
+          CodegenProperty.NAMING_STRATEGY, SnakeCaseStrategy.class,
+          CodegenProperty.TABLE, TABLE_DEFINITION,
+          CodegenProperty.DIALECT, "",
+          CodegenProperty.SCHEMA, SCHEMA_DEFINITION
+      )
+  );
+
+  public static final String SEPARATOR = "_";
+
+  @Test
+  public void testColumnOverride() {
+    Field classField = TestEmbeddedEntity.class.getDeclaredFields()[1];
+    Field embeddableField = TestEmbeddableEntity.class.getDeclaredFields()[0];
+
+    List<EntityColumnDefinition> built = factory.build(classField, PROPERTIES);
+
+    var columnDefinition = built.get(0);
+    var name = classField.getName() + SEPARATOR + embeddableField.getName();
+
+    Assertions.assertNotEquals(name, columnDefinition.getName());
+  }
+
+  @Test
+  public void testEmbeddedClass() {
+    Field classField = TestEmbeddedEntity.class.getDeclaredFields()[0];
+    Field embeddableField = TestEmbeddableEntity.class.getDeclaredFields()[0];
+
+    List<EntityColumnDefinition> built = factory.build(classField, PROPERTIES);
+
+    var columnDefinition = built.get(0);
+    var name = classField.getName() + SEPARATOR + embeddableField.getName();
+
+    Assertions.assertEquals(name, columnDefinition.getName());
+  }
 
   @Test
   void buildSuccessTest() {
     for (Field field : TestEntity.class.getDeclaredFields()) {
-      Optional<EntityColumnDefinition> built = factory.build(field, new Annotation[0], TABLE_DEFINITION);
-      Assertions.assertTrue(built.isPresent());
+      List<EntityColumnDefinition> built =
+          Assertions.assertDoesNotThrow(() -> factory.build(field, PROPERTIES));
+      var result = built.get(0);
 
-      EntityColumnDefinition definition = built.orElseThrow();
-      Assertions.assertEquals(ENTITY_ID, definition.getName());
+      Assertions.assertNotNull(built);
+      Assertions.assertEquals(ENTITY_ID, result.getName());
     }
   }
 
   @Test
   void buildWithoutColumnNameSuccessTest() {
     for (Field field : TestEntityWithoutColumnName.class.getDeclaredFields()) {
-      Optional<EntityColumnDefinition> built = factory.build(field, new Annotation[0], TABLE_DEFINITION);
-      Assertions.assertTrue(built.isPresent());
+      List<EntityColumnDefinition> built =
+          Assertions.assertDoesNotThrow(() -> factory.build(field, PROPERTIES));
+      var result = built.get(0);
 
-      EntityColumnDefinition definition = built.orElseThrow();
-      Assertions.assertEquals(field.getName(), definition.getName());
+      Assertions.assertNotNull(built);
+      Assertions.assertEquals(field.getName(), result.getName());
     }
   }
 
   @Test
-  void buildWithoutAnnotationSuccessTest() {
-    for (Field field : TestEntityWithoutAnnotation.class.getDeclaredFields()) {
-      Optional<EntityColumnDefinition> built = factory.build(field, new Annotation[0], TABLE_DEFINITION);
-      Assertions.assertTrue(built.isPresent());
+  void buildWithTableAnnotationSuccessTest() {
+    for (Field field : TestEntityWithTableAnnotation.class.getDeclaredFields()) {
+      List<EntityColumnDefinition> built =
+          Assertions.assertDoesNotThrow(() -> factory.build(field, PROPERTIES));
+      var result = built.get(0);
 
-      EntityColumnDefinition definition = built.orElseThrow();
-      Assertions.assertEquals(field.getName(), definition.getName());
+      Assertions.assertNotNull(built);
+      Assertions.assertEquals(field.getName(), result.getName());
     }
   }
 
@@ -84,7 +133,20 @@ class EntityColumnDefinitionFactoryTest {
     @Column
     private Integer id;
   }
-  static class TestEntityWithoutAnnotation {
+
+  @Table
+  static class TestEntityWithTableAnnotation {
+    private Integer id;
+  }
+
+  static class TestEmbeddedEntity {
+    private TestEmbeddableEntity embeddable;
+    @ColumnOverride(name = "id", column = @Column("number"))
+    private TestEmbeddableEntity otherEmbeddable;
+  }
+
+  @Embedded
+  static class TestEmbeddableEntity {
     private Integer id;
   }
 }

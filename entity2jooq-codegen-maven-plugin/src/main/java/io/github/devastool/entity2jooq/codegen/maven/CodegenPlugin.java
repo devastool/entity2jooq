@@ -20,6 +20,7 @@ import static io.github.devastool.entity2jooq.codegen.filesystem.ExtFileVisitor.
 
 import io.github.devastool.entity2jooq.codegen.Entity2JooqDatabase;
 import io.github.devastool.entity2jooq.codegen.filesystem.ExtFileVisitor;
+import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -47,8 +48,8 @@ import org.jooq.meta.jaxb.Property;
 /**
  * Maven plugin for code generating.
  *
- * @since 1.0.0
  * @author Andrey_Yurzanov
+ * @since 1.0.0
  */
 @Mojo(
     name = "entity2jooq-generate",
@@ -63,6 +64,9 @@ public class CodegenPlugin extends AbstractMojo {
   @Parameter(property = "compile")
   private Compile compile;
 
+  private static final String CLASSPATH_SEPARATOR = File.pathSeparator;
+  private static final String DIALECT_PROPERTY_KEY = "dialect";
+  private static final String CLASSPATH_PROPERTY_KEY = "classpath";
   private static final String CLASSES_PROPERTY_KEY = "classes";
   private static final String TEST_CLASSES_PROPERTY_KEY = "testClasses";
 
@@ -93,8 +97,10 @@ public class CodegenPlugin extends AbstractMojo {
       manager.setLocation(StandardLocation.CLASS_PATH, compile.getClasspathFiles());
 
       Collection<PathJavaFileObject> sourceCodes = visitor.getFiltered(PathJavaFileObject::new);
-      CompilationTask task = compiler.getTask(null, manager, null, null, null, sourceCodes);
-      task.call();
+      if (!sourceCodes.isEmpty()) {
+        CompilationTask task = compiler.getTask(null, manager, null, null, null, sourceCodes);
+        task.call();
+      }
     } catch (Exception exception) {
       throw new RuntimeException(exception);
     }
@@ -110,9 +116,17 @@ public class CodegenPlugin extends AbstractMojo {
     testClasses.setKey(TEST_CLASSES_PROPERTY_KEY);
     testClasses.setValue(build.getTestOutputDirectory());
 
+    Property classpath = new Property();
+    classpath.setKey(CLASSPATH_PROPERTY_KEY);
+    classpath.setValue(String.join(CLASSPATH_SEPARATOR, compile.getClasspath()));
+
+    Property dialect = new Property();
+    dialect.setKey(DIALECT_PROPERTY_KEY);
+    dialect.setValue(generate.getDialect());
+
     Database database = new Database();
     database.setName(Entity2JooqDatabase.class.getCanonicalName());
-    database.setProperties(Arrays.asList(classes, testClasses));
+    database.setProperties(Arrays.asList(classes, testClasses, classpath, dialect));
     return database;
   }
 }

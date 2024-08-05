@@ -28,34 +28,83 @@ import org.jooq.meta.jaxb.Target;
  * @since 1.0.0
  */
 public class Generate {
-//  private String dialect; TODO. Add dialect configuration, by default autodetect
+  private String dialect; // TODO. Add autodetect
   private String className;
   private String packageName;
   private String target;
 
+  private static final String DEFAULT_DIALECT = "";
   private static final String DEFAULT_PACKAGE_NAME = "org.jooq.generated";
   private static final String DEFAULT_TARGET = "/generated-sources/jooq";
 
+  /**
+   * Returns SQL dialect.
+   *
+   * @return SQL dialect
+   */
+  public String getDialect() {
+    return dialect;
+  }
+
+  /**
+   * Sets SQL dialect.
+   *
+   * @param dialect SQL dialect
+   */
+  public void setDialect(String dialect) {
+    this.dialect = dialect;
+  }
+
+  /**
+   * Returns the package name for generated classes.
+   *
+   * @return package name for generated classes
+   */
   public String getPackageName() {
     return packageName;
   }
 
+  /**
+   * Sets the package name for generated classes.
+   *
+   * @param packageName package name for generated classes
+   */
   public void setPackageName(String packageName) {
     this.packageName = packageName;
   }
 
+  /**
+   * Returns directory for generated classes.
+   *
+   * @return directory for generated classes
+   */
   public String getTarget() {
     return target;
   }
 
+  /**
+   * Sets directory for generated classes.
+   *
+   * @param target directory for generated classes
+   */
   public void setTarget(String target) {
     this.target = target;
   }
 
+  /**
+   * Returns class name of the jooq generator.
+   *
+   * @return class name of the jooq generator
+   */
   public String getClassName() {
     return className;
   }
 
+  /**
+   * Sets class name of the jooq generator.
+   *
+   * @param className class name of the jooq generator
+   */
   public void setClassName(String className) {
     this.className = className;
   }
@@ -74,11 +123,25 @@ public class Generate {
 
   /**
    * Configuration initialization.
+   * <br/>
+   * Default values:
+   * <br/>
+   * dialect = ""
+   * <br/>
+   * packageName = "org.jooq.generated"
+   * <br/>
+   * target = "/generated-sources/jooq"
+   * <br/>
+   * className = "io.github.devastool.entity2jooq.codegen.Entity2JooqJavaGenerator"
    *
    * @param project information of maven project
    */
   public void init(MavenProject project) {
     Build build = project.getBuild();
+    if (dialect == null || dialect.isEmpty()) {
+      dialect = DEFAULT_DIALECT;
+    }
+
     if (packageName == null || packageName.isEmpty()) {
       packageName = DEFAULT_PACKAGE_NAME;
     }

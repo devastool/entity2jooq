@@ -14,22 +14,16 @@
  *    limitations under the License.
  */
 
-package io.github.devastool.entity2jooq.annotation;
+package io.github.devastool.entity2jooq.example;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import io.github.devastool.entity2jooq.annotation.Table;
 
 /**
- * Annotation to specify that a field or class is embedded.
+ * Example entity parent.
  *
  * @since 1.0.0
- * @author Sergey_Konovalov
+ * @author Andrey_Yurzanov
  */
-@Documented
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.FIELD, ElementType.TYPE})
-public @interface Embedded {
+@Table
+public class TestEntityParent {
 }

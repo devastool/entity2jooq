@@ -17,8 +17,11 @@
 package io.github.devastool.entity2jooq.codegen.definition.factory;
 
 import io.github.devastool.entity2jooq.annotation.Table;
+import io.github.devastool.entity2jooq.codegen.Entity2JooqDatabase;
 import io.github.devastool.entity2jooq.codegen.definition.EntityTableDefinition;
-import java.util.Optional;
+import io.github.devastool.entity2jooq.codegen.properties.CodegenProperties;
+import io.github.devastool.entity2jooq.codegen.properties.CodegenProperty;
+import java.util.Map;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -28,35 +31,46 @@ import org.junit.jupiter.api.Test;
  * @author Andrey_Yurzanov
  */
 class EntityTableDefinitionFactoryTest {
+  private final FactoryContext context = new FactoryContext();
   private final EntityTableDefinitionFactory factory = new EntityTableDefinitionFactory(
-      new EntitySchemaDefinitionFactory(),
-      new EntityColumnDefinitionFactory(new EntityDataTypeDefinitionFactory())
+      new EntitySchemaDefinitionFactory(context),
+      new EntityColumnDefinitionFactory(new EntityDataTypeDefinitionFactory(context), context),
+      context
   );
   private static final String TEST_TABLE = "test_table";
   private static final String CLASS_NAME = "test_entity_without_table_name";
+  private static final CodegenProperties PROPERTIES = new CodegenProperties(
+      Map.of(
+          CodegenProperty.DIALECT, "",
+          CodegenProperty.DATABASE, new Entity2JooqDatabase()
+      )
+  );
 
   @Test
   void buildSuccessTest() {
-    Optional<EntityTableDefinition> built = factory.build(TestEntity.class, null);
-    Assertions.assertTrue(built.isPresent());
+    EntityTableDefinition built =
+        Assertions.assertDoesNotThrow(() -> factory.build(TestEntity.class, PROPERTIES));
 
-    EntityTableDefinition definition = built.orElseThrow();
-    Assertions.assertEquals(TEST_TABLE, definition.getName());
+    Assertions.assertNotNull(built);
+    Assertions.assertEquals(TEST_TABLE, built.getName());
   }
 
   @Test
   void buildWithoutTableNameSuccessTest() {
-    Optional<EntityTableDefinition> built = factory.build(TestEntityWithoutTableName.class, null);
-    Assertions.assertTrue(built.isPresent());
+    EntityTableDefinition built = Assertions.assertDoesNotThrow(
+        () -> factory.build(TestEntityWithoutTableName.class, PROPERTIES)
+    );
 
-    EntityTableDefinition definition = built.orElseThrow();
-    Assertions.assertEquals(CLASS_NAME, definition.getName());
+    Assertions.assertNotNull(built);
+    Assertions.assertEquals(CLASS_NAME, built.getName());
   }
 
   @Test
   void buildWithoutAnnotationSuccessTest() {
-    Optional<EntityTableDefinition> built = factory.build(TestEntityWithoutAnnotation.class, null);
-    Assertions.assertFalse(built.isPresent());
+    EntityTableDefinition built = Assertions.assertDoesNotThrow(
+        () -> factory.build(TestEntityWithoutAnnotation.class, PROPERTIES)
+    );
+    Assertions.assertNull(built);
   }
 
   @Table(TEST_TABLE)

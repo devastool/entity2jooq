@@ -16,12 +16,13 @@
 
 package io.github.devastool.entity2jooq.codegen.definition.factory;
 
+import static io.github.devastool.entity2jooq.codegen.properties.CodegenProperty.DATABASE;
+import static io.github.devastool.entity2jooq.codegen.properties.CodegenProperty.NAMING_STRATEGY;
+
 import io.github.devastool.entity2jooq.annotation.Schema;
 import io.github.devastool.entity2jooq.annotation.naming.NamingStrategy;
-import io.github.devastool.entity2jooq.annotation.naming.SnakeCaseStrategy;
 import io.github.devastool.entity2jooq.codegen.definition.EntitySchemaDefinition;
-import java.util.Optional;
-import org.jooq.meta.Database;
+import io.github.devastool.entity2jooq.codegen.properties.CodegenProperties;
 
 /**
  * The factory for {@link EntitySchemaDefinition} building.
@@ -29,24 +30,38 @@ import org.jooq.meta.Database;
  * @author Andrey_Yurzanov
  * @since 1.0.0
  */
-public class EntitySchemaDefinitionFactory {
+public class EntitySchemaDefinitionFactory
+    extends DefinitionFactory<Class<?>, EntitySchemaDefinition> {
+
   /**
-   * Builds new instance of {@link EntitySchemaDefinition}.
+   * Constructs new instance of {@link EntitySchemaDefinitionFactory}.
    *
-   * @param type     entity class, annotation {@link Schema} is optional
-   * @param database meta-information provider
+   * @param context instance of {@link FactoryContext}
    */
-  public Optional<EntitySchemaDefinition> build(Class<?> type, Database database) {
-    String schemaName;
-    Schema schemaAnnotation = type.getAnnotation(Schema.class);
-    if (schemaAnnotation != null && !schemaAnnotation.value().isEmpty()) {
-      schemaName = schemaAnnotation.value();
-    } else {
-      schemaName = getLastPackageName(type.getPackage());
+  public EntitySchemaDefinitionFactory(FactoryContext context) {
+    super(context);
+  }
+
+  @Override
+  public EntitySchemaDefinition build(Class<?> type, CodegenProperties properties) {
+    String name = getLastPackageName(type.getPackage());
+    Class<? extends NamingStrategy> naming = properties.require(NAMING_STRATEGY);
+
+    Schema annotation = type.getAnnotation(Schema.class);
+    if (annotation != null) {
+      naming = annotation.naming();
+
+      String definedName = annotation.value();
+      if (definedName != null && !definedName.isEmpty()) {
+        name = definedName;
+      }
     }
 
-    NamingStrategy strategy = new SnakeCaseStrategy(); // TODO. Use schemaAnnotation.naming()
-    return Optional.of(new EntitySchemaDefinition(database, strategy.resolve(schemaName)));
+    NamingStrategy strategy = getContext().getInstance(naming);
+    return new EntitySchemaDefinition(
+        properties.require(DATABASE),
+        strategy.resolve(name)
+    );
   }
 
   private String getLastPackageName(Package packageDefinition) {

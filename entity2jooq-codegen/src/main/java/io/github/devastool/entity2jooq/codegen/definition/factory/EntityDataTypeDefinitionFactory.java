@@ -19,9 +19,10 @@ package io.github.devastool.entity2jooq.codegen.definition.factory;
 import io.github.devastool.entity2jooq.annotation.type.NoSuchTypeException;
 import io.github.devastool.entity2jooq.annotation.type.Type;
 import io.github.devastool.entity2jooq.codegen.definition.EntityDataTypeDefinition;
+import io.github.devastool.entity2jooq.codegen.properties.CodegenProperties;
+import io.github.devastool.entity2jooq.codegen.properties.CodegenProperty;
 import io.github.devastool.entity2jooq.codegen.type.RouteTypeMapper;
 import java.lang.reflect.Field;
-import org.jooq.meta.SchemaDefinition;
 
 /**
  * The factory for {@link EntityDataTypeDefinition} building.
@@ -29,21 +30,23 @@ import org.jooq.meta.SchemaDefinition;
  * @author Andrey_Yurzanov
  * @since 1.0.0
  */
-public class EntityDataTypeDefinitionFactory {
-  private static final RouteTypeMapper route = new RouteTypeMapper();
+public class EntityDataTypeDefinitionFactory
+    extends DefinitionFactory<Field, EntityDataTypeDefinition> {
+  private final RouteTypeMapper route = new RouteTypeMapper();
 
   /**
-   * Builds new instance of {@link EntityDataTypeDefinition}.
+   * Constructs new instance of {@link EntityDataTypeDefinitionFactory}.
    *
-   * @param schema meta-information about schema
-   * @param field entity field, annotation {@link Type} is optional
+   * @param context instance of {@link FactoryContext}
    */
-  public EntityDataTypeDefinition build(
-      SchemaDefinition schema,
-      Field field
-  ) throws NoSuchTypeException {
+  public EntityDataTypeDefinitionFactory(FactoryContext context) {
+    super(context);
+  }
+
+  @Override
+  public EntityDataTypeDefinition build(Field field, CodegenProperties properties)
+      throws NoSuchTypeException, IllegalArgumentException {
     String sqlType = "";
-    String dialect = ""; // TODO. Extract from configuration
     Class<?> classType = field.getType();
 
     Type annotation = field.getAnnotation(Type.class);
@@ -52,8 +55,15 @@ public class EntityDataTypeDefinitionFactory {
     }
 
     if (sqlType.isEmpty()) {
-      sqlType = route.getSqlType(dialect, classType);
+      sqlType = route.getSqlType(
+          properties.require(CodegenProperty.DIALECT),
+          classType
+      );
     }
-    return new EntityDataTypeDefinition(schema, classType, sqlType);
+    return new EntityDataTypeDefinition(
+        properties.require(CodegenProperty.SCHEMA),
+        classType,
+        sqlType
+    );
   }
 }

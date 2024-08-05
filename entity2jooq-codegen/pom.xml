@@ -36,12 +36,14 @@
   </properties>
 
   <dependencies>
+    <!-- Project modules -->
     <dependency>
       <groupId>io.github.devastool.entity2jooq</groupId>
       <artifactId>entity2jooq-annotation</artifactId>
       <version>${project.version}</version>
     </dependency>
 
+    <!-- Jooq -->
     <dependency>
       <groupId>org.jooq</groupId>
       <artifactId>jooq-codegen-maven</artifactId>
@@ -53,6 +55,7 @@
       <version>${jooq-codegen.version}</version>
     </dependency>
 
+    <!-- Tests -->
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-engine</artifactId>

@@ -17,8 +17,13 @@
 package io.github.devastool.entity2jooq.codegen.definition.factory;
 
 import io.github.devastool.entity2jooq.annotation.Schema;
+import io.github.devastool.entity2jooq.annotation.Table;
+import io.github.devastool.entity2jooq.annotation.naming.SnakeCaseStrategy;
+import io.github.devastool.entity2jooq.codegen.Entity2JooqDatabase;
 import io.github.devastool.entity2jooq.codegen.definition.EntitySchemaDefinition;
-import java.util.Optional;
+import io.github.devastool.entity2jooq.codegen.properties.CodegenProperties;
+import io.github.devastool.entity2jooq.codegen.properties.CodegenProperty;
+import java.util.Map;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -28,29 +33,39 @@ import org.junit.jupiter.api.Test;
  * @author Andrey_Yurzanov
  */
 class EntitySchemaDefinitionFactoryTest {
-  private final EntitySchemaDefinitionFactory factory = new EntitySchemaDefinitionFactory();
+  private final EntitySchemaDefinitionFactory factory =
+      new EntitySchemaDefinitionFactory(new FactoryContext());
   private static final String TEST_SCHEMA = "test_schema";
   private static final String PACKAGE_NAME = "factory";
+  private static final CodegenProperties PROPERTIES = new CodegenProperties(
+      Map.of(
+          CodegenProperty.NAMING_STRATEGY, SnakeCaseStrategy.class,
+          CodegenProperty.DIALECT, "",
+          CodegenProperty.DATABASE, new Entity2JooqDatabase()
+      )
+  );
 
   @Test
   void buildSuccessTest() {
-    Optional<EntitySchemaDefinition> built = factory.build(TestEntity.class, null);
-    Assertions.assertTrue(built.isPresent());
+    EntitySchemaDefinition built =
+        Assertions.assertDoesNotThrow(() -> factory.build(TestEntity.class, PROPERTIES));
 
-    EntitySchemaDefinition definition = built.orElseThrow();
-    Assertions.assertEquals(TEST_SCHEMA, definition.getName());
+    Assertions.assertNotNull(built);
+    Assertions.assertEquals(TEST_SCHEMA, built.getName());
   }
 
   @Test
-  void buildWithoutAnnotationSuccessTest() {
-    Optional<EntitySchemaDefinition> built = factory.build(TestEntityWithoutAnnotation.class, null);
-    Assertions.assertTrue(built.isPresent());
+  void buildWithTableAnnotationSuccessTest() {
+    EntitySchemaDefinition built = Assertions.assertDoesNotThrow(
+        () -> factory.build(TestEntityWithTableAnnotation.class, PROPERTIES)
+    );
 
-    EntitySchemaDefinition definition = built.orElseThrow();
-    Assertions.assertEquals(PACKAGE_NAME, definition.getName());
+    Assertions.assertNotNull(built);
+    Assertions.assertEquals(PACKAGE_NAME, built.getName());
   }
 
   @Schema(value = TEST_SCHEMA)
   static final class TestEntity {}
-  static final class TestEntityWithoutAnnotation {}
+  @Table
+  static final class TestEntityWithTableAnnotation {}
 }
