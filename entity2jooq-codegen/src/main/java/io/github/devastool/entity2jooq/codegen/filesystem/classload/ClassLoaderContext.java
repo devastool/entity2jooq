@@ -54,7 +54,7 @@ public class ClassLoaderContext implements Iterable<ClassFile> {
 
   /**
    * Adds information about the class path, the class path contains path elements separated by the
-   * symbol ':' or ';'
+   * symbol ':' or ';'.
    *
    * @param value classpath information
    */

@@ -40,11 +40,11 @@ public @interface Type {
    */
   String value() default "";
 
-//  TODO. release-2.0.0
-//  /**
-//   * Mapping between SQL and Java types.
-//   */
-//  Class<? extends TypeMapper> mapper() default TypeMapper.class;
+  //  TODO. release-2.0.0
+  //  /**
+  //   * Mapping between SQL and Java types.
+  //   */
+  //  Class<? extends TypeMapper> mapper() default TypeMapper.class;
 
   /**
    * Container of {@link Type} annotations.
