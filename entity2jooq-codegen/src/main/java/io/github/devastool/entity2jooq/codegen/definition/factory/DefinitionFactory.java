@@ -59,7 +59,7 @@ public abstract class DefinitionFactory<T, R> {
   }
 
   /**
-   * Getter
+   * Getter.
    *
    * @return instance of {@link FactoryContext }.
    */
