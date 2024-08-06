@@ -68,8 +68,10 @@ public class EntityColumnDefinitionFactory extends
     List<EntityColumnDefinition> columns = new ArrayList<>();
     Deque<FieldDetails> queue = new ArrayDeque<>();
 
-    Map<String, Column> overrideColumns = getOverrideColumns(field.getDeclaredAnnotations(),
-        field.getName());
+    Map<String, Column> overrideColumns = getOverrideColumns(
+        field.getDeclaredAnnotations(),
+        field.getName()
+    );
 
     queue.push(new FieldDetails(field, null, new ArrayList<>()));
 
@@ -90,8 +92,8 @@ public class EntityColumnDefinitionFactory extends
       } else {
         String name = fieldDetails.getName();
         Class<? extends NamingStrategy> naming = properties.require(NAMING_STRATEGY);
-
         var fieldNames = fieldDetails.getParentFieldsName();
+
         String parentName = fieldDetails.getParentFieldName();
         if (parentName != null) {
           fieldNames.add(parentName);

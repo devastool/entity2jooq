@@ -16,7 +16,6 @@
 
 package io.github.devastool.entity2jooq.codegen.definition;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.List;
 
@@ -72,15 +71,6 @@ public class FieldDetails {
   }
 
   /**
-   * Returns the parent field.
-   *
-   * @return the parent field
-   */
-  public Field getParentField() {
-    return parentfield;
-  }
-
-  /**
    * Returns the list of parent field names.
    *
    * @return the list of parent field names
@@ -99,17 +89,5 @@ public class FieldDetails {
       return null;
     }
     return parentfield.getName();
-  }
-
-  /**
-   * Returns the annotations declared on the parent field, or {@code null} if there is no parent field.
-   *
-   * @return an array of the annotations declared on the parent field, or {@code null} if there is no parent field
-   */
-  public Annotation[] getParentAnnotations() {
-    if (parentfield == null) {
-      return null;
-    }
-    return parentfield.getDeclaredAnnotations();
   }
 }
