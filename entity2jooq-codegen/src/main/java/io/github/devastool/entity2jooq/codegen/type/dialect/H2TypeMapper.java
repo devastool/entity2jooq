@@ -49,6 +49,7 @@ public class H2TypeMapper extends DialectTypeMapper {
         Set.of(
             // Numeric types
             new TypePair(Short.class, "smallint"),
+            new TypePair(Byte.class, "tinyint"),
             new TypePair(Integer.class, "integer"),
             new TypePair(Long.class, "bigint"),
             new TypePair(BigDecimal.class, "numeric"),
