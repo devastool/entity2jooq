@@ -70,7 +70,6 @@ public class TestEntity extends TestEntityParent {
    */
   public TestEntity() {
     byteField = getRandomByte();
-    ;
     shortField = (short) byteField;
     intField = (int) byteField;
     longField = (long) byteField;

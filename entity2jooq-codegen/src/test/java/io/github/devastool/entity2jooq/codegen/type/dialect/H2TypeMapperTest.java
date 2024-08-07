@@ -26,7 +26,6 @@ import org.junit.jupiter.api.Test;
  * @author Evgeniy_Gerasimov
  */
 class H2TypeMapperTest {
-
   private final H2TypeMapper mapper = new H2TypeMapper();
 
   @Test
@@ -40,5 +39,4 @@ class H2TypeMapperTest {
     String sqlType = mapper.getSqlType("H2", LocalDateTime.class);
     Assertions.assertEquals("timestamp", sqlType);
   }
-
 }
