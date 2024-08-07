@@ -25,7 +25,58 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.OffsetTime;
-import java.time.ZonedDateTime;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 import java.util.Date;
 import java.util.Set;
 import java.util.UUID;
@@ -67,7 +118,6 @@ public class H2TypeMapper extends DialectTypeMapper {
             new TypePair(LocalDateTime.class, "timestamp"),
             new TypePair(Timestamp.class, "timestamp"),
             new TypePair(OffsetDateTime.class, "timestamp with time zone"),
-            new TypePair(ZonedDateTime.class, "timestamp with time zone"),
             // Boolean types
             new TypePair(Boolean.class, "boolean"),
             // UUID types
