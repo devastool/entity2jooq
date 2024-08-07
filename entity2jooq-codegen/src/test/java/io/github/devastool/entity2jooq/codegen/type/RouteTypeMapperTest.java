@@ -30,17 +30,6 @@ class RouteTypeMapperTest {
   private final RouteTypeMapper mapper = new RouteTypeMapper();
 
   @Test
-  void getTypeSuccessTest() {
-    Class<?> result = Assertions.assertDoesNotThrow(() -> mapper.getType("", "bigint"));
-    Assertions.assertEquals(Long.class, result);
-  }
-
-  @Test
-  void getTypeFailureTest() {
-    Assertions.assertThrows(NoSuchTypeException.class, () -> mapper.getType("wrong", "bigint"));
-  }
-
-  @Test
   void getSqlTypeSuccessTest() {
     String result = Assertions.assertDoesNotThrow(() -> mapper.getSqlType("", LocalDate.class));
     Assertions.assertEquals("date", result);

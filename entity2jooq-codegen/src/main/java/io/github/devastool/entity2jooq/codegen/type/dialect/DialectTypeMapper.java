@@ -44,16 +44,6 @@ public abstract class DialectTypeMapper implements TypeMapper {
   }
 
   @Override
-  public Class<?> getType(String dialect, String sqlType) throws NoSuchTypeException {
-    return types
-        .stream()
-        .filter(data -> Objects.equals(data.getSqlType(), sqlType))
-        .findFirst()
-        .orElseThrow(() -> new NoSuchTypeException(dialect, sqlType))
-        .getType();
-  }
-
-  @Override
   public String getSqlType(String dialect, Class<?> type) throws NoSuchTypeException {
     return types
         .stream()

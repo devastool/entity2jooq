@@ -86,7 +86,9 @@ public class EntityTableDefinitionFactory
           Map.of(TABLE, table, SCHEMA, schema, NAMING_STRATEGY, naming)
       );
       for (Field field : type.getDeclaredFields()) {
-        columns.add(columnFactory.build(field, columnProperties));
+        if (columnFactory.canBuild(field)) {
+          columns.add(columnFactory.build(field, columnProperties));
+        }
       }
       return table;
     }
