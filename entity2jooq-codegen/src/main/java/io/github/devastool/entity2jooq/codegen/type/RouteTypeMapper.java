@@ -75,15 +75,6 @@ public class RouteTypeMapper implements TypeMapper {
   }
 
   @Override
-  public Class<?> getType(String dialect, String sqlType) throws NoSuchTypeException {
-    TypeMapper typeMapper = dialects.get(dialect);
-    if (typeMapper == null) {
-      throw new NoSuchTypeException(dialect, sqlType);
-    }
-    return typeMapper.getType(dialect, sqlType);
-  }
-
-  @Override
   public String getSqlType(String dialect, Class<?> type) throws NoSuchTypeException {
     TypeMapper typeMapper = dialects.get(dialect);
     if (typeMapper == null) {

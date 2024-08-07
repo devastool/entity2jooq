@@ -72,4 +72,10 @@ public class EntityColumnDefinitionFactory extends
         typeFactory.build(field, properties)
     );
   }
+
+  @Override
+  public boolean canBuild(Field field) {
+    Class<?> type = field.getType();
+    return !type.isPrimitive() && typeFactory.canBuild(field);
+  }
 }

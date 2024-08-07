@@ -23,15 +23,6 @@ package io.github.devastool.entity2jooq.annotation.type;
  * @since 1.0.0
  */
 public interface TypeMapper {
-  /**
-   * Returns Java type by dialect and SQL type.
-   *
-   * @param dialect SQL dialect
-   * @param sqlType SQL type
-   * @return Java type
-   * @throws NoSuchTypeException when th type is not found
-   */
-  Class<?> getType(String dialect, String sqlType) throws NoSuchTypeException;
 
   /**
    * Returns SQL type by dialect and Java type.
