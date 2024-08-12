@@ -47,6 +47,7 @@ class EntityColumnDefinitionFactoryTest {
   private static final EntityTableDefinition TABLE_DEFINITION = new EntityTableDefinition(
       new EntitySchemaDefinition(new Entity2JooqDatabase(), "test_schema"),
       "test_table",
+      Object.class,
       new ArrayList<>()
   );
   private static final CodegenProperties PROPERTIES = new CodegenProperties(

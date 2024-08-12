@@ -78,6 +78,7 @@ public class EntityTableDefinitionFactory
       EntityTableDefinition table = new EntityTableDefinition(
           schema,
           name,
+          type,
           columns
       );
 

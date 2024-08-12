@@ -16,7 +16,6 @@
 
 package io.github.devastool.entity2jooq.codegen.definition;
 
-import io.github.devastool.entity2jooq.annotation.naming.NamingStrategy;
 import java.sql.SQLException;
 import java.util.List;
 import org.jooq.meta.AbstractTableDefinition;
@@ -31,6 +30,7 @@ import org.jooq.meta.SchemaDefinition;
  * @since 1.0.0
  */
 public class EntityTableDefinition extends AbstractTableDefinition {
+  private final Class<?> entityType;
   private final List<ColumnDefinition> columns;
 
   /**
@@ -43,14 +43,25 @@ public class EntityTableDefinition extends AbstractTableDefinition {
   public EntityTableDefinition(
       SchemaDefinition schema,
       String name,
+      Class<?> entityType,
       List<ColumnDefinition> columns
   ) {
     super(schema, name, "");
+    this.entityType = entityType;
     this.columns = columns;
   }
 
   @Override
   protected List<ColumnDefinition> getElements0() throws SQLException {
     return columns;
+  }
+
+  /**
+   * Returns type of entity.
+   *
+   * @return type of entity
+   */
+  public Class<?> getEntityType() {
+    return entityType;
   }
 }

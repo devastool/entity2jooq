@@ -17,6 +17,11 @@
 package io.github.devastool.entity2jooq.codegen;
 
 import io.github.devastool.entity2jooq.codegen.definition.EntityDataTypeDefinition;
+import io.github.devastool.entity2jooq.codegen.generate.GenerateChainPart;
+import io.github.devastool.entity2jooq.codegen.generate.ToEntityGenerateChainPart;
+import io.github.devastool.entity2jooq.codegen.generate.code.BufferedCodeTarget;
+import io.github.devastool.entity2jooq.codegen.generate.code.IndentCodeTarget;
+import java.util.List;
 import java.util.Objects;
 import org.jooq.codegen.GeneratorStrategy.Mode;
 import org.jooq.codegen.JavaGenerator;
@@ -28,10 +33,14 @@ import org.jooq.meta.TableDefinition;
 /**
  * Generator of Java source code by annotations.
  *
- * @since 1.0.0
  * @author Andrey_Yurzanov
+ * @since 1.0.0
  */
 public class Entity2JooqJavaGenerator extends JavaGenerator {
+  private final List<GenerateChainPart> methods = List.of(
+      new ToEntityGenerateChainPart()
+  );
+
   @Override
   public boolean generateRecords() {
     return false;
@@ -59,10 +68,10 @@ public class Entity2JooqJavaGenerator extends JavaGenerator {
   protected void generateTableClassFooter(TableDefinition table, JavaWriter out) {
     super.generateTableClassFooter(table, out);
 
-    // TODO. Mapping functionality
-    out.println(
-        "public %s map(Record record) { throw new UnsupportedOperationException(); }",
-        Object.class
-    );
+    BufferedCodeTarget target = new BufferedCodeTarget();
+    for (GenerateChainPart method : methods) {
+      method.generate(table, new IndentCodeTarget(target));
+    }
+    out.print(target.getBuffer());
   }
 }
