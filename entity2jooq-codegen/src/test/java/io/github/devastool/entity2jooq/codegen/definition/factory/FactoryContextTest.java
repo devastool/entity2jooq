@@ -26,7 +26,15 @@ import org.junit.jupiter.api.Test;
  * @author Evgeniy_Gerasimov
  */
 class FactoryContextTest {
-  private final FactoryContext factoryContext = new FactoryContext();
+  private FactoryContext factoryContext = new FactoryContext();
+
+  @Test
+  void createInstanceFailTest() {
+    Assertions.assertThrows(
+        RuntimeException.class,
+        () -> factoryContext.getInstance(String.class, 1, 2, "test")
+    );
+  }
 
   @Test
   void getInstanceSuccessTest() {

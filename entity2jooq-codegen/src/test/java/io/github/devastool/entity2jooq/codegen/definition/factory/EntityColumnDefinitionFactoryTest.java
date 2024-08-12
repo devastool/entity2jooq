@@ -27,6 +27,7 @@ import io.github.devastool.entity2jooq.codegen.properties.CodegenProperties;
 import io.github.devastool.entity2jooq.codegen.properties.CodegenProperty;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Map;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -91,6 +92,26 @@ class EntityColumnDefinitionFactoryTest {
     }
   }
 
+  @Test
+  void canBuildSuccessTest() {
+    var field = Arrays
+        .stream(TestEntityWithTableAnnotation.class.getDeclaredFields())
+        .findFirst()
+        .get();
+
+    Assertions.assertTrue(factory.canBuild(field));
+  }
+
+  @Test
+  void canBuildFailureTest() {
+    var field = Arrays
+        .stream(TestEntityWithPrimitiveField.class.getDeclaredFields())
+        .findFirst()
+        .get();
+
+    Assertions.assertFalse(factory.canBuild(field));
+  }
+
   static class TestEntity {
     @Column(ENTITY_ID)
     private Integer id;
@@ -102,5 +123,9 @@ class EntityColumnDefinitionFactoryTest {
   @Table
   static class TestEntityWithTableAnnotation {
     private Integer id;
+  }
+  @Table
+  static class TestEntityWithPrimitiveField {
+    private int id;
   }
 }
