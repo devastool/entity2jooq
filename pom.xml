@@ -93,6 +93,7 @@
         <version>${jacoco.version}</version>
         <configuration>
           <excludes>
+            <!--TODO cover this package by tests-->
             <exclude>**/type/**</exclude>
             <exclude>**/classload/**</exclude>
             <exclude>**/maven/**</exclude>
@@ -127,6 +128,7 @@
                     <limit>
                       <counter>BRANCH</counter>
                       <value>COVEREDRATIO</value>
+                    <!--TODO up coverage-->
                       <minimum>0.33</minimum>
                     </limit>
                   </limits>

@@ -36,7 +36,8 @@ class EntityTableDefinitionTest {
   private final EntityColumnDefinition column = new EntityColumnDefinition(
       new EntityTableDefinition(schema, "name", List.of()),
       "name",
-      type);
+      type
+  );
   private final EntityTableDefinition tableDefinition =
       new EntityTableDefinition(schema, "table", List.of(column));
 
