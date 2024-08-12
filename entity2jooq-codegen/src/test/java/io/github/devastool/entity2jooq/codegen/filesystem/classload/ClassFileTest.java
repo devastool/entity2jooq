@@ -20,6 +20,7 @@ package io.github.devastool.entity2jooq.codegen.filesystem.classload;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import javax.swing.filechooser.FileSystemView;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -31,7 +32,7 @@ import org.junit.jupiter.api.Test;
 class ClassFileTest {
   private final Path classFilePath = Path.of(File.createTempFile("prfx", "sfx").toURI());
   private final ClassFile classFile = new ClassFile(
-      Path.of("C:\\"),
+      Path.of(FileSystemView.getFileSystemView().getHomeDirectory().toURI()),
       classFilePath
   );
 
