@@ -16,19 +16,19 @@
 
 package io.github.devastool.entity2jooq.example;
 
-import static org.jooq.generated.test_schema.tables.TestEntity.TEST_ENTITY;
+
+import static org.jooq.generated.Tables.TEST_ENTITY;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import org.h2.jdbcx.JdbcConnectionPool;
 import org.jooq.DSLContext;
 import org.jooq.DeleteConditionStep;
-import org.jooq.InsertValuesStep5;
 import org.jooq.Record;
 import org.jooq.Table;
 import org.jooq.UpdateConditionStep;
@@ -45,18 +45,23 @@ import org.junit.jupiter.api.TestMethodOrder;
 /**
  * Tests of {@link TestEntity} DDL.
  *
- * @author Andrey_Yurzanov
+ * @author Sergey_Konovalov
  */
 @TestMethodOrder(OrderAnnotation.class)
 class TestEntityTest {
   private static JdbcConnectionPool pool;
-  private static final String DB_URL = "jdbc:h2:mem:db1;DB_CLOSE_DELAY=-1;DATABASE_TO_UPPER=false";
-  private static final TestEntityLocation entityLocation = new TestEntityLocation("RIO");
-  private static final TestEntityInfo entityInfo = new TestEntityInfo("1", entityLocation);
+  private static final String DB_URL = String.join(
+      "",
+      "jdbc:h2:mem:db1;",
+      "DB_CLOSE_DELAY=-1;",
+      "MODE=PostgreSQL;",
+      "DATABASE_TO_LOWER=TRUE;",
+      "DEFAULT_NULL_ORDERING=HIGH"
+  );
+
   private static final List<TestEntity> DATA = Arrays.asList(
-      new TestEntity(1, "TestEntity1", LocalDateTime.now(), entityInfo),
-      new TestEntity(2, "TestEntity2", LocalDateTime.now(), entityInfo),
-      new TestEntity(3, "TestEntity3", LocalDateTime.now(), entityInfo)
+      new TestEntity("Pablo", "Pablo work street", "Pablo home street"),
+      new TestEntity("Barry", "Barry work street", "Barry home street")
   );
 
   @BeforeAll
@@ -72,11 +77,9 @@ class TestEntityTest {
     Table<Record> table = TEST_ENTITY.asTable();
     context
         .createTableIfNotExists(table)
-        .column(TEST_ENTITY.ID)
-        .column(TEST_ENTITY.ENTITY_NAME)
-        .column(TEST_ENTITY.INSERT_TIME)
-        .column(TEST_ENTITY.CITY)
-        .column(TEST_ENTITY.INFO_ENTITY_VERSION)
+        .column(TEST_ENTITY.NAME)
+        .column(TEST_ENTITY.WORK)
+        .column(TEST_ENTITY.HOME)
         .execute();
 
     connection.close();
@@ -93,23 +96,19 @@ class TestEntityTest {
     Connection connection = pool.getConnection();
     DSLContext context = DSL.using(connection);
 
-    InsertValuesStep5<Record, Integer, String, LocalDateTime,String, String> insert = context
+    var insert = context
         .insertInto(TEST_ENTITY)
         .columns(
-            TEST_ENTITY.ID,
-            TEST_ENTITY.ENTITY_NAME,
-            TEST_ENTITY.INSERT_TIME,
-            TEST_ENTITY.CITY,
-            TEST_ENTITY.INFO_ENTITY_VERSION
+            TEST_ENTITY.NAME,
+            TEST_ENTITY.WORK,
+            TEST_ENTITY.HOME
         );
 
     for (TestEntity entity : DATA) {
       insert.values(
-          entity.getId(),
           entity.getName(),
-          entity.getInsertTime(),
-          entity.getInfo().getLocation().getCountry(),
-          entity.getInfo().getVersion()
+          entity.getWorkCity(),
+          entity.getHomeCity()
       );
     }
     Assertions.assertDoesNotThrow(insert::execute);
@@ -123,29 +122,36 @@ class TestEntityTest {
     Connection connection = pool.getConnection();
     DSLContext context = DSL.using(connection);
 
-    List<TestEntity> results = context
+    var select = context
         .select(
-            TEST_ENTITY.ID,
-            TEST_ENTITY.ENTITY_NAME,
-            TEST_ENTITY.INSERT_TIME,
-            TEST_ENTITY.CITY,
-            TEST_ENTITY.INFO_ENTITY_VERSION
+            TEST_ENTITY.NAME,
+            TEST_ENTITY.WORK,
+            TEST_ENTITY.HOME
         )
         .from(TEST_ENTITY)
-        .fetch(
-            records -> new TestEntity(
-                records.get(TEST_ENTITY.ID),
-                records.get(TEST_ENTITY.ENTITY_NAME),
-                records.get(TEST_ENTITY.INSERT_TIME),
-                new TestEntityInfo(
-                    records.get(TEST_ENTITY.CITY),
-                    new TestEntityLocation(records.get(TEST_ENTITY.INFO_ENTITY_VERSION))
-                )
-            )
-        );
+        .where(TEST_ENTITY.NAME.isNotNull());
+
+    List<TestEntity> results = select.fetch(
+        records -> new TestEntity(
+            records.get(TEST_ENTITY.NAME),
+            records.get(TEST_ENTITY.WORK),
+            records.get(TEST_ENTITY.HOME)
+        )
+    );
 
     for (TestEntity entity : DATA) {
-      Assertions.assertTrue(results.contains(entity));
+      String name = entity.getName();
+      String workCity = entity.getWorkCity();
+      String homeCity = entity.getHomeCity();
+      Assertions.assertTrue(
+          results
+              .stream()
+              .anyMatch(
+                  result -> Objects.equals(result.getName(), name)
+                      && Objects.equals(result.getWorkCity(), workCity)
+                      && Objects.equals(result.getHomeCity(), homeCity)
+              )
+      );
     }
     connection.close();
   }
@@ -161,11 +167,9 @@ class TestEntityTest {
       updates.add(
           context
               .update(TEST_ENTITY)
-              .set(TEST_ENTITY.ENTITY_NAME, entity.getName())
-              .set(TEST_ENTITY.INSERT_TIME, entity.getInsertTime())
-              .set(TEST_ENTITY.CITY, "NY")
-              .set(TEST_ENTITY.INFO_ENTITY_VERSION, "2")
-              .where(TEST_ENTITY.ID.eq(entity.getId()))
+              .set(TEST_ENTITY.NAME, entity.getName())
+              .set(TEST_ENTITY.WORK, entity.getWorkCity())
+              .where(TEST_ENTITY.HOME.eq(entity.getHomeCity()))
       );
     }
     Assertions.assertDoesNotThrow(() -> context.batch(updates).execute());
@@ -182,10 +186,10 @@ class TestEntityTest {
     DeleteConditionStep<Record> delete = context
         .delete(TEST_ENTITY)
         .where(
-            TEST_ENTITY.ID.in(
+            TEST_ENTITY.NAME.in(
                 DATA
                     .stream()
-                    .map(TestEntity::getId)
+                    .map(TestEntity::getName)
                     .collect(Collectors.toList())
             )
         );

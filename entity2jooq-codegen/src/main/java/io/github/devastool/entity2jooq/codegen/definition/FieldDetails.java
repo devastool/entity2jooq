@@ -20,54 +20,56 @@ import java.lang.reflect.Field;
 import java.util.List;
 
 /**
- * Represents details about a field.
+ * Represents details about a being processed field.
  *
  * @author Sergey_Konovalov
  * @since 1.0.0
  */
 public class FieldDetails {
-  private final Field field;
+  private final Field processedField;
   private final Field parentfield;
   private final List<String> parentFieldsName;
 
   /**
-   * Constructs a new FieldDetails instance with the specified field, parent field, and parent field names.
+   * Creates a new instance of FieldDetails using the specified being processed field name, parent
+   * field name, and parent field chain names.
    *
-   * @param field the field this instance will represent
-   * @param parentField the parent field of the field, or {@code null} if there is no parent field
+   * @param processedField   the being processed field.
+   * @param parentField      the parent field of the being processed field, or {@code null} if there
+   *                         is no parent field
    * @param parentFieldsName the list of parent field names
    */
-  public FieldDetails(Field field, Field parentField, List<String> parentFieldsName) {
-    this.field = field;
+  public FieldDetails(Field processedField, Field parentField, List<String> parentFieldsName) {
+    this.processedField = processedField;
     this.parentfield = parentField;
     this.parentFieldsName = parentFieldsName;
   }
 
   /**
-   * Returns the field this instance represents.
+   * Returns the being processed field.
    *
    * @return the field
    */
-   public Field getField() {
-    return field;
+  public Field getProcessedField() {
+    return processedField;
   }
 
   /**
-   * Returns the type of the field.
+   * Returns the type of the being processed field.
    *
    * @return the class representing the type of the field
    */
-  public Class<?> getType() {
-    return field.getType();
+  public Class<?> getProcessedType() {
+    return processedField.getType();
   }
 
   /**
-   * Returns the name of the field.
+   * Returns the name of the field being processed.
    *
    * @return the name of the field
    */
   public String getName() {
-    return field.getName();
+    return processedField.getName();
   }
 
   /**
@@ -80,7 +82,8 @@ public class FieldDetails {
   }
 
   /**
-   * Returns the parent field of the field, or {@code null} if there is no parent field.
+   * Returns the parent field of the being processed field, or {@code null} if there is no parent
+   * field.
    *
    * @return the parent field, or {@code null} if there is no parent field
    */

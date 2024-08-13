@@ -16,8 +16,9 @@
 
 package io.github.devastool.entity2jooq.codegen.definition;
 
+import java.util.Arrays;
+import org.jooq.SQLDialect;
 import org.jooq.impl.DSL;
-import org.jooq.meta.Database;
 import org.jooq.meta.DefaultDataTypeDefinition;
 import org.jooq.meta.SchemaDefinition;
 
@@ -28,6 +29,8 @@ import org.jooq.meta.SchemaDefinition;
  * @since 1.0.0
  */
 public class EntityDataTypeDefinition extends DefaultDataTypeDefinition {
+  private final SQLDialect dialect;
+
   private static final String JAVA_TYPE_REFERENCE_TEMPLATE =
       "new org.jooq.impl.DefaultDataType(org.jooq.SQLDialect.%s, %s.class, \"%s\")";
 
@@ -38,7 +41,12 @@ public class EntityDataTypeDefinition extends DefaultDataTypeDefinition {
    * @param typeJava Java type class
    * @param typeSql  SQL type
    */
-  public EntityDataTypeDefinition(SchemaDefinition schema, Class<?> typeJava, String typeSql) {
+  public EntityDataTypeDefinition(
+      SchemaDefinition schema,
+      Class<?> typeJava,
+      String dialect,
+      String typeSql
+  ) {
     super(
         schema.getDatabase(),
         schema,
@@ -53,6 +61,13 @@ public class EntityDataTypeDefinition extends DefaultDataTypeDefinition {
         null,
         typeJava.getCanonicalName()
     );
+
+    this.dialect = Arrays
+        .stream(SQLDialect.values())
+        .filter(SQLDialect::supported)
+        .filter(value -> value.getName().equalsIgnoreCase(dialect))
+        .findFirst()
+        .orElse(SQLDialect.DEFAULT);
   }
 
   /**
@@ -61,10 +76,9 @@ public class EntityDataTypeDefinition extends DefaultDataTypeDefinition {
    * @return Java type reference
    */
   public String getJavaTypeReference() {
-    Database database = getDatabase();
     return String.format(
         JAVA_TYPE_REFERENCE_TEMPLATE,
-        database.getDialect(),
+        dialect,
         getJavaType(),
         getType()
     );

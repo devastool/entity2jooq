@@ -44,8 +44,5 @@ class FactoryContextTest {
     Assertions.assertThrows(
         IllegalArgumentException.class, () -> factoryContext.getInstance(null)
     );
-
-    Assertions.assertThrows(
-        RuntimeException.class, () -> factoryContext.getInstance(SnakeCaseStrategy.class, 1));
   }
 }

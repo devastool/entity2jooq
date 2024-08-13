@@ -27,7 +27,6 @@ import io.github.devastool.entity2jooq.annotation.naming.NamingStrategy;
 import io.github.devastool.entity2jooq.codegen.definition.EntityColumnDefinition;
 import io.github.devastool.entity2jooq.codegen.definition.FieldDetails;
 import io.github.devastool.entity2jooq.codegen.properties.CodegenProperties;
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -68,18 +67,16 @@ public class EntityColumnDefinitionFactory extends
     List<EntityColumnDefinition> columns = new ArrayList<>();
     Deque<FieldDetails> queue = new ArrayDeque<>();
 
-    Map<String, Column> overrideColumns = getOverrideColumns(
-        field.getDeclaredAnnotations(),
-        field.getName()
-    );
+    Map<String, Column> overrideColumns = getOverrideColumns(field);
 
     queue.push(new FieldDetails(field, null, new ArrayList<>()));
 
     while (!queue.isEmpty()) {
       FieldDetails fieldDetails = queue.pop();
+      Class<?> processedType = fieldDetails.getProcessedType();
 
-      if (fieldDetails.getType().isAnnotationPresent(Embedded.class)) {
-        for (Field declaredField : fieldDetails.getType().getDeclaredFields()) {
+      if (processedType.isAnnotationPresent(Embedded.class)) {
+        for (Field declaredField : processedType.getDeclaredFields()) {
           List<String> fieldsName = new ArrayList<>(fieldDetails.getParentFieldsName());
           String parentFieldName = fieldDetails.getParentFieldName();
 
@@ -87,7 +84,7 @@ public class EntityColumnDefinitionFactory extends
             fieldsName.add(fieldDetails.getParentFieldName());
           }
 
-          queue.push(new FieldDetails(declaredField, fieldDetails.getField(), fieldsName));
+          queue.push(new FieldDetails(declaredField, fieldDetails.getProcessedField(), fieldsName));
         }
       } else {
         String name = fieldDetails.getName();
@@ -99,7 +96,8 @@ public class EntityColumnDefinitionFactory extends
           fieldNames.add(parentName);
         }
 
-        Column column = fieldDetails.getField().getAnnotation(Column.class);
+        Field processedField = fieldDetails.getProcessedField();
+        Column column = processedField.getAnnotation(Column.class);
         Column overrideColum = overrideColumns.get(String.join(DOT, fieldNames) + DOT + name);
 
         if (overrideColum != null) {
@@ -121,7 +119,7 @@ public class EntityColumnDefinitionFactory extends
         columns.add(new EntityColumnDefinition(
             properties.require(TABLE),
             strategy.resolve(name),
-            typeFactory.build(fieldDetails.getField(), properties)
+            typeFactory.build(processedField, properties)
         ));
       }
     }
@@ -132,13 +130,13 @@ public class EntityColumnDefinitionFactory extends
   /**
    * Gets a map of overridden columns based on the annotations for the specified field.
    *
-   * @param annotations an array of annotations applied to the field
-   * @param fieldName   the name of the field for which overrides are being found
+   * @param field the being processed field.
    * @return Map of overridden columns
    */
-  private Map<String, Column> getOverrideColumns(Annotation[] annotations, String fieldName) {
-    ColumnOverrides columnOverrides = findAnnotation(annotations, ColumnOverrides.class);
-    ColumnOverride columnOverride = findAnnotation(annotations, ColumnOverride.class);
+  private Map<String, Column> getOverrideColumns(Field field) {
+    ColumnOverrides columnOverrides = field.getAnnotation(ColumnOverrides.class);
+    ColumnOverride columnOverride = field.getAnnotation(ColumnOverride.class);
+    String fieldName = field.getName();
     Map<String, Column> overrideColumns = new HashMap<>();
 
     if (columnOverrides != null) {
@@ -153,28 +151,6 @@ public class EntityColumnDefinitionFactory extends
   }
 
   /**
-   * Searches for an annotation of the specified type in the given array of annotations.
-   *
-   * @param <T>             The type of the annotation being searched for.
-   * @param annotations     The array of annotations to search through.
-   * @param annotationClass The class object representing the type of annotation to find.
-   * @return The annotation of the specified type if found, otherwise null.
-   */
-  private <T extends Annotation> T findAnnotation(
-      Annotation[] annotations,
-      Class<T> annotationClass
-  ) {
-    if (annotations != null) {
-      for (Annotation annotation : annotations) {
-        if (annotationClass.isInstance(annotation)) {
-          return annotationClass.cast(annotation);
-        }
-      }
-    }
-    return null;
-  }
-
-  /**
    * Replaces the original value with a new value if the new value is not empty.
    *
    * @param newValue     the new value
@@ -186,5 +162,11 @@ public class EntityColumnDefinitionFactory extends
       currentValue = newValue;
     }
     return currentValue;
+  }
+
+  @Override
+  public boolean canBuild(Field field) {
+    Class<?> type = field.getType();
+    return !type.isPrimitive() && typeFactory.canBuild(field);
   }
 }

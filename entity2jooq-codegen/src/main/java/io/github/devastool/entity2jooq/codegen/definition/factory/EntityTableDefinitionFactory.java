@@ -78,6 +78,7 @@ public class EntityTableDefinitionFactory
           new CodegenProperties(properties, Map.of(NAMING_STRATEGY, naming))
       );
       ArrayList<ColumnDefinition> columns = new ArrayList<>();
+
       EntityTableDefinition table = new EntityTableDefinition(
           schema,
           name,
@@ -88,12 +89,17 @@ public class EntityTableDefinitionFactory
           properties,
           Map.of(TABLE, table, SCHEMA, schema, NAMING_STRATEGY, naming)
       );
+
+      ArrayList<ColumnDefinition> resultBuild = new ArrayList<>();
+      Set<ColumnDefinition> uniqueColumns = new HashSet<>();
+
       for (Field field : type.getDeclaredFields()) {
-        columns.addAll(columnFactory.build(field, columnProperties));
+        if (columnFactory.canBuild(field)) {
+          resultBuild.addAll(columnFactory.build(field, columnProperties));
+        }
       }
 
-      Set<ColumnDefinition> uniqueColumns = new HashSet<>();
-      var existsColumns = columns
+      String existsColumns = resultBuild
           .stream()
           .filter(column -> !uniqueColumns.add(column))
           .map(ColumnDefinition::getName)
@@ -102,12 +108,13 @@ public class EntityTableDefinitionFactory
       if (!existsColumns.isEmpty()) {
         throw new IllegalArgumentException(
             String.format(
-                "Column %s already exists. Use @ColumnOverride",
+                "Columns %s already exists. Use @ColumnOverride",
                 existsColumns
             )
         );
       }
 
+      columns.addAll(uniqueColumns);
       return table;
     }
     return null;

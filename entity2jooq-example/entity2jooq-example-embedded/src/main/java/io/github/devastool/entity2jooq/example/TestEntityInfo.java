@@ -14,23 +14,34 @@
  *    limitations under the License.
  */
 
-package io.github.devastool.entity2jooq.annotation.type;
+package io.github.devastool.entity2jooq.example;
+
+import io.github.devastool.entity2jooq.annotation.Embedded;
 
 /**
- * Mapping between SQL and Java types.
+ * Example Embedded entity, see tests.
  *
- * @author Andrey_Yurzanov
+ * @author Sergey_Konovalov
  * @since 1.0.0
  */
-public interface TypeMapper {
+@Embedded
+public class TestEntityInfo {
+  private TestEntityLocation work;
+  private TestEntityLocation home;
 
   /**
-   * Returns SQL type by dialect and Java type.
-   *
-   * @param dialect SQL dialect
-   * @param type    Java type
-   * @return SQL type
-   * @throws NoSuchTypeException when the type is not found
+   * Constructs new instance of {@link TestEntityInfo}.
    */
-  String getSqlType(String dialect, Class<?> type) throws NoSuchTypeException;
+  public TestEntityInfo(TestEntityLocation work, TestEntityLocation home) {
+    this.work = work;
+    this.home = home;
+  }
+
+  public TestEntityLocation getWork() {
+    return work;
+  }
+
+  public TestEntityLocation getHome() {
+    return home;
+  }
 }
