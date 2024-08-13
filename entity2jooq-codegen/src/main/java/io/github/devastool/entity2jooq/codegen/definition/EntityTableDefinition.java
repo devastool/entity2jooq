@@ -16,7 +16,6 @@
 
 package io.github.devastool.entity2jooq.codegen.definition;
 
-import io.github.devastool.entity2jooq.annotation.naming.NamingStrategy;
 import java.sql.SQLException;
 import java.util.List;
 import org.jooq.meta.AbstractTableDefinition;
