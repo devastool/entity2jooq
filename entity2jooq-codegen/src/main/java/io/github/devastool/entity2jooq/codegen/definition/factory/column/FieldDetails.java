@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package io.github.devastool.entity2jooq.codegen.definition;
+package io.github.devastool.entity2jooq.codegen.definition.factory.column;
 
 import java.lang.reflect.Field;
 import java.util.List;

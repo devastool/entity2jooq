@@ -25,7 +25,7 @@ import io.github.devastool.entity2jooq.annotation.ColumnOverride.ColumnOverrides
 import io.github.devastool.entity2jooq.annotation.Embedded;
 import io.github.devastool.entity2jooq.annotation.naming.NamingStrategy;
 import io.github.devastool.entity2jooq.codegen.definition.EntityColumnDefinition;
-import io.github.devastool.entity2jooq.codegen.definition.FieldDetails;
+import io.github.devastool.entity2jooq.codegen.definition.factory.column.FieldDetails;
 import io.github.devastool.entity2jooq.codegen.properties.CodegenProperties;
 import java.lang.reflect.Field;
 import java.util.ArrayDeque;

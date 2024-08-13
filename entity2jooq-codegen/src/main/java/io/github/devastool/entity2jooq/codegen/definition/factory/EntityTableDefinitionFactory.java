@@ -107,10 +107,7 @@ public class EntityTableDefinitionFactory
 
       if (!existsColumns.isEmpty()) {
         throw new IllegalArgumentException(
-            String.format(
-                "Columns %s already exists. Use @ColumnOverride",
-                existsColumns
-            )
+            String.format("Columns %s already exists. Use @ColumnOverride", existsColumns)
         );
       }
 
