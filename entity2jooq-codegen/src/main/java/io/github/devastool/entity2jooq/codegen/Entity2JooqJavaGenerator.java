@@ -58,10 +58,11 @@ public class Entity2JooqJavaGenerator extends JavaGenerator {
 
   @Override
   protected String getJavaTypeReference(Database db, DataTypeDefinition type) {
-    if (Objects.equals(EntityDataTypeDefinition.class, type.getClass())) {
+    Class<? extends DataTypeDefinition> typeClass = type.getClass();
+    if (Objects.equals(EntityDataTypeDefinition.class, typeClass)) {
       return ((EntityDataTypeDefinition) type).getJavaTypeReference();
     }
-    return super.getJavaTypeReference(db, type);
+    throw new IllegalArgumentException("Unsupported type class: [" + typeClass + "]");
   }
 
   @Override

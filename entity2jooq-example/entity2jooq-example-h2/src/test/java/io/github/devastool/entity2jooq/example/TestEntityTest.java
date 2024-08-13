@@ -195,29 +195,7 @@ class TestEntityTest {
         .from(TEST_ENTITY)
         .where(TEST_ENTITY.SHORT_FIELD.isNotNull());
 
-    List<TestEntity> results = select.fetch(
-        records -> new TestEntity(
-            records.get(TEST_ENTITY.BYTE_FIELD),
-            records.get(TEST_ENTITY.SHORT_FIELD),
-            records.get(TEST_ENTITY.INT_FIELD),
-            records.get(TEST_ENTITY.LONG_FIELD),
-            records.get(TEST_ENTITY.BIG_DECIMAL_FIELD),
-            records.get(TEST_ENTITY.FLOAT_FIELD),
-            records.get(TEST_ENTITY.DOUBLE_FIELD),
-            records.get(TEST_ENTITY.ENTITY_NAME),
-            records.get(TEST_ENTITY.LOCAL_DATE_FIELD),
-            records.get(TEST_ENTITY.DATE_FIELD),
-            records.get(TEST_ENTITY.SQL_DATE_FIELD),
-            records.get(TEST_ENTITY.LOCAL_TIME_FIELD),
-            records.get(TEST_ENTITY.TIME_FIELD),
-            records.get(TEST_ENTITY.OFFSET_TIME_FIELD),
-            records.get(TEST_ENTITY.LOCAL_DATE_TIME_FIELD),
-            records.get(TEST_ENTITY.TIMESTAMP_FIELD),
-            records.get(TEST_ENTITY.OFFSET_DATE_TIME_FIELD),
-            records.get(TEST_ENTITY.BOOLEAN_FIELD),
-            records.get(TEST_ENTITY.UUID_FIELD)
-        )
-    );
+    List<TestEntity> results = select.fetch(TEST_ENTITY::toEntity);
 
     for (TestEntity entity : DATA) {
       Byte byteField = entity.getByteField();
