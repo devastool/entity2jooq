@@ -16,7 +16,7 @@
 
 package io.github.devastool.entity2jooq.codegen.generate.code;
 
-import io.github.devastool.entity2jooq.codegen.generate.code.operator.CodeGeneratorOperator;
+import io.github.devastool.entity2jooq.codegen.generate.code.operator.OperatorCodeGenerator;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -34,7 +34,7 @@ public class MethodCodeGenerator implements CodeGenerator {
   private String name;
   private Class<?> returnType;
   private Map<String, Class<?>> params;
-  private List<CodeGeneratorOperator> operators;
+  private List<OperatorCodeGenerator> operators;
 
   private static final String ACCESS_KEYWORD = "public";
   private static final String PARAMS_BEGIN = "(";
@@ -87,7 +87,7 @@ public class MethodCodeGenerator implements CodeGenerator {
    * @param operator operator of method's body
    * @return current instance
    */
-  public MethodCodeGenerator setOperator(CodeGeneratorOperator operator) {
+  public MethodCodeGenerator setOperator(OperatorCodeGenerator operator) {
     if (this.operators == null) {
       this.operators = new ArrayList<>();
     }
@@ -149,7 +149,6 @@ public class MethodCodeGenerator implements CodeGenerator {
     if (operators != null && !operators.isEmpty()) {
       for (CodeGenerator operator : operators) {
         operator.generate(target);
-        target.writeln();
       }
     }
     target.writeln(BODY_END);

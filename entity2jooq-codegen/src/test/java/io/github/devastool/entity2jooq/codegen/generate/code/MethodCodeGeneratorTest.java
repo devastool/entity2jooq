@@ -16,6 +16,8 @@
 
 package io.github.devastool.entity2jooq.codegen.generate.code;
 
+import io.github.devastool.entity2jooq.codegen.generate.code.operator.EndLineCodeOperator;
+import io.github.devastool.entity2jooq.codegen.generate.code.operator.ReturnCodeGenerator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -30,6 +32,8 @@ class MethodCodeGeneratorTest {
   private static final String WITH_RETURN_TYPE_EXPECTED = String.join(
       "",
       "public java.lang.String testMethod(java.lang.String testParam) {",
+      System.lineSeparator(),
+      "return \"Test\";",
       System.lineSeparator(),
       "}",
       System.lineSeparator()
@@ -49,6 +53,7 @@ class MethodCodeGeneratorTest {
         .setName(METHOD_NAME)
         .setReturnType(String.class)
         .setParam(PARAM_NAME, String.class)
+        .setOperator(new EndLineCodeOperator(new ReturnCodeGenerator("\"Test\"")))
         .generate(target);
 
     Assertions.assertEquals(WITH_RETURN_TYPE_EXPECTED, target.getBuffer());

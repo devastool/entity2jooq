@@ -17,30 +17,29 @@
 package io.github.devastool.entity2jooq.codegen.generate.code.operator;
 
 import io.github.devastool.entity2jooq.codegen.generate.code.BufferedCodeTarget;
-import java.util.ArrayList;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 /**
- * Tests of {@link VariableDefCodeOperatorGenerator}.
+ * Tests of {@link VarMemberCodeGenerator}.
  *
  * @author Andrey_Yurzanov
  */
-class VariableDefCodeOperatorGeneratorTest {
-  private static final String VARIABLE_NAME = "myVariable";
-  private static final String EXPECTED_VALUE =
-      "java.util.ArrayList myVariable = new java.util.ArrayList();";
+class VarMemberCodeGeneratorTest {
+  private static final String VARIABLE_NAME = "testVar";
+  private static final String MEMBER_NAME = "testField";
+  private static final String EXPECTED = String.join(".", VARIABLE_NAME, MEMBER_NAME);
 
   @Test
   void generateTest() {
-    VariableDefCodeOperatorGenerator operator = new VariableDefCodeOperatorGenerator(
+    BufferedCodeTarget buffer = new BufferedCodeTarget();
+
+    VarMemberCodeGenerator generator = new VarMemberCodeGenerator(
         VARIABLE_NAME,
-        ArrayList.class
+        target -> target.write(MEMBER_NAME)
     );
+    generator.generate(buffer);
 
-    BufferedCodeTarget target = new BufferedCodeTarget();
-    operator.generate(target);
-
-    Assertions.assertEquals(EXPECTED_VALUE, target.getBuffer());
+    Assertions.assertEquals(EXPECTED, buffer.getBuffer());
   }
 }

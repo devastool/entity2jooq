@@ -19,32 +19,44 @@ package io.github.devastool.entity2jooq.codegen.generate.code.operator;
 import io.github.devastool.entity2jooq.codegen.generate.code.CodeTarget;
 
 /**
- * Implementation of {@link CodeGeneratorOperator} to generate the 'return' operator.
+ * Implementation of {@link OperatorCodeGenerator} to generate variable definition.
  *
  * @author Andrey_Yurzanov
  * @since 1.0.0
  */
-public class ReturnCodeGeneratorOperator implements CodeGeneratorOperator {
-  private final String returnValue;
+public class VarDefCodeGenerator implements OperatorCodeGenerator {
+  private final String name;
+  private final Class<?> type;
+
+  private static final String NEW_KEYWORD = "new";
+  private static final String ASSIGN_OPERATOR = "=";
+  private static final String PARAMS_BEGIN = "(";
+  private static final String PARAMS_END = ")";
 
   /**
-   * Constructs new instance of {@link ReturnCodeGeneratorOperator}.
+   * Constructs new instance of {@link VarDefCodeGenerator}.
    *
-   * @param returnValue value to return
+   * @param name name of the variable
+   * @param type type of the variable
    */
-  public ReturnCodeGeneratorOperator(String returnValue) {
-    this.returnValue = returnValue;
+  public VarDefCodeGenerator(String name, Class<?> type) {
+    this.name = name;
+    this.type = type;
   }
-
-  private static final String RETURN_KEYWORD = "return";
-  private static final String END_OPERATOR = ";";
 
   @Override
   public void generate(CodeTarget target) {
     target
-        .write(RETURN_KEYWORD)
+        .write(type.getCanonicalName())
         .space()
-        .write(returnValue)
-        .write(END_OPERATOR);
+        .write(name)
+        .space()
+        .write(ASSIGN_OPERATOR)
+        .space()
+        .write(NEW_KEYWORD)
+        .space()
+        .write(type.getCanonicalName())
+        .write(PARAMS_BEGIN)
+        .write(PARAMS_END);
   }
 }

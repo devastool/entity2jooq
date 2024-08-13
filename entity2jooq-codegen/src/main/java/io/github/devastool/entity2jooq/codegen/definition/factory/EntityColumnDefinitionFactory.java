@@ -68,6 +68,7 @@ public class EntityColumnDefinitionFactory extends
     NamingStrategy strategy = context.getInstance(naming);
     return new EntityColumnDefinition(
         properties.require(TABLE),
+        field,
         strategy.resolve(name),
         typeFactory.build(field, properties)
     );

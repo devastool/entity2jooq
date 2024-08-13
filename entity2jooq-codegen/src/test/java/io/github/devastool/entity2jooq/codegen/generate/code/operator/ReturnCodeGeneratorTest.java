@@ -16,14 +16,26 @@
 
 package io.github.devastool.entity2jooq.codegen.generate.code.operator;
 
-import io.github.devastool.entity2jooq.codegen.generate.code.CodeGenerator;
+import io.github.devastool.entity2jooq.codegen.generate.code.BufferedCodeTarget;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
- * Operator marker that can be used in a method or constructor. For example, 'return', 'new', '=',
- * etc.
+ * Tests of {@link ReturnCodeGenerator}.
  *
  * @author Andrey_Yurzanov
- * @since 1.0.0
  */
-public interface CodeGeneratorOperator extends CodeGenerator {
+class ReturnCodeGeneratorTest {
+  private static final String RETURN_VALUE = "\"Test Value\"";
+  private static final String EXPECTED_VALUE = "return \"Test Value\"";
+
+  @Test
+  void generateTest() {
+    BufferedCodeTarget target = new BufferedCodeTarget();
+
+    ReturnCodeGenerator operator = new ReturnCodeGenerator(RETURN_VALUE);
+    operator.generate(target);
+
+    Assertions.assertEquals(EXPECTED_VALUE, target.getBuffer());
+  }
 }

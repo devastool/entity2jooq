@@ -14,15 +14,13 @@
  *    limitations under the License.
  */
 
-package io.github.devastool.entity2jooq.codegen.definition.factory;
+package io.github.devastool.entity2jooq.codegen.definition;
 
-import io.github.devastool.entity2jooq.annotation.Column;
-import io.github.devastool.entity2jooq.annotation.Table;
 import io.github.devastool.entity2jooq.annotation.naming.SnakeCaseStrategy;
 import io.github.devastool.entity2jooq.codegen.Entity2JooqDatabase;
-import io.github.devastool.entity2jooq.codegen.definition.EntityColumnDefinition;
-import io.github.devastool.entity2jooq.codegen.definition.EntitySchemaDefinition;
-import io.github.devastool.entity2jooq.codegen.definition.EntityTableDefinition;
+import io.github.devastool.entity2jooq.codegen.definition.factory.EntityColumnDefinitionFactory;
+import io.github.devastool.entity2jooq.codegen.definition.factory.EntityDataTypeDefinitionFactory;
+import io.github.devastool.entity2jooq.codegen.definition.factory.FactoryContext;
 import io.github.devastool.entity2jooq.codegen.properties.CodegenProperties;
 import io.github.devastool.entity2jooq.codegen.properties.CodegenProperty;
 import java.lang.reflect.Field;
@@ -32,16 +30,14 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 /**
- * Tests of {@link EntityColumnDefinitionFactory}.
+ * Tests of {@link EntityColumnDefinition}.
  *
  * @author Andrey_Yurzanov
  */
-class EntityColumnDefinitionFactoryTest {
+class EntityColumnDefinitionTest {
   private final FactoryContext context = new FactoryContext();
   private final EntityColumnDefinitionFactory factory =
       new EntityColumnDefinitionFactory(new EntityDataTypeDefinitionFactory(context), context);
-
-  private static final String ENTITY_ID = "entity_id";
   private static final EntitySchemaDefinition SCHEMA_DEFINITION =
       new EntitySchemaDefinition(new Entity2JooqDatabase(), "test_schema");
   private static final EntityTableDefinition TABLE_DEFINITION = new EntityTableDefinition(
@@ -60,50 +56,38 @@ class EntityColumnDefinitionFactoryTest {
   );
 
   @Test
-  void buildSuccessTest() {
-    for (Field field : TestEntity.class.getDeclaredFields()) {
-      EntityColumnDefinition built =
-          Assertions.assertDoesNotThrow(() -> factory.build(field, PROPERTIES));
-
-      Assertions.assertNotNull(built);
-      Assertions.assertEquals(ENTITY_ID, built.getName());
-    }
+  void getGetterNameTest() {
+    Field[] fields = TestEntity.class.getDeclaredFields();
+    EntityColumnDefinition built = factory.build(fields[0], PROPERTIES);
+    Assertions.assertEquals("getId", built.getGetterName());
   }
 
   @Test
-  void buildWithoutColumnNameSuccessTest() {
-    for (Field field : TestEntityWithoutColumnName.class.getDeclaredFields()) {
-      EntityColumnDefinition built =
-          Assertions.assertDoesNotThrow(() -> factory.build(field, PROPERTIES));
-
-      Assertions.assertNotNull(built);
-      Assertions.assertEquals(field.getName(), built.getName());
-    }
+  void getSetterNameTest() {
+    Field[] fields = TestEntity.class.getDeclaredFields();
+    EntityColumnDefinition built = factory.build(fields[0], PROPERTIES);
+    Assertions.assertEquals("setId", built.getSetterName());
   }
 
   @Test
-  void buildWithTableAnnotationSuccessTest() {
-    for (Field field : TestEntityWithTableAnnotation.class.getDeclaredFields()) {
-      EntityColumnDefinition built =
-          Assertions.assertDoesNotThrow(() -> factory.build(field, PROPERTIES));
+  void getGetterNameWithSmallNameTest() {
+    Field[] fields = TestEntityWithSmallName.class.getDeclaredFields();
+    EntityColumnDefinition built = factory.build(fields[0], PROPERTIES);
+    Assertions.assertEquals("getI", built.getGetterName());
+  }
 
-      Assertions.assertNotNull(built);
-      Assertions.assertEquals(field.getName(), built.getName());
-    }
+  @Test
+  void getSetterNameWithSmallNameTest() {
+    Field[] fields = TestEntityWithSmallName.class.getDeclaredFields();
+    EntityColumnDefinition built = factory.build(fields[0], PROPERTIES);
+    Assertions.assertEquals("setI", built.getSetterName());
   }
 
   static class TestEntity {
-    @Column(ENTITY_ID)
     private Integer id;
   }
 
-  static class TestEntityWithoutColumnName {
-    @Column
-    private Integer id;
-  }
-
-  @Table
-  static class TestEntityWithTableAnnotation {
-    private Integer id;
+  static class TestEntityWithSmallName {
+    private Integer i;
   }
 }

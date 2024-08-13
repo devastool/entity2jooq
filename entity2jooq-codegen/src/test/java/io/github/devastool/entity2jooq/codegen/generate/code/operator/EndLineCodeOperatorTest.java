@@ -21,21 +21,31 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 /**
- * Tests of {@link ReturnCodeGeneratorOperator}.
+ * Tests of {@link EndLineCodeOperator}.
  *
  * @author Andrey_Yurzanov
  */
-class ReturnCodeGeneratorOperatorTest {
-  private static final String RETURN_VALUE = "\"Test Value\"";
-  private static final String EXPECTED_VALUE = "return \"Test Value\";";
+class EndLineCodeOperatorTest {
+  private static final String EXPECTED = "return;" + System.lineSeparator();
+  private static final String WITHOUT_OPERATORS_EXPECTED = ";" + System.lineSeparator();
 
   @Test
   void generateTest() {
-    BufferedCodeTarget target = new BufferedCodeTarget();
+    BufferedCodeTarget buffer = new BufferedCodeTarget();
 
-    ReturnCodeGeneratorOperator operator = new ReturnCodeGeneratorOperator(RETURN_VALUE);
-    operator.generate(target);
+    EndLineCodeOperator operator = new EndLineCodeOperator(target -> target.write("return"));
+    operator.generate(buffer);
 
-    Assertions.assertEquals(EXPECTED_VALUE, target.getBuffer());
+    Assertions.assertEquals(EXPECTED, buffer.getBuffer());
+  }
+
+  @Test
+  void generateWithoutOperatorsTest() {
+    BufferedCodeTarget buffer = new BufferedCodeTarget();
+
+    EndLineCodeOperator operator = new EndLineCodeOperator();
+    operator.generate(buffer);
+
+    Assertions.assertEquals(WITHOUT_OPERATORS_EXPECTED, buffer.getBuffer());
   }
 }
