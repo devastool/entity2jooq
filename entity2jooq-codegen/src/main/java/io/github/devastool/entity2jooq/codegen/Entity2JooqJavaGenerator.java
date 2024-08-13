@@ -18,11 +18,9 @@ package io.github.devastool.entity2jooq.codegen;
 
 import io.github.devastool.entity2jooq.codegen.definition.EntityDataTypeDefinition;
 import java.util.Objects;
-import java.util.stream.Collectors;
 import org.jooq.codegen.GeneratorStrategy.Mode;
 import org.jooq.codegen.JavaGenerator;
 import org.jooq.codegen.JavaWriter;
-import org.jooq.meta.ColumnDefinition;
 import org.jooq.meta.DataTypeDefinition;
 import org.jooq.meta.Database;
 import org.jooq.meta.TableDefinition;
@@ -57,23 +55,9 @@ public class Entity2JooqJavaGenerator extends JavaGenerator {
     return super.getJavaTypeReference(db, type);
   }
 
-
-
   @Override
   protected void generateTableClassFooter(TableDefinition table, JavaWriter out) {
     super.generateTableClassFooter(table, out);
-
-    String fields = table
-        .getColumns()
-        .stream()
-        .map(ColumnDefinition::getName)
-        .map(String::toUpperCase)
-        .collect(Collectors.joining(", "));
-
-    out.println(
-        "public final java.util.Collection<Field<?>> ALL = java.util.List.of(%s);",
-        fields
-    );
 
     // TODO. Mapping functionality
     out.println(
