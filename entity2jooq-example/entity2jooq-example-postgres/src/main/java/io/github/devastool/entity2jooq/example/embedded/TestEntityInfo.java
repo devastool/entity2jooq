@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package io.github.devastool.entity2jooq.example;
+package io.github.devastool.entity2jooq.example.embedded;
 
 import io.github.devastool.entity2jooq.annotation.Embedded;
 

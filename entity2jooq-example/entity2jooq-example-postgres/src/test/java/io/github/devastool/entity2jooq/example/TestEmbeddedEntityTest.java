@@ -17,8 +17,9 @@
 package io.github.devastool.entity2jooq.example;
 
 
-import static org.jooq.generated.Tables.TEST_ENTITY;
+import static org.jooq.generated.test_schema.tables.TestEmbeddedEntity.TEST_EMBEDDED_ENTITY;
 
+import io.github.devastool.entity2jooq.example.embedded.TestEmbeddedEntity;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -43,12 +44,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 
 /**
- * Tests of {@link TestEntity} DDL.
+ * Tests of {@link TestEmbeddedEntity} DDL.
  *
  * @author Sergey_Konovalov
  */
 @TestMethodOrder(OrderAnnotation.class)
-class TestEntityTest {
+class TestEmbeddedEntityTest {
   private static JdbcConnectionPool pool;
   private static final String DB_URL = String.join(
       "",
@@ -59,9 +60,9 @@ class TestEntityTest {
       "DEFAULT_NULL_ORDERING=HIGH"
   );
 
-  private static final List<TestEntity> DATA = Arrays.asList(
-      new TestEntity("Pablo", "Pablo work street", "Pablo home street"),
-      new TestEntity("Barry", "Barry work street", "Barry home street")
+  private static final List<TestEmbeddedEntity> DATA = Arrays.asList(
+      new TestEmbeddedEntity("Pablo", "Pablo work street", "Pablo home street"),
+      new TestEmbeddedEntity("Barry", "Barry work street", "Barry home street")
   );
 
   @BeforeAll
@@ -74,12 +75,12 @@ class TestEntityTest {
         .createSchemaIfNotExists(DefaultCatalog.DEFAULT_CATALOG.TEST_SCHEMA)
         .execute();
 
-    Table<Record> table = TEST_ENTITY.asTable();
+    Table<Record> table = TEST_EMBEDDED_ENTITY.asTable();
     context
         .createTableIfNotExists(table)
-        .column(TEST_ENTITY.NAME)
-        .column(TEST_ENTITY.WORK)
-        .column(TEST_ENTITY.HOME)
+        .column(TEST_EMBEDDED_ENTITY.NAME)
+        .column(TEST_EMBEDDED_ENTITY.WORK)
+        .column(TEST_EMBEDDED_ENTITY.HOME)
         .execute();
 
     connection.close();
@@ -97,14 +98,14 @@ class TestEntityTest {
     DSLContext context = DSL.using(connection);
 
     var insert = context
-        .insertInto(TEST_ENTITY)
+        .insertInto(TEST_EMBEDDED_ENTITY)
         .columns(
-            TEST_ENTITY.NAME,
-            TEST_ENTITY.WORK,
-            TEST_ENTITY.HOME
+            TEST_EMBEDDED_ENTITY.NAME,
+            TEST_EMBEDDED_ENTITY.WORK,
+            TEST_EMBEDDED_ENTITY.HOME
         );
 
-    for (TestEntity entity : DATA) {
+    for (TestEmbeddedEntity entity : DATA) {
       insert.values(
           entity.getName(),
           entity.getWorkCity(),
@@ -124,22 +125,22 @@ class TestEntityTest {
 
     var select = context
         .select(
-            TEST_ENTITY.NAME,
-            TEST_ENTITY.WORK,
-            TEST_ENTITY.HOME
+            TEST_EMBEDDED_ENTITY.NAME,
+            TEST_EMBEDDED_ENTITY.WORK,
+            TEST_EMBEDDED_ENTITY.HOME
         )
-        .from(TEST_ENTITY)
-        .where(TEST_ENTITY.NAME.isNotNull());
+        .from(TEST_EMBEDDED_ENTITY)
+        .where(TEST_EMBEDDED_ENTITY.NAME.isNotNull());
 
-    List<TestEntity> results = select.fetch(
-        records -> new TestEntity(
-            records.get(TEST_ENTITY.NAME),
-            records.get(TEST_ENTITY.WORK),
-            records.get(TEST_ENTITY.HOME)
+    List<TestEmbeddedEntity> results = select.fetch(
+        records -> new TestEmbeddedEntity(
+            records.get(TEST_EMBEDDED_ENTITY.NAME),
+            records.get(TEST_EMBEDDED_ENTITY.WORK),
+            records.get(TEST_EMBEDDED_ENTITY.HOME)
         )
     );
 
-    for (TestEntity entity : DATA) {
+    for (TestEmbeddedEntity entity : DATA) {
       String name = entity.getName();
       String workCity = entity.getWorkCity();
       String homeCity = entity.getHomeCity();
@@ -163,13 +164,13 @@ class TestEntityTest {
     DSLContext context = DSL.using(connection);
 
     ArrayList<UpdateConditionStep<?>> updates = new ArrayList<>();
-    for (TestEntity entity : DATA) {
+    for (TestEmbeddedEntity entity : DATA) {
       updates.add(
           context
-              .update(TEST_ENTITY)
-              .set(TEST_ENTITY.NAME, entity.getName())
-              .set(TEST_ENTITY.WORK, entity.getWorkCity())
-              .where(TEST_ENTITY.HOME.eq(entity.getHomeCity()))
+              .update(TEST_EMBEDDED_ENTITY)
+              .set(TEST_EMBEDDED_ENTITY.NAME, entity.getName())
+              .set(TEST_EMBEDDED_ENTITY.WORK, entity.getWorkCity())
+              .where(TEST_EMBEDDED_ENTITY.HOME.eq(entity.getHomeCity()))
       );
     }
     Assertions.assertDoesNotThrow(() -> context.batch(updates).execute());
@@ -184,12 +185,12 @@ class TestEntityTest {
     DSLContext context = DSL.using(connection);
 
     DeleteConditionStep<Record> delete = context
-        .delete(TEST_ENTITY)
+        .delete(TEST_EMBEDDED_ENTITY)
         .where(
-            TEST_ENTITY.NAME.in(
+            TEST_EMBEDDED_ENTITY.NAME.in(
                 DATA
                     .stream()
-                    .map(TestEntity::getName)
+                    .map(TestEmbeddedEntity::getName)
                     .collect(Collectors.toList())
             )
         );

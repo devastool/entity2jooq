@@ -40,6 +40,9 @@ public class FieldDetails {
    * @param parentFieldsName the list of parent field names
    */
   public FieldDetails(Field processedField, Field parentField, List<String> parentFieldsName) {
+    if (parentField != null) {
+      parentFieldsName.add(parentField.getName());
+    }
     this.processedField = processedField;
     this.parentfield = parentField;
     this.parentFieldsName = parentFieldsName;
@@ -79,18 +82,5 @@ public class FieldDetails {
    */
   public List<String> getParentFieldsName() {
     return parentFieldsName;
-  }
-
-  /**
-   * Returns the parent field of the being processed field, or {@code null} if there is no parent
-   * field.
-   *
-   * @return the parent field, or {@code null} if there is no parent field
-   */
-  public String getParentFieldName() {
-    if (parentfield == null) {
-      return null;
-    }
-    return parentfield.getName();
   }
 }

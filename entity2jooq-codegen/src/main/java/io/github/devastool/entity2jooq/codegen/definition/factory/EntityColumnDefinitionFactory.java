@@ -34,7 +34,6 @@ import java.util.Deque;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.apache.maven.shared.utils.StringUtils;
 
 /**
  * The factory for {@link EntityColumnDefinition} building.
@@ -68,7 +67,6 @@ public class EntityColumnDefinitionFactory extends
     Deque<FieldDetails> queue = new ArrayDeque<>();
 
     Map<String, Column> overrideColumns = getOverrideColumns(field);
-
     queue.push(new FieldDetails(field, null, new ArrayList<>()));
 
     while (!queue.isEmpty()) {
@@ -78,11 +76,6 @@ public class EntityColumnDefinitionFactory extends
       if (processedType.isAnnotationPresent(Embedded.class)) {
         for (Field declaredField : processedType.getDeclaredFields()) {
           List<String> fieldsName = new ArrayList<>(fieldDetails.getParentFieldsName());
-          String parentFieldName = fieldDetails.getParentFieldName();
-
-          if (parentFieldName != null) {
-            fieldsName.add(fieldDetails.getParentFieldName());
-          }
 
           queue.push(new FieldDetails(declaredField, fieldDetails.getProcessedField(), fieldsName));
         }
@@ -90,11 +83,6 @@ public class EntityColumnDefinitionFactory extends
         String name = fieldDetails.getName();
         Class<? extends NamingStrategy> naming = properties.require(NAMING_STRATEGY);
         var fieldNames = fieldDetails.getParentFieldsName();
-
-        String parentName = fieldDetails.getParentFieldName();
-        if (parentName != null) {
-          fieldNames.add(parentName);
-        }
 
         Field processedField = fieldDetails.getProcessedField();
         Column column = processedField.getAnnotation(Column.class);
@@ -141,10 +129,16 @@ public class EntityColumnDefinitionFactory extends
 
     if (columnOverrides != null) {
       for (ColumnOverride override : columnOverrides.value()) {
-        overrideColumns.put(fieldName + DOT + override.name(), override.column());
+        overrideColumns.put(
+            String.join(DOT, fieldName, override.name()),
+            override.column()
+        );
       }
     } else if (columnOverride != null) {
-      overrideColumns.put(fieldName + DOT + columnOverride.name(), columnOverride.column());
+      overrideColumns.put(
+          String.join(DOT, fieldName, columnOverride.name()),
+          columnOverride.column()
+      );
     }
 
     return overrideColumns;
@@ -158,7 +152,7 @@ public class EntityColumnDefinitionFactory extends
    * @return the new value if it is not empty, otherwise the original value
    */
   private String replaceValueIfNotEmpty(String newValue, String currentValue) {
-    if (StringUtils.isNotEmpty(newValue)) {
+    if (newValue != null && !newValue.isEmpty()) {
       currentValue = newValue;
     }
     return currentValue;

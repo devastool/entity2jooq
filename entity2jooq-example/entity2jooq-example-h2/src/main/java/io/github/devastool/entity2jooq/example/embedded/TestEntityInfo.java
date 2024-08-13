@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package io.github.devastool.entity2jooq.example;
+package io.github.devastool.entity2jooq.example.embedded;
 
 import io.github.devastool.entity2jooq.annotation.Embedded;
 
@@ -25,17 +25,23 @@ import io.github.devastool.entity2jooq.annotation.Embedded;
  * @since 1.0.0
  */
 @Embedded
-public class TestEntityLocation {
-  private String point;
+public class TestEntityInfo {
+  private TestEntityLocation work;
+  private TestEntityLocation home;
 
   /**
-   * Constructs new instance of {@link TestEntityLocation}.
+   * Constructs new instance of {@link TestEntityInfo}.
    */
-  public TestEntityLocation(String point) {
-    this.point = point;
+  public TestEntityInfo(TestEntityLocation work, TestEntityLocation home) {
+    this.work = work;
+    this.home = home;
   }
 
-  public String getPoint() {
-    return point;
+  public TestEntityLocation getWork() {
+    return work;
+  }
+
+  public TestEntityLocation getHome() {
+    return home;
   }
 }

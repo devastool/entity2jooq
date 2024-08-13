@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package io.github.devastool.entity2jooq.example;
+package io.github.devastool.entity2jooq.example.embedded;
 
 import io.github.devastool.entity2jooq.annotation.Column;
 import io.github.devastool.entity2jooq.annotation.ColumnOverride;
@@ -29,7 +29,7 @@ import io.github.devastool.entity2jooq.annotation.Table;
  */
 @Table
 @Schema("test_schema")
-public class TestEntity {
+public class TestEmbeddedEntity {
   private String name;
 
   @ColumnOverride(name = "work.point", column = @Column("work"))
@@ -37,9 +37,9 @@ public class TestEntity {
   private TestEntityInfo info;
 
   /**
-   * Constructs new instance of {@link TestEntity}.
+   * Constructs new instance of {@link TestEmbeddedEntity}.
    */
-  public TestEntity(String name, String work, String home) {
+  public TestEmbeddedEntity(String name, String work, String home) {
     this.name = name;
     this.info = new TestEntityInfo(
         new TestEntityLocation(work),
