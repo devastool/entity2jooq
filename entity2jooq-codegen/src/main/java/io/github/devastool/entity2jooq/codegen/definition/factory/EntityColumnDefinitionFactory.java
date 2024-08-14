@@ -115,6 +115,12 @@ public class EntityColumnDefinitionFactory extends
     return columns;
   }
 
+  @Override
+  public boolean canBuild(Field field) {
+    Class<?> type = field.getType();
+    return !type.isPrimitive() && typeFactory.canBuild(field);
+  }
+
   /**
    * Gets a map of overridden columns based on the annotations for the specified field.
    *
@@ -156,11 +162,5 @@ public class EntityColumnDefinitionFactory extends
       currentValue = newValue;
     }
     return currentValue;
-  }
-
-  @Override
-  public boolean canBuild(Field field) {
-    Class<?> type = field.getType();
-    return !type.isPrimitive() && typeFactory.canBuild(field);
   }
 }

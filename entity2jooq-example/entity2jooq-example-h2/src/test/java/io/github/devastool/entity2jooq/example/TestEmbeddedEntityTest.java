@@ -16,7 +16,6 @@
 
 package io.github.devastool.entity2jooq.example;
 
-
 import static org.jooq.generated.test_schema.tables.TestEmbeddedEntity.TEST_EMBEDDED_ENTITY;
 
 import io.github.devastool.entity2jooq.example.embedded.TestEmbeddedEntity;
