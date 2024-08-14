@@ -39,7 +39,7 @@ import java.util.UUID;
  * @author Evgeniy_Gerasimov
  * @since 1.0.0
  */
-@Table
+@Table(inheritance = true)
 @Schema("test_schema")
 public class TestEntity extends TestEntityParent {
   private Byte byteField;
@@ -69,6 +69,7 @@ public class TestEntity extends TestEntityParent {
    * Constructs new instance of {@link TestEntity}.
    */
   public TestEntity() {
+    super();
     byteField = getRandomByte();
     shortField = (short) byteField;
     intField = (int) byteField;
@@ -94,6 +95,7 @@ public class TestEntity extends TestEntityParent {
    * Constructs new instance of {@link TestEntity}.
    */
   public TestEntity(
+      String superField,
       Byte byteField,
       Short shortField,
       Integer intField,
@@ -114,6 +116,7 @@ public class TestEntity extends TestEntityParent {
       Boolean booleanField,
       UUID uuidField
   ) {
+    super(superField);
     this.byteField = byteField;
     this.shortField = shortField;
     this.intField = intField;
@@ -295,6 +298,9 @@ public class TestEntity extends TestEntityParent {
     if (other == null || getClass() != other.getClass()) {
       return false;
     }
+    if (!super.equals(other)) {
+      return false;
+    }
     TestEntity entity = (TestEntity) other;
     return Objects.equals(shortField, entity.shortField)
         && Objects.equals(intField, entity.intField)
@@ -319,6 +325,7 @@ public class TestEntity extends TestEntityParent {
   @Override
   public int hashCode() {
     return Objects.hash(
+        super.getSuperField(),
         shortField,
         intField,
         longField,

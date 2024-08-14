@@ -73,9 +73,19 @@ class EntityTableDefinitionFactoryTest {
     Assertions.assertNull(built);
   }
 
+  @Test
+  void buildInheritanceSuccessTest() {
+    EntityTableDefinition built = Assertions.assertDoesNotThrow(
+        () -> factory.build(TestInheritanceEntity.class, PROPERTIES)
+    );
+    Assertions.assertNotNull(built);
+  }
+
   @Table(TEST_TABLE)
   static class TestEntity {}
   @Table
   static class TestEntityWithoutTableName {}
   static class TestEntityWithoutAnnotation {}
+  @Table(inheritance = true)
+  static class TestInheritanceEntity extends TestEntity{}
 }

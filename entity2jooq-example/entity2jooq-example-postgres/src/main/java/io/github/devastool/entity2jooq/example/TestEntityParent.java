@@ -17,13 +17,49 @@
 package io.github.devastool.entity2jooq.example;
 
 import io.github.devastool.entity2jooq.annotation.Table;
+import java.util.Objects;
 
 /**
  * Example entity parent.
  *
  * @since 1.0.0
- * @author Andrey_Yurzanov
+ * @author Andrey_Yurzanov, Artem Filkov
  */
 @Table
 public class TestEntityParent {
+
+  private String superField;
+
+  public TestEntityParent() {
+    superField = "TestEntityParent superField";
+  }
+
+  public TestEntityParent(String superField) {
+    this.superField = superField;
+  }
+
+  public String getSuperField() {
+    return superField;
+  }
+
+  public void setSuperField(String superField) {
+    this.superField = superField;
+  }
+
+  @Override
+  public boolean equals(Object other) {
+    if (this == other) {
+      return true;
+    }
+    if (other == null || getClass() != other.getClass()) {
+      return false;
+    }
+    TestEntityParent entityParent = (TestEntityParent) other;
+    return Objects.equals(superField, entityParent.superField);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(superField);
+  }
 }
