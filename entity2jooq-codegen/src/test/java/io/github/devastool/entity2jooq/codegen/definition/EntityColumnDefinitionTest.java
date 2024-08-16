@@ -24,7 +24,7 @@ import io.github.devastool.entity2jooq.codegen.definition.factory.FactoryContext
 import io.github.devastool.entity2jooq.codegen.properties.CodegenProperties;
 import io.github.devastool.entity2jooq.codegen.properties.CodegenProperty;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -42,9 +42,7 @@ class EntityColumnDefinitionTest {
       new EntitySchemaDefinition(new Entity2JooqDatabase(), "test_schema");
   private static final EntityTableDefinition TABLE_DEFINITION = new EntityTableDefinition(
       new EntitySchemaDefinition(new Entity2JooqDatabase(), "test_schema"),
-      "test_table",
-      Object.class,
-      new ArrayList<>()
+      "test_table"
   );
   private static final CodegenProperties PROPERTIES = new CodegenProperties(
       Map.of(
@@ -58,29 +56,29 @@ class EntityColumnDefinitionTest {
   @Test
   void getGetterNameTest() {
     Field[] fields = TestEntity.class.getDeclaredFields();
-    EntityColumnDefinition built = factory.build(fields[0], PROPERTIES);
-    Assertions.assertEquals("getId", built.getGetterName());
+    List<EntityColumnDefinition> built = factory.build(fields[0], PROPERTIES);
+    Assertions.assertEquals("getId", built.get(0).getGetterName());
   }
 
   @Test
   void getSetterNameTest() {
     Field[] fields = TestEntity.class.getDeclaredFields();
-    EntityColumnDefinition built = factory.build(fields[0], PROPERTIES);
-    Assertions.assertEquals("setId", built.getSetterName());
+    List<EntityColumnDefinition> built = factory.build(fields[0], PROPERTIES);
+    Assertions.assertEquals("setId", built.get(0).getSetterName());
   }
 
   @Test
   void getGetterNameWithSmallNameTest() {
     Field[] fields = TestEntityWithSmallName.class.getDeclaredFields();
-    EntityColumnDefinition built = factory.build(fields[0], PROPERTIES);
-    Assertions.assertEquals("getI", built.getGetterName());
+    List<EntityColumnDefinition> built = factory.build(fields[0], PROPERTIES);
+    Assertions.assertEquals("getI", built.get(0).getGetterName());
   }
 
   @Test
   void getSetterNameWithSmallNameTest() {
     Field[] fields = TestEntityWithSmallName.class.getDeclaredFields();
-    EntityColumnDefinition built = factory.build(fields[0], PROPERTIES);
-    Assertions.assertEquals("setI", built.getSetterName());
+    List<EntityColumnDefinition> built = factory.build(fields[0], PROPERTIES);
+    Assertions.assertEquals("setI", built.get(0).getSetterName());
   }
 
   static class TestEntity {

@@ -106,6 +106,7 @@ public class EntityColumnDefinitionFactory extends
 
         columns.add(new EntityColumnDefinition(
             properties.require(TABLE),
+            field,
             strategy.resolve(name),
             typeFactory.build(processedField, properties)
         ));

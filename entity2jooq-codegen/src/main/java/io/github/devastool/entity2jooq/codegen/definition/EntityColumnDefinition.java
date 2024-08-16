@@ -28,7 +28,8 @@ import org.jooq.meta.TableDefinition;
  * @author Andrey_Yurzanov
  * @since 1.0.0
  */
-public class EntityColumnDefinition extends DefaultColumnDefinition {
+public class EntityColumnDefinition extends DefaultColumnDefinition
+    implements Comparable<EntityColumnDefinition> {
   private final Field field;
 
   private static final String GETTER_PREFIX = "get";
@@ -51,6 +52,13 @@ public class EntityColumnDefinition extends DefaultColumnDefinition {
   ) {
     super(table, name, 0, type, false, "");
     this.field = field;
+  }
+
+  @Override
+  public int compareTo(EntityColumnDefinition other) {
+    return field
+        .getName()
+        .compareTo(other.field.getName());
   }
 
   /**

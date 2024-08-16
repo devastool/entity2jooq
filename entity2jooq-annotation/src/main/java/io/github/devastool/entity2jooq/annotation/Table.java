@@ -48,6 +48,11 @@ public @interface Table {
   Class<? extends NamingStrategy> naming() default SnakeCaseStrategy.class;
 
   /**
+   * Enable/Disable code generating for mapping functionality.
+   */
+  boolean mapping() default true;
+
+  /**
    * Container of {@link Table} annotations.
    *
    * @author Andrey_Yurzanov

@@ -28,9 +28,8 @@ import io.github.devastool.entity2jooq.codegen.definition.EntityTableDefinition;
 import io.github.devastool.entity2jooq.codegen.properties.CodegenProperties;
 import io.github.devastool.entity2jooq.codegen.properties.CodegenProperty;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -50,9 +49,7 @@ class EntityColumnDefinitionFactoryTest {
       new EntitySchemaDefinition(new Entity2JooqDatabase(), "test_schema");
   private static final EntityTableDefinition TABLE_DEFINITION = new EntityTableDefinition(
       new EntitySchemaDefinition(new Entity2JooqDatabase(), "test_schema"),
-      "test_table",
-      Object.class,
-      new ArrayList<>()
+      "test_table"
   );
   private static final CodegenProperties PROPERTIES = new CodegenProperties(
       Map.of(

@@ -22,6 +22,7 @@ import static io.github.devastool.entity2jooq.codegen.properties.CodegenProperty
 
 import io.github.devastool.entity2jooq.annotation.Table;
 import io.github.devastool.entity2jooq.annotation.naming.NamingStrategy;
+import io.github.devastool.entity2jooq.codegen.definition.EntityColumnDefinition;
 import io.github.devastool.entity2jooq.codegen.definition.EntitySchemaDefinition;
 import io.github.devastool.entity2jooq.codegen.definition.EntityTableDefinition;
 import io.github.devastool.entity2jooq.codegen.properties.CodegenProperties;
@@ -77,23 +78,18 @@ public class EntityTableDefinitionFactory
           type,
           new CodegenProperties(properties, Map.of(NAMING_STRATEGY, naming))
       );
-      ArrayList<ColumnDefinition> columns = new ArrayList<>();
 
-      EntityTableDefinition table = new EntityTableDefinition(
-          schema,
-          name,
-          type,
-          columns
-      );
+      EntityTableDefinition table = new EntityTableDefinition(schema, name);
+      table.setMapping(annotation.mapping());
+      table.setEntityType(type);
 
       CodegenProperties columnProperties = new CodegenProperties(
           properties,
           Map.of(TABLE, table, SCHEMA, schema, NAMING_STRATEGY, naming)
       );
 
-      ArrayList<ColumnDefinition> resultBuild = new ArrayList<>();
-      Set<ColumnDefinition> uniqueColumns = new HashSet<>();
-
+      Set<EntityColumnDefinition> uniqueColumns = new HashSet<>();
+      ArrayList<EntityColumnDefinition> resultBuild = new ArrayList<>();
       for (Field field : type.getDeclaredFields()) {
         if (columnFactory.canBuild(field)) {
           resultBuild.addAll(columnFactory.build(field, columnProperties));
@@ -111,8 +107,7 @@ public class EntityTableDefinitionFactory
             String.format("Columns %s already exists. Use @ColumnOverride", existsColumns)
         );
       }
-
-      columns.addAll(uniqueColumns);
+      table.setColumns(uniqueColumns);
       return table;
     }
     return null;

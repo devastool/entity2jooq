@@ -17,6 +17,7 @@
 package io.github.devastool.entity2jooq.codegen.definition;
 
 import java.sql.SQLException;
+import java.util.Collection;
 import java.util.List;
 import org.jooq.meta.AbstractTableDefinition;
 import org.jooq.meta.ColumnDefinition;
@@ -30,30 +31,50 @@ import org.jooq.meta.SchemaDefinition;
  * @since 1.0.0
  */
 public class EntityTableDefinition extends AbstractTableDefinition {
-  private final Class<?> entityType;
-  private final List<ColumnDefinition> columns;
+  private boolean mapping;
+  private Class<?> entityType;
+  private List<ColumnDefinition> columns;
 
   /**
    * Constructs new instance of {@link EntityTableDefinition}.
    *
-   * @param schema  meta-information about schema
-   * @param name    name of the table
-   * @param columns list of the table columns
+   * @param schema meta-information about schema
+   * @param name   name of the table
    */
-  public EntityTableDefinition(
-      SchemaDefinition schema,
-      String name,
-      Class<?> entityType,
-      List<ColumnDefinition> columns
-  ) {
+  public EntityTableDefinition(SchemaDefinition schema, String name) {
     super(schema, name, "");
-    this.entityType = entityType;
-    this.columns = columns;
   }
 
   @Override
   protected List<ColumnDefinition> getElements0() throws SQLException {
     return columns;
+  }
+
+  /**
+   * Sets columns of the table.
+   *
+   * @param columns columns of the table
+   */
+  public void setColumns(Collection<? extends ColumnDefinition> columns) {
+    this.columns = List.copyOf(columns);
+  }
+
+  /**
+   * Returns enable/disable flag of mapping functionality.
+   *
+   * @return enable/disable flag of mapping functionality
+   */
+  public boolean isMapping() {
+    return mapping;
+  }
+
+  /**
+   * Sets enable/disable flag of mapping functionality.
+   *
+   * @param mapping enable/disable flag of mapping functionality
+   */
+  public void setMapping(boolean mapping) {
+    this.mapping = mapping;
   }
 
   /**
@@ -63,5 +84,14 @@ public class EntityTableDefinition extends AbstractTableDefinition {
    */
   public Class<?> getEntityType() {
     return entityType;
+  }
+
+  /**
+   * Sets type of entity.
+   *
+   * @param entityType type of entity
+   */
+  public void setEntityType(Class<?> entityType) {
+    this.entityType = entityType;
   }
 }

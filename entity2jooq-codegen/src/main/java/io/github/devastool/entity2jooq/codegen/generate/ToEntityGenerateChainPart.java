@@ -26,6 +26,7 @@ import io.github.devastool.entity2jooq.codegen.generate.code.operator.ReturnCode
 import io.github.devastool.entity2jooq.codegen.generate.code.operator.VarDefCodeGenerator;
 import io.github.devastool.entity2jooq.codegen.generate.code.operator.VarMemberCodeGenerator;
 import java.util.Objects;
+import java.util.TreeSet;
 import org.jooq.Record;
 import org.jooq.meta.ColumnDefinition;
 import org.jooq.meta.TableDefinition;
@@ -47,30 +48,32 @@ public class ToEntityGenerateChainPart implements GenerateChainPart {
   public void generate(TableDefinition table, CodeTarget target) {
     if (Objects.equals(EntityTableDefinition.class, table.getClass())) {
       EntityTableDefinition entity = (EntityTableDefinition) table;
-      Class<?> entityType = entity.getEntityType();
+      if (entity.isMapping()) {
+        Class<?> entityType = entity.getEntityType();
 
-      MethodCodeGenerator generator = new MethodCodeGenerator()
-          .setName(METHOD_NAME)
-          .setReturnType(entityType)
-          .setParam(PARAM_NAME, Record.class)
-          .setOperator(
-              new EndLineCodeOperator(
-                  new VarDefCodeGenerator(VARIABLE_NAME, entityType)
-              )
-          );
+        MethodCodeGenerator generator = new MethodCodeGenerator()
+            .setName(METHOD_NAME)
+            .setReturnType(entityType)
+            .setParam(PARAM_NAME, Record.class)
+            .setOperator(
+                new EndLineCodeOperator(
+                    new VarDefCodeGenerator(VARIABLE_NAME, entityType)
+                )
+            );
 
-      for (ColumnDefinition column : entity.getColumns()) {
-        if (Objects.equals(EntityColumnDefinition.class, column.getClass())) {
-          generateSetValue(generator, entity, (EntityColumnDefinition) column);
+        for (ColumnDefinition column : new TreeSet<>(entity.getColumns())) {
+          if (Objects.equals(EntityColumnDefinition.class, column.getClass())) {
+            generateSetValue(generator, entity, (EntityColumnDefinition) column);
+          }
         }
+        generator
+            .setOperator(
+                new EndLineCodeOperator(
+                    new ReturnCodeGenerator(VARIABLE_NAME)
+                )
+            )
+            .generate(target);
       }
-      generator
-          .setOperator(
-              new EndLineCodeOperator(
-                  new ReturnCodeGenerator(VARIABLE_NAME)
-              )
-          )
-          .generate(target);
     }
   }
 

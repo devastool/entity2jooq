@@ -93,14 +93,17 @@ class Entity2JooqJavaGeneratorTest {
 
   @Test
   void generateTableClassFooterTest(@TempDir File root) {
+    EntityTableDefinition table = new EntityTableDefinition(
+        new EntitySchemaDefinition(new Entity2JooqDatabase(), "test_schema"),
+        "test_table"
+    );
+    table.setMapping(true);
+    table.setEntityType(Object.class);
+    table.setColumns(new ArrayList<>());
+
     BufferedCodeTarget target = new BufferedCodeTarget();
     generator.generateTableClassFooter(
-        new EntityTableDefinition(
-            new EntitySchemaDefinition(new Entity2JooqDatabase(), "test_schema"),
-            "test_table",
-            Object.class,
-            new ArrayList<>()
-        ),
+        table,
         new JavaWriter(new File(root, FILE_NAME), null) {
           @Override
           public JavaWriter print(String value) {
