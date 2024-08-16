@@ -27,6 +27,8 @@ import io.github.devastool.entity2jooq.codegen.generate.code.CodeTarget;
 public class ReturnCodeGenerator implements OperatorCodeGenerator {
   private final String returnValue;
 
+  private static final String RETURN_KEYWORD = "return";
+
   /**
    * Constructs new instance of {@link ReturnCodeGenerator}.
    *
@@ -35,8 +37,6 @@ public class ReturnCodeGenerator implements OperatorCodeGenerator {
   public ReturnCodeGenerator(String returnValue) {
     this.returnValue = returnValue;
   }
-
-  private static final String RETURN_KEYWORD = "return";
 
   @Override
   public void generate(CodeTarget target) {
