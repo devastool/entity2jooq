@@ -27,8 +27,11 @@ import io.github.devastool.entity2jooq.codegen.definition.EntityTableDefinition;
 import io.github.devastool.entity2jooq.codegen.properties.CodegenProperties;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.jooq.meta.ColumnDefinition;
 
 /**
@@ -75,6 +78,7 @@ public class EntityTableDefinitionFactory
           new CodegenProperties(properties, Map.of(NAMING_STRATEGY, naming))
       );
       ArrayList<ColumnDefinition> columns = new ArrayList<>();
+
       EntityTableDefinition table = new EntityTableDefinition(
           schema,
           name,
@@ -86,11 +90,29 @@ public class EntityTableDefinitionFactory
           properties,
           Map.of(TABLE, table, SCHEMA, schema, NAMING_STRATEGY, naming)
       );
+
+      ArrayList<ColumnDefinition> resultBuild = new ArrayList<>();
+      Set<ColumnDefinition> uniqueColumns = new HashSet<>();
+
       for (Field field : type.getDeclaredFields()) {
         if (columnFactory.canBuild(field)) {
-          columns.add(columnFactory.build(field, columnProperties));
+          resultBuild.addAll(columnFactory.build(field, columnProperties));
         }
       }
+
+      String existsColumns = resultBuild
+          .stream()
+          .filter(column -> !uniqueColumns.add(column))
+          .map(ColumnDefinition::getName)
+          .collect(Collectors.joining(","));
+
+      if (!existsColumns.isEmpty()) {
+        throw new IllegalArgumentException(
+            String.format("Columns %s already exists. Use @ColumnOverride", existsColumns)
+        );
+      }
+
+      columns.addAll(uniqueColumns);
       return table;
     }
     return null;
