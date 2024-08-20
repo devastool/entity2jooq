@@ -28,7 +28,7 @@ import java.lang.annotation.Target;
  * The table of marked entity.
  *
  * @since 1.0.0
- * @author Andrey_Yurzanov
+ * @author Andrey_Yurzanov, Filkov_Artem
  */
 @Documented
 @Target(ElementType.TYPE)
@@ -40,7 +40,17 @@ public @interface Table {
   String value() default "";
 
   /**
+   * Enable inheritance.
+   */
+  boolean inheritance() default false;
+
+  /**
    * Naming strategy for table name resolving. By default {@link SnakeCaseStrategy}.
    */
   Class<? extends NamingStrategy> naming() default SnakeCaseStrategy.class;
+
+  /**
+   * Enable/Disable code generating for mapping functionality.
+   */
+  boolean mapping() default true;
 }

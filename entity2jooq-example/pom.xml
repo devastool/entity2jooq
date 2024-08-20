@@ -37,6 +37,7 @@
 
   <modules>
     <module>entity2jooq-example-postgres</module>
+    <module>entity2jooq-example-h2</module>
   </modules>
   <packaging>pom</packaging>
 

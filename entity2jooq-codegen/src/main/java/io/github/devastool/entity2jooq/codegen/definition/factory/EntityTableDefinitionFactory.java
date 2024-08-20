@@ -27,14 +27,17 @@ import io.github.devastool.entity2jooq.codegen.definition.EntityTableDefinition;
 import io.github.devastool.entity2jooq.codegen.properties.CodegenProperties;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.jooq.meta.ColumnDefinition;
 
 /**
  * The factory for {@link EntityTableDefinition} building.
  *
- * @author Andrey_Yurzanov
+ * @author Andrey_Yurzanov, Filkov Artem
  * @since 1.0.0
  */
 public class EntityTableDefinitionFactory
@@ -74,22 +77,46 @@ public class EntityTableDefinitionFactory
           type,
           new CodegenProperties(properties, Map.of(NAMING_STRATEGY, naming))
       );
-      ArrayList<ColumnDefinition> columns = new ArrayList<>();
-      EntityTableDefinition table = new EntityTableDefinition(
-          schema,
-          name,
-          columns
-      );
+
+      EntityTableDefinition table = new EntityTableDefinition(schema, name);
+      table.setMapping(annotation.mapping());
+      table.setEntityType(type);
 
       CodegenProperties columnProperties = new CodegenProperties(
           properties,
           Map.of(TABLE, table, SCHEMA, schema, NAMING_STRATEGY, naming)
       );
-      for (Field field : type.getDeclaredFields()) {
-        if (columnFactory.canBuild(field)) {
-          columns.add(columnFactory.build(field, columnProperties));
+
+      ArrayList<ColumnDefinition> resultBuild = new ArrayList<>();
+      Set<ColumnDefinition> uniqueColumns = new HashSet<>();
+
+      Class<?> currentClass = type;
+      while (currentClass != null) {
+        for (Field field : currentClass.getDeclaredFields()) {
+          if (columnFactory.canBuild(field)) {
+            resultBuild.addAll(columnFactory.build(field, columnProperties));
+          }
+        }
+
+        if (annotation.inheritance()) {
+          currentClass = currentClass.getSuperclass();
+        } else {
+          currentClass = null;
         }
       }
+
+      String existsColumns = resultBuild
+          .stream()
+          .filter(column -> !uniqueColumns.add(column))
+          .map(ColumnDefinition::getName)
+          .collect(Collectors.joining(","));
+
+      if (!existsColumns.isEmpty()) {
+        throw new IllegalArgumentException(
+            String.format("Columns %s already exists. Use @ColumnOverride", existsColumns)
+        );
+      }
+      table.setColumns(uniqueColumns);
       return table;
     }
     return null;
