@@ -56,6 +56,7 @@ public class H2TypeMapper extends DialectTypeMapper {
             new TypePair(Double.class, "double precision"),
             // Character types
             new TypePair(String.class, "character varying"),
+            new TypePair(Enum.class, "character varying"),
             // Date/Time types
             new TypePair(LocalDate.class, "date"),
             new TypePair(Date.class, "date"),
