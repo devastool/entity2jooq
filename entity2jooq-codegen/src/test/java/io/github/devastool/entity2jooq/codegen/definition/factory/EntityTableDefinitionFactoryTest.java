@@ -81,11 +81,23 @@ class EntityTableDefinitionFactoryTest {
     Assertions.assertNotNull(built);
   }
 
+  @Test
+  void buildWithPrimitiveColumnsTest() {
+    EntityTableDefinition built = Assertions.assertDoesNotThrow(
+        () -> factory.build(TestEntityWithPrimitive.class, PROPERTIES)
+    );
+    Assertions.assertEquals(0, built.getColumns().size());
+  }
+
   @Table(TEST_TABLE)
   static class TestEntity {}
   @Table
   static class TestEntityWithoutTableName {}
   static class TestEntityWithoutAnnotation {}
+  @Table
+  static class TestEntityWithPrimitive {
+    private int id;
+  }
   @Table(inheritance = true)
   static class TestInheritanceEntity extends TestEntity{}
 }

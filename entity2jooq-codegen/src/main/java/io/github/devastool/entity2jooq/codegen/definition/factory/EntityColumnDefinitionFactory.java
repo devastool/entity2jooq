@@ -20,10 +20,20 @@ import static io.github.devastool.entity2jooq.codegen.properties.CodegenProperty
 import static io.github.devastool.entity2jooq.codegen.properties.CodegenProperty.TABLE;
 
 import io.github.devastool.entity2jooq.annotation.Column;
+import io.github.devastool.entity2jooq.annotation.ColumnOverride;
+import io.github.devastool.entity2jooq.annotation.ColumnOverride.ColumnOverrides;
+import io.github.devastool.entity2jooq.annotation.Embedded;
 import io.github.devastool.entity2jooq.annotation.naming.NamingStrategy;
 import io.github.devastool.entity2jooq.codegen.definition.EntityColumnDefinition;
+import io.github.devastool.entity2jooq.codegen.definition.factory.column.FieldDetails;
 import io.github.devastool.entity2jooq.codegen.properties.CodegenProperties;
 import java.lang.reflect.Field;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Deque;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * The factory for {@link EntityColumnDefinition} building.
@@ -32,8 +42,10 @@ import java.lang.reflect.Field;
  * @since 1.0.0
  */
 public class EntityColumnDefinitionFactory extends
-    DefinitionFactory<Field, EntityColumnDefinition> {
+    DefinitionFactory<Field, List<EntityColumnDefinition>> {
   private final EntityDataTypeDefinitionFactory typeFactory;
+  public static final String SEPARATOR = "_";
+  public static final String DOT = ".";
 
   /**
    * Constructs new instance of {@link EntityColumnDefinitionFactory}.
@@ -50,32 +62,105 @@ public class EntityColumnDefinitionFactory extends
   }
 
   @Override
-  public EntityColumnDefinition build(Field field, CodegenProperties properties) {
-    String name = field.getName();
-    Class<? extends NamingStrategy> naming = properties.require(NAMING_STRATEGY);
+  public List<EntityColumnDefinition> build(Field field, CodegenProperties properties) {
+    List<EntityColumnDefinition> columns = new ArrayList<>();
+    Deque<FieldDetails> queue = new ArrayDeque<>();
 
-    Column annotation = field.getAnnotation(Column.class);
-    if (annotation != null) {
-      naming = annotation.naming();
+    Map<String, Column> overrideColumns = getOverrideColumns(field);
+    queue.push(new FieldDetails(field, null, new ArrayList<>()));
 
-      String definedName = annotation.value();
-      if (definedName != null && !definedName.isEmpty()) {
-        name = definedName;
+    while (!queue.isEmpty()) {
+      FieldDetails fieldDetails = queue.pop();
+      Class<?> processedType = fieldDetails.getProcessedType();
+
+      if (processedType.isAnnotationPresent(Embedded.class)) {
+        for (Field declaredField : processedType.getDeclaredFields()) {
+          List<String> fieldsName = new ArrayList<>(fieldDetails.getParentFieldsName());
+
+          queue.push(new FieldDetails(declaredField, fieldDetails.getProcessedField(), fieldsName));
+        }
+      } else {
+        String name = fieldDetails.getName();
+        Class<? extends NamingStrategy> naming = properties.require(NAMING_STRATEGY);
+        var fieldNames = fieldDetails.getParentFieldsName();
+
+        Field processedField = fieldDetails.getProcessedField();
+        Column column = processedField.getAnnotation(Column.class);
+        Column overrideColum = overrideColumns.get(String.join(DOT, fieldNames) + DOT + name);
+
+        if (overrideColum != null) {
+          naming = overrideColum.naming();
+          name = replaceValueIfNotEmpty(overrideColum.value(), name);
+        } else {
+          if (column != null) {
+            naming = column.naming();
+            name = replaceValueIfNotEmpty(column.value(), name);
+          }
+
+          fieldNames.add(name);
+          name = String.join(SEPARATOR, fieldNames);
+        }
+
+        FactoryContext context = getContext();
+        NamingStrategy strategy = context.getInstance(naming);
+
+        columns.add(new EntityColumnDefinition(
+            properties.require(TABLE),
+            strategy.resolve(name),
+            typeFactory.build(processedField, properties)
+        ));
       }
     }
 
-    FactoryContext context = getContext();
-    NamingStrategy strategy = context.getInstance(naming);
-    return new EntityColumnDefinition(
-        properties.require(TABLE),
-        strategy.resolve(name),
-        typeFactory.build(field, properties)
-    );
+    return columns;
   }
 
   @Override
   public boolean canBuild(Field field) {
     Class<?> type = field.getType();
     return !type.isPrimitive() && typeFactory.canBuild(field);
+  }
+
+  /**
+   * Gets a map of overridden columns based on the annotations for the specified field.
+   *
+   * @param field the being processed field.
+   * @return Map of overridden columns
+   */
+  private Map<String, Column> getOverrideColumns(Field field) {
+    ColumnOverrides columnOverrides = field.getAnnotation(ColumnOverrides.class);
+    ColumnOverride columnOverride = field.getAnnotation(ColumnOverride.class);
+    String fieldName = field.getName();
+    Map<String, Column> overrideColumns = new HashMap<>();
+
+    if (columnOverrides != null) {
+      for (ColumnOverride override : columnOverrides.value()) {
+        overrideColumns.put(
+            String.join(DOT, fieldName, override.name()),
+            override.column()
+        );
+      }
+    } else if (columnOverride != null) {
+      overrideColumns.put(
+          String.join(DOT, fieldName, columnOverride.name()),
+          columnOverride.column()
+      );
+    }
+
+    return overrideColumns;
+  }
+
+  /**
+   * Replaces the original value with a new value if the new value is not empty.
+   *
+   * @param newValue     the new value
+   * @param currentValue the original value
+   * @return the new value if it is not empty, otherwise the original value
+   */
+  private String replaceValueIfNotEmpty(String newValue, String currentValue) {
+    if (newValue != null && !newValue.isEmpty()) {
+      currentValue = newValue;
+    }
+    return currentValue;
   }
 }
