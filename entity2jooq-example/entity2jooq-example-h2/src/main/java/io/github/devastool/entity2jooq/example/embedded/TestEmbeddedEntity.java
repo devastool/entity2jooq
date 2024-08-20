@@ -27,7 +27,7 @@ import io.github.devastool.entity2jooq.annotation.Table;
  * @author Sergey_Konovalov
  * @since 1.0.0
  */
-@Table
+@Table(mapping = false)
 @Schema("test_schema")
 public class TestEmbeddedEntity {
   private String name;

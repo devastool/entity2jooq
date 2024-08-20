@@ -19,14 +19,16 @@ package io.github.devastool.entity2jooq.codegen;
 import io.github.devastool.entity2jooq.codegen.definition.EntityDataTypeDefinition;
 import io.github.devastool.entity2jooq.codegen.definition.EntitySchemaDefinition;
 import io.github.devastool.entity2jooq.codegen.definition.EntityTableDefinition;
+import io.github.devastool.entity2jooq.codegen.generate.code.BufferedCodeTarget;
 import java.io.File;
-import java.io.IOException;
-import java.util.List;
+import java.util.ArrayList;
 import org.jooq.SQLDialect;
 import org.jooq.codegen.GeneratorStrategy.Mode;
 import org.jooq.codegen.JavaWriter;
+import org.jooq.meta.DefaultDataTypeDefinition;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /**
  * Tests of {@link Entity2JooqJavaGenerator}.
@@ -35,6 +37,8 @@ import org.junit.jupiter.api.Test;
  */
 class Entity2JooqJavaGeneratorTest {
   private final Entity2JooqJavaGenerator generator = new Entity2JooqJavaGenerator();
+
+  private static final String FILE_NAME = "Test.java";
 
   @Test
   void generateRecordsTest() {
@@ -77,13 +81,38 @@ class Entity2JooqJavaGeneratorTest {
   }
 
   @Test
-  void generateTableClassFooterTest() throws IOException {
-    var schema = new EntitySchemaDefinition(new Entity2JooqDatabase(), "testName");
-    var javaWriter = new JavaWriter(File.createTempFile("tmp-prfx", "tmp-suf"), null);
-
-    Assertions.assertDoesNotThrow(
-        () -> generator.generateTableClassFooter(
-            new EntityTableDefinition(schema, "table", List.of()), javaWriter)
+  void getJavaTypeReferenceDefaultTypeTest() {
+    Entity2JooqDatabase database = new Entity2JooqDatabase();
+    var schema = new EntitySchemaDefinition(database, "testName");
+    Assertions.assertThrows(IllegalArgumentException.class, () -> generator.getJavaTypeReference(
+            database,
+            new DefaultDataTypeDefinition(database, schema, "integer")
+        )
     );
+  }
+
+  @Test
+  void generateTableClassFooterTest(@TempDir File root) {
+    EntityTableDefinition table = new EntityTableDefinition(
+        new EntitySchemaDefinition(new Entity2JooqDatabase(), "test_schema"),
+        "test_table"
+    );
+    table.setMapping(true);
+    table.setEntityType(Object.class);
+    table.setColumns(new ArrayList<>());
+
+    BufferedCodeTarget target = new BufferedCodeTarget();
+    generator.generateTableClassFooter(
+        table,
+        new JavaWriter(new File(root, FILE_NAME), null) {
+          @Override
+          public JavaWriter print(String value) {
+            target.write(value);
+            return this;
+          }
+        }
+    );
+
+    Assertions.assertFalse(target.getBuffer().isEmpty());
   }
 }

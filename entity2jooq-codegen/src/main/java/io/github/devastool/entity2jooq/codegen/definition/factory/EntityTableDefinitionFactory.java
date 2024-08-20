@@ -77,13 +77,10 @@ public class EntityTableDefinitionFactory
           type,
           new CodegenProperties(properties, Map.of(NAMING_STRATEGY, naming))
       );
-      ArrayList<ColumnDefinition> columns = new ArrayList<>();
 
-      EntityTableDefinition table = new EntityTableDefinition(
-          schema,
-          name,
-          columns
-      );
+      EntityTableDefinition table = new EntityTableDefinition(schema, name);
+      table.setMapping(annotation.mapping());
+      table.setEntityType(type);
 
       CodegenProperties columnProperties = new CodegenProperties(
           properties,
@@ -119,8 +116,7 @@ public class EntityTableDefinitionFactory
             String.format("Columns %s already exists. Use @ColumnOverride", existsColumns)
         );
       }
-
-      columns.addAll(uniqueColumns);
+      table.setColumns(uniqueColumns);
       return table;
     }
     return null;

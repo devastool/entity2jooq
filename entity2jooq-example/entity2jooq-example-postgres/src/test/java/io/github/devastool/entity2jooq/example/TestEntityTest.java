@@ -29,6 +29,7 @@ import org.h2.jdbcx.JdbcConnectionPool;
 import org.jooq.DSLContext;
 import org.jooq.DeleteConditionStep;
 import org.jooq.Record;
+import org.jooq.SQLDialect;
 import org.jooq.Table;
 import org.jooq.UpdateConditionStep;
 import org.jooq.generated.DefaultCatalog;
@@ -69,7 +70,7 @@ class TestEntityTest {
     pool = JdbcConnectionPool.create(DB_URL, "", "");
 
     Connection connection = pool.getConnection();
-    DSLContext context = DSL.using(connection);
+    DSLContext context = DSL.using(connection, SQLDialect.POSTGRES);
     context
         .createSchemaIfNotExists(DefaultCatalog.DEFAULT_CATALOG.TEST_SCHEMA)
         .execute();
@@ -109,7 +110,7 @@ class TestEntityTest {
   @Order(1)
   void insertTest() throws SQLException {
     Connection connection = pool.getConnection();
-    DSLContext context = DSL.using(connection);
+    DSLContext context = DSL.using(connection, SQLDialect.POSTGRES);
 
     var insert = context
         .insertInto(TEST_ENTITY)
@@ -165,9 +166,9 @@ class TestEntityTest {
   @Order(2)
   void selectTest() throws SQLException {
     Connection connection = pool.getConnection();
-    DSLContext context = DSL.using(connection);
+    DSLContext context = DSL.using(connection, SQLDialect.POSTGRES);
 
-    var select = context
+    List<TestEntity> results = context
         .select(
             TEST_ENTITY.SHORT_FIELD,
             TEST_ENTITY.INT_FIELD,
@@ -189,30 +190,8 @@ class TestEntityTest {
             TEST_ENTITY.UUID_FIELD
         )
         .from(TEST_ENTITY)
-        .where(TEST_ENTITY.SHORT_FIELD.isNotNull());
-
-    List<TestEntity> results = select.fetch(
-        records -> new TestEntity(
-            records.get(TEST_ENTITY.SHORT_FIELD),
-            records.get(TEST_ENTITY.INT_FIELD),
-            records.get(TEST_ENTITY.LONG_FIELD),
-            records.get(TEST_ENTITY.BIG_DECIMAL_FIELD),
-            records.get(TEST_ENTITY.FLOAT_FIELD),
-            records.get(TEST_ENTITY.DOUBLE_FIELD),
-            records.get(TEST_ENTITY.ENTITY_NAME),
-            records.get(TEST_ENTITY.LOCAL_DATE_FIELD),
-            records.get(TEST_ENTITY.DATE_FIELD),
-            records.get(TEST_ENTITY.SQL_DATE_FIELD),
-            records.get(TEST_ENTITY.LOCAL_TIME_FIELD),
-            records.get(TEST_ENTITY.TIME_FIELD),
-            records.get(TEST_ENTITY.OFFSET_TIME_FIELD),
-            records.get(TEST_ENTITY.LOCAL_DATE_TIME_FIELD),
-            records.get(TEST_ENTITY.TIMESTAMP_FIELD),
-            records.get(TEST_ENTITY.OFFSET_DATE_TIME_FIELD),
-            records.get(TEST_ENTITY.BOOLEAN_FIELD),
-            records.get(TEST_ENTITY.UUID_FIELD)
-        )
-    );
+        .where(TEST_ENTITY.SHORT_FIELD.isNotNull())
+        .fetch(TEST_ENTITY::toEntity);
 
     for (TestEntity entity : DATA) {
       Short shortField = entity.getShortField();
@@ -229,7 +208,7 @@ class TestEntityTest {
   @Order(3)
   void updateTest() throws SQLException {
     Connection connection = pool.getConnection();
-    DSLContext context = DSL.using(connection);
+    DSLContext context = DSL.using(connection, SQLDialect.POSTGRES);
 
     ArrayList<UpdateConditionStep<?>> updates = new ArrayList<>();
     for (TestEntity entity : DATA) {
@@ -250,7 +229,7 @@ class TestEntityTest {
   @Order(4)
   void deleteTest() throws SQLException {
     Connection connection = pool.getConnection();
-    DSLContext context = DSL.using(connection);
+    DSLContext context = DSL.using(connection, SQLDialect.POSTGRES);
 
     DeleteConditionStep<Record> delete = context
         .delete(TEST_ENTITY)
