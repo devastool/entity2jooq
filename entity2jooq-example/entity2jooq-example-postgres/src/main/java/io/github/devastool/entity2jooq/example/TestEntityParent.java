@@ -27,23 +27,22 @@ import java.util.Objects;
  */
 @Table
 public class TestEntityParent {
-
-  private String superField;
+  private String inheritField;
 
   public TestEntityParent() {
-    superField = "TestEntityParent superField";
+    inheritField = "TestEntityParent inheritField";
   }
 
-  public TestEntityParent(String superField) {
-    this.superField = superField;
+  public TestEntityParent(String inheritField) {
+    this.inheritField = inheritField;
   }
 
-  public String getSuperField() {
-    return superField;
+  public String getInheritField() {
+    return inheritField;
   }
 
-  public void setSuperField(String superField) {
-    this.superField = superField;
+  public void setInheritField(String inheritField) {
+    this.inheritField = inheritField;
   }
 
   @Override
@@ -55,11 +54,11 @@ public class TestEntityParent {
       return false;
     }
     TestEntityParent entityParent = (TestEntityParent) other;
-    return Objects.equals(superField, entityParent.superField);
+    return Objects.equals(inheritField, entityParent.inheritField);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(superField);
+    return Objects.hash(inheritField);
   }
 }

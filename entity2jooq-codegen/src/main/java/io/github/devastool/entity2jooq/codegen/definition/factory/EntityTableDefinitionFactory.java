@@ -95,7 +95,7 @@ public class EntityTableDefinitionFactory
         }
 
         if (annotation.inheritance()) {
-          currentClass = Objects.requireNonNull(currentClass).getSuperclass();
+          currentClass = currentClass.getSuperclass();
         } else {
           currentClass = null;
         }

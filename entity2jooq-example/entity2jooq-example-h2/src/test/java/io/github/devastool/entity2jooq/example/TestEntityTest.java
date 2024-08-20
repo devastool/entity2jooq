@@ -77,7 +77,6 @@ class TestEntityTest {
     Table<Record> table = TEST_ENTITY.asTable();
     context
         .createTableIfNotExists(table)
-        .column(TEST_ENTITY.SUPER_FIELD)
         .column(TEST_ENTITY.BYTE_FIELD)
         .column(TEST_ENTITY.SHORT_FIELD)
         .column(TEST_ENTITY.INT_FIELD)
@@ -116,7 +115,6 @@ class TestEntityTest {
     var insert = context
         .insertInto(TEST_ENTITY)
         .columns(
-            TEST_ENTITY.SUPER_FIELD,
             TEST_ENTITY.BYTE_FIELD,
             TEST_ENTITY.SHORT_FIELD,
             TEST_ENTITY.INT_FIELD,
@@ -140,7 +138,6 @@ class TestEntityTest {
 
     for (TestEntity entity : DATA) {
       insert.values(
-          entity.getSuperField(),
           entity.getByteField(),
           entity.getShortField(),
           entity.getIntField(),
@@ -175,7 +172,6 @@ class TestEntityTest {
 
     var select = context
         .select(
-            TEST_ENTITY.SUPER_FIELD,
             TEST_ENTITY.BYTE_FIELD,
             TEST_ENTITY.SHORT_FIELD,
             TEST_ENTITY.INT_FIELD,
@@ -201,7 +197,6 @@ class TestEntityTest {
 
     List<TestEntity> results = select.fetch(
         records -> new TestEntity(
-            records.get(TEST_ENTITY.SUPER_FIELD),
             records.get(TEST_ENTITY.BYTE_FIELD),
             records.get(TEST_ENTITY.SHORT_FIELD),
             records.get(TEST_ENTITY.INT_FIELD),
