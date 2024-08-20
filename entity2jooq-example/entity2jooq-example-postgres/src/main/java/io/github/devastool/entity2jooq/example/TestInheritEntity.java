@@ -16,49 +16,41 @@
 
 package io.github.devastool.entity2jooq.example;
 
+import io.github.devastool.entity2jooq.annotation.Schema;
 import io.github.devastool.entity2jooq.annotation.Table;
 import java.util.Objects;
 
 /**
- * Example entity parent.
+ * Example inheritance entity, see tests.
  *
- * @author Evgeniy_Gerasimov, Filkov_Artem
+ * @author Filkov_Artem
  * @since 1.0.0
  */
-@Table
-public class TestEntityParent {
-  private String inheritField;
+@Table(inheritance = true)
+@Schema("test_inherit_schema")
+public class TestInheritEntity extends TestEntityParent {
 
-  public TestEntityParent() {
-    inheritField = "TestEntityParent inheritField";
+  /**
+   * Constructs new instance of {@link TestInheritEntity}.
+   */
+  public TestInheritEntity() {
+    super();
   }
 
-  public TestEntityParent(String inheritField) {
-    this.inheritField = inheritField;
-  }
-
-  public String getInheritField() {
-    return inheritField;
-  }
-
-  public void setInheritField(String inheritField) {
-    this.inheritField = inheritField;
+  /**
+   * Constructs new instance of {@link TestInheritEntity}.
+   */
+  public TestInheritEntity(String inheritField) {
+    super(inheritField);
   }
 
   @Override
   public boolean equals(Object other) {
-    if (this == other) {
-      return true;
-    }
-    if (other == null || getClass() != other.getClass()) {
-      return false;
-    }
-    TestEntityParent entityParent = (TestEntityParent) other;
-    return Objects.equals(inheritField, entityParent.inheritField);
+    return super.equals(other);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(inheritField);
+    return Objects.hash(super.getInheritField());
   }
 }

@@ -30,7 +30,7 @@ import java.lang.annotation.Target;
  * The table of marked entity.
  *
  * @since 1.0.0
- * @author Andrey_Yurzanov
+ * @author Andrey_Yurzanov, Filkov_Artem
  */
 @Documented
 @Repeatable(Tables.class)
@@ -41,6 +41,11 @@ public @interface Table {
    * Name of the table.
    */
   String value() default "";
+
+  /**
+   * Enable inheritance.
+   */
+  boolean inheritance() default false;
 
   /**
    * Naming strategy for table name resolving. By default {@link SnakeCaseStrategy}.

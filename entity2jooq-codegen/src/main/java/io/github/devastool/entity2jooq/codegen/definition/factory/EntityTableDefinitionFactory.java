@@ -38,7 +38,7 @@ import org.jooq.meta.ColumnDefinition;
 /**
  * The factory for {@link EntityTableDefinition} building.
  *
- * @author Andrey_Yurzanov
+ * @author Andrey_Yurzanov, Filkov Artem
  * @since 1.0.0
  */
 public class EntityTableDefinitionFactory
@@ -88,11 +88,21 @@ public class EntityTableDefinitionFactory
           Map.of(TABLE, table, SCHEMA, schema, NAMING_STRATEGY, naming)
       );
 
-      Set<EntityColumnDefinition> uniqueColumns = new HashSet<>();
-      ArrayList<EntityColumnDefinition> resultBuild = new ArrayList<>();
-      for (Field field : type.getDeclaredFields()) {
-        if (columnFactory.canBuild(field)) {
-          resultBuild.addAll(columnFactory.build(field, columnProperties));
+      ArrayList<ColumnDefinition> resultBuild = new ArrayList<>();
+      Set<ColumnDefinition> uniqueColumns = new HashSet<>();
+
+      Class<?> currentClass = type;
+      while (currentClass != null) {
+        for (Field field : currentClass.getDeclaredFields()) {
+          if (columnFactory.canBuild(field)) {
+            resultBuild.addAll(columnFactory.build(field, columnProperties));
+          }
+        }
+
+        if (annotation.inheritance()) {
+          currentClass = currentClass.getSuperclass();
+        } else {
+          currentClass = null;
         }
       }
 
