@@ -17,6 +17,7 @@
 package io.github.devastool.entity2jooq.codegen.generate;
 
 import io.github.devastool.entity2jooq.annotation.Table;
+import io.github.devastool.entity2jooq.annotation.type.Type;
 import io.github.devastool.entity2jooq.codegen.Entity2JooqDatabase;
 import io.github.devastool.entity2jooq.codegen.definition.factory.EntityColumnDefinitionFactory;
 import io.github.devastool.entity2jooq.codegen.definition.factory.EntityDataTypeDefinitionFactory;
@@ -28,6 +29,7 @@ import io.github.devastool.entity2jooq.codegen.generate.code.IndentCodeTarget;
 import io.github.devastool.entity2jooq.codegen.properties.CodegenProperties;
 import io.github.devastool.entity2jooq.codegen.properties.CodegenProperty;
 import java.util.Map;
+import org.jooq.Converter;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -49,20 +51,15 @@ class ToEntityGenerateChainPartTest {
           CodegenProperty.DATABASE, new Entity2JooqDatabase()
       )
   );
-  private static final String EXPECTED = String.join(
+  private static final String WITHOUT_CONVERTERS_EXPECTED = String.join(
       "",
-      "    public ",
-      "io.github.devastool.entity2jooq.codegen.generate.ToEntityGenerateChainPartTest.TestEntity ",
-      "toEntity(org.jooq.Record record) {",
+      "    public io.github.devastool.entity2jooq.codegen.generate.ToEntityGenerateChainPartTest.TestEntityWithoutConverters toEntity(org.jooq.Record record) {",
       System.lineSeparator(),
-      "        ",
-      "io.github.devastool.entity2jooq.codegen.generate.ToEntityGenerateChainPartTest.TestEntity ",
-      "entity = new io.github.devastool.entity2jooq.codegen.generate.",
-      "ToEntityGenerateChainPartTest.TestEntity();",
+      "        io.github.devastool.entity2jooq.codegen.generate.ToEntityGenerateChainPartTest.TestEntityWithoutConverters entity = new io.github.devastool.entity2jooq.codegen.generate.ToEntityGenerateChainPartTest.TestEntityWithoutConverters();",
       System.lineSeparator(),
-      "        entity.setCount(record.get(TEST_ENTITY.COUNT));",
+      "        entity.setCount(record.get(TEST_ENTITY_WITHOUT_CONVERTERS.COUNT));",
       System.lineSeparator(),
-      "        entity.setId(record.get(TEST_ENTITY.ID));",
+      "        entity.setId(record.get(TEST_ENTITY_WITHOUT_CONVERTERS.ID));",
       System.lineSeparator(),
       "        return entity;",
       System.lineSeparator(),
@@ -70,18 +67,110 @@ class ToEntityGenerateChainPartTest {
       System.lineSeparator()
   );
 
+  private static final String WITH_CONVERTERS_EXPECTED = String.join(
+      "",
+      "    public io.github.devastool.entity2jooq.codegen.generate.ToEntityGenerateChainPartTest.TestEntity toEntity(org.jooq.Record record) {",
+      System.lineSeparator(),
+      "        io.github.devastool.entity2jooq.codegen.generate.ToEntityGenerateChainPartTest.TestEntity entity = new io.github.devastool.entity2jooq.codegen.generate.ToEntityGenerateChainPartTest.TestEntity();",
+      System.lineSeparator(),
+      "        entity.setCount(record.get(TEST_ENTITY.COUNT, null));",
+      System.lineSeparator(),
+      "        entity.setId(record.get(TEST_ENTITY.ID, null));",
+      System.lineSeparator(),
+      "        entity.setSecondId(record.get(TEST_ENTITY.SECOND_ID, null));",
+      System.lineSeparator(),
+      "        return entity;",
+      System.lineSeparator(),
+      "    }",
+      System.lineSeparator()
+
+  );
+
   @Test
-  void generateTest() {
+  void generateWithoutConvertersTest() {
     BufferedCodeTarget target = new BufferedCodeTarget();
     ToEntityGenerateChainPart part = new ToEntityGenerateChainPart();
-    part.generate(factory.build(TestEntity.class, PROPERTIES), new IndentCodeTarget(target));
+    part.generate(
+        new GenerateContext(
+            factory.build(TestEntityWithoutConverters.class, PROPERTIES),
+            new IndentCodeTarget(target)
+        )
+    );
 
-    Assertions.assertEquals(EXPECTED, target.getBuffer());
+    Assertions.assertEquals(WITHOUT_CONVERTERS_EXPECTED, target.getBuffer());
+  }
+
+  @Test
+  void generateWithConvertersTest() {
+    BufferedCodeTarget target = new BufferedCodeTarget();
+    ToEntityGenerateChainPart part = new ToEntityGenerateChainPart();
+    part.generate(
+        new GenerateContext(
+            factory.build(TestEntity.class, PROPERTIES),
+            new IndentCodeTarget(target)
+        )
+    );
+
+    Assertions.assertEquals(WITH_CONVERTERS_EXPECTED, target.getBuffer());
   }
 
   @Table
   static class TestEntity {
+    @Type(converter = StringToInteger.class)
+    private String id;
+    @Type(converter = StringToInteger.class)
+    private String secondId;
+    @Type(converter = IntegerToString.class)
+    private Integer count;
+  }
+
+  @Table
+  static class TestEntityWithoutConverters {
     private String id;
     private Integer count;
+  }
+
+  public static class StringToInteger implements Converter<String, Integer> {
+    @Override
+    public Integer from(String value) {
+      return Integer.parseInt(value);
+    }
+
+    @Override
+    public String to(Integer value) {
+      return value.toString();
+    }
+
+    @Override
+    public Class<String> fromType() {
+      return String.class;
+    }
+
+    @Override
+    public Class<Integer> toType() {
+      return Integer.class;
+    }
+  }
+
+  public static class IntegerToString implements Converter<Integer, String> {
+    @Override
+    public String from(Integer value) {
+      return value.toString();
+    }
+
+    @Override
+    public Integer to(String value) {
+      return Integer.parseInt(value);
+    }
+
+    @Override
+    public Class<Integer> fromType() {
+      return Integer.class;
+    }
+
+    @Override
+    public Class<String> toType() {
+      return String.class;
+    }
   }
 }

@@ -54,15 +54,9 @@ class ConverterGenerateChainPartTest {
   );
   private static final String WITH_CONVERTERS_EXPECTED = String.join(
       "",
-      "    public final io.github.devastool.entity2jooq.codegen.generate.",
-      "ConverterGenerateChainPartTest.IntegerToString INTEGER_TO_STRING = ",
-      "new io.github.devastool.entity2jooq.codegen.generate.",
-      "ConverterGenerateChainPartTest.IntegerToString();",
+      "    public final io.github.devastool.entity2jooq.codegen.generate.ConverterGenerateChainPartTest.IntegerToString INTEGER_TO_STRING = new io.github.devastool.entity2jooq.codegen.generate.ConverterGenerateChainPartTest.IntegerToString();",
       System.lineSeparator(),
-      "    public final io.github.devastool.entity2jooq.codegen.generate.",
-      "ConverterGenerateChainPartTest.StringToInteger STRING_TO_INTEGER = ",
-      "new io.github.devastool.entity2jooq.codegen.generate.",
-      "ConverterGenerateChainPartTest.StringToInteger();",
+      "    public final io.github.devastool.entity2jooq.codegen.generate.ConverterGenerateChainPartTest.StringToInteger STRING_TO_INTEGER = new io.github.devastool.entity2jooq.codegen.generate.ConverterGenerateChainPartTest.StringToInteger();",
       System.lineSeparator()
 
   );
@@ -72,7 +66,12 @@ class ConverterGenerateChainPartTest {
   void generateWithConvertersTest() {
     BufferedCodeTarget target = new BufferedCodeTarget();
     ConverterGenerateChainPart part = new ConverterGenerateChainPart();
-    part.generate(factory.build(TestEntity.class, PROPERTIES), new IndentCodeTarget(target));
+    part.generate(
+        new GenerateContext(
+            factory.build(TestEntity.class, PROPERTIES),
+            new IndentCodeTarget(target)
+        )
+    );
 
     Assertions.assertEquals(WITH_CONVERTERS_EXPECTED, target.getBuffer());
   }
@@ -82,8 +81,10 @@ class ConverterGenerateChainPartTest {
     BufferedCodeTarget target = new BufferedCodeTarget();
     ConverterGenerateChainPart part = new ConverterGenerateChainPart();
     part.generate(
-        factory.build(TestEntityWithoutConverters.class, PROPERTIES),
-        new IndentCodeTarget(target)
+        new GenerateContext(
+            factory.build(TestEntityWithoutConverters.class, PROPERTIES),
+            new IndentCodeTarget(target)
+        )
     );
 
     Assertions.assertEquals(WITHOUT_CONVERTERS_EXPECTED, target.getBuffer());

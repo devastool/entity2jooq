@@ -29,7 +29,6 @@ import java.util.Optional;
 import java.util.TreeSet;
 import org.jooq.Converter;
 import org.jooq.meta.ColumnDefinition;
-import org.jooq.meta.TableDefinition;
 
 /**
  * Implementation of {@link GenerateChainPart} for converter fields generating.
@@ -41,30 +40,30 @@ public class ConverterGenerateChainPart implements GenerateChainPart {
   private final NamingStrategy naming = new SnakeCaseStrategy(true);
 
   @Override
-  public void generate(TableDefinition table, CodeTarget target) {
-    if (Objects.equals(EntityTableDefinition.class, table.getClass())) {
-      EntityTableDefinition entity = (EntityTableDefinition) table;
-      if (entity.isMapping()) {
-        TreeSet<Class<?>> types = new TreeSet<>(new ClassComparator());
-        for (ColumnDefinition column : entity.getColumns()) {
-          Optional<EntityDataTypeDefinition> extracted = getType(column);
-          if (extracted.isPresent()) {
-            EntityDataTypeDefinition type = extracted.get();
+  public void generate(GenerateContext context) {
+    EntityTableDefinition table = context.getTable();
+    if (table.isMapping()) {
+      TreeSet<Class<?>> types = new TreeSet<>(new ClassComparator());
+      for (ColumnDefinition column : table.getColumns()) {
+        Optional<EntityDataTypeDefinition> extracted = getType(column);
+        if (extracted.isPresent()) {
+          EntityDataTypeDefinition type = extracted.get();
 
-            Converter converter = type.getTypeConverter();
-            if (converter != null) {
-              types.add(converter.getClass());
-            }
+          Converter converter = type.getTypeConverter();
+          if (converter != null) {
+            types.add(converter.getClass());
           }
         }
+      }
 
-        for (Class<?> type : types) {
-          String name = naming.resolve(type.getSimpleName());
+      CodeTarget target = context.getTarget();
+      for (Class<?> type : types) {
+        String name = naming.resolve(type.getSimpleName());
+        context.setVariable(type, name);
 
-          NewCodeGenerator assignment = new NewCodeGenerator(type);
-          FieldCodeGenerator field = new FieldCodeGenerator(name, type, assignment);
-          field.generate(target);
-        }
+        NewCodeGenerator assignment = new NewCodeGenerator(type);
+        FieldCodeGenerator field = new FieldCodeGenerator(name, type, assignment);
+        field.generate(target);
       }
     }
   }

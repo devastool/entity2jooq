@@ -14,22 +14,27 @@
  *    limitations under the License.
  */
 
-package io.github.devastool.entity2jooq.codegen.generate;
+package io.github.devastool.entity2jooq.codegen.generate.code.operator;
 
-import io.github.devastool.entity2jooq.codegen.generate.code.CodeTarget;
-import org.jooq.meta.TableDefinition;
+import io.github.devastool.entity2jooq.codegen.generate.code.BufferedCodeTarget;
+import java.util.ArrayList;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
- * Abstraction of source code generation of a specific feature, for example method or constant.
+ * Tests of {@link NewCodeGenerator}.
  *
  * @author Andrey_Yurzanov
- * @since 1.0.0
  */
-public interface GenerateChainPart {
-  /**
-   * Generates source code of a specific feature.
-   *
-   * @param context context for source code generating
-   */
-  void generate(GenerateContext context);
+class NewCodeGeneratorTest {
+  private static final String EXPECTED_VALUE = "new java.util.ArrayList()";
+
+  @Test
+  void generateTest() {
+    BufferedCodeTarget target = new BufferedCodeTarget();
+    NewCodeGenerator operator = new NewCodeGenerator(ArrayList.class);
+    operator.generate(target);
+
+    Assertions.assertEquals(EXPECTED_VALUE, target.getBuffer());
+  }
 }

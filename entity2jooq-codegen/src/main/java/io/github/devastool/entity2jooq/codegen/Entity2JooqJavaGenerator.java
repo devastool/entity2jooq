@@ -17,8 +17,10 @@
 package io.github.devastool.entity2jooq.codegen;
 
 import io.github.devastool.entity2jooq.codegen.definition.EntityDataTypeDefinition;
+import io.github.devastool.entity2jooq.codegen.definition.EntityTableDefinition;
 import io.github.devastool.entity2jooq.codegen.generate.ConverterGenerateChainPart;
 import io.github.devastool.entity2jooq.codegen.generate.GenerateChainPart;
+import io.github.devastool.entity2jooq.codegen.generate.GenerateContext;
 import io.github.devastool.entity2jooq.codegen.generate.ToEntityGenerateChainPart;
 import io.github.devastool.entity2jooq.codegen.generate.code.BufferedCodeTarget;
 import io.github.devastool.entity2jooq.codegen.generate.code.IndentCodeTarget;
@@ -71,10 +73,15 @@ public class Entity2JooqJavaGenerator extends JavaGenerator {
   protected void generateTableClassFooter(TableDefinition table, JavaWriter out) {
     super.generateTableClassFooter(table, out);
 
-    BufferedCodeTarget target = new BufferedCodeTarget();
-    for (GenerateChainPart method : methods) {
-      method.generate(table, new IndentCodeTarget(target));
+    if (EntityTableDefinition.class.equals(table.getClass())) {
+      EntityTableDefinition entity = (EntityTableDefinition) table;
+
+      BufferedCodeTarget target = new BufferedCodeTarget();
+      GenerateContext context = new GenerateContext(entity, new IndentCodeTarget(target));
+      for (GenerateChainPart method : methods) {
+        method.generate(context);
+      }
+      out.print(target.getBuffer());
     }
-    out.print(target.getBuffer());
   }
 }
