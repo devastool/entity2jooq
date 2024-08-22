@@ -32,7 +32,6 @@ import java.util.Date;
 import java.util.Objects;
 import java.util.Random;
 import java.util.UUID;
-import org.jooq.Converter;
 
 /**
  * Example entity, see tests.
@@ -46,7 +45,6 @@ public class TestEntity extends TestEntityParent {
   private Byte byteField;
   private Short shortField;
   @Column
-  @Type(converter = Conv.class)
   private Integer intField;
   private Long longField;
   private BigDecimal bigDecimalField;
@@ -344,28 +342,5 @@ public class TestEntity extends TestEntityParent {
 
   private static byte getRandomByte() {
     return (byte) new Random().nextInt(Byte.MAX_VALUE - 1);
-  }
-
-
-  public static class Conv implements Converter<String, Integer> {
-    @Override
-    public Integer from(String s) {
-      return Integer.parseInt(s);
-    }
-
-    @Override
-    public String to(Integer integer) {
-      return String.valueOf(integer);
-    }
-
-    @Override
-    public Class<String> fromType() {
-      return String.class;
-    }
-
-    @Override
-    public Class<Integer> toType() {
-      return Integer.class;
-    }
   }
 }

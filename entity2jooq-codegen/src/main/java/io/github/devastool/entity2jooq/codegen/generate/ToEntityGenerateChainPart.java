@@ -96,7 +96,7 @@ public class ToEntityGenerateChainPart implements GenerateChainPart {
   }
 
   // Generates code: record.get(TABLE_NAME.VALUE) or record.get(TABLE_NAME.VALUE, CONVERTER)
-  public OperatorCodeGenerator getRecordValueGetter(
+  private OperatorCodeGenerator getRecordValueGetter(
       GenerateContext context,
       EntityTableDefinition table,
       EntityColumnDefinition column
