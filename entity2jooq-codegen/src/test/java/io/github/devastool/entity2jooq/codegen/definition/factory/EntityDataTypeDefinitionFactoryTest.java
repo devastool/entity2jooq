@@ -27,6 +27,7 @@ import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Map;
+import org.jooq.Converter;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -90,7 +91,7 @@ class EntityDataTypeDefinitionFactoryTest {
   }
 
   static class TestEntity {
-    @Type("integer")
+    @Type(value = "integer", converter = TestConverter.class)
     private Integer id;
     @Type("decimal")
     private BigDecimal amount;
@@ -106,5 +107,29 @@ class EntityDataTypeDefinitionFactoryTest {
 
   static class TestEntityNotFoundType {
     private Object field;
+  }
+
+  static class TestConverter implements Converter<Integer, Integer> {
+    public TestConverter() {}
+
+    @Override
+    public Integer from(Integer integer) {
+      return integer;
+    }
+
+    @Override
+    public Integer to(Integer integer) {
+      return integer;
+    }
+
+    @Override
+    public Class<Integer> fromType() {
+      return Integer.class;
+    }
+
+    @Override
+    public Class<Integer> toType() {
+      return Integer.class;
+    }
   }
 }

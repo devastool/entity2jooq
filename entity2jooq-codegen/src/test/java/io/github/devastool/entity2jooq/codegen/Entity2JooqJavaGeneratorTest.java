@@ -49,7 +49,7 @@ class Entity2JooqJavaGeneratorTest {
   void getJavaTypeTest() {
     var schema = new EntitySchemaDefinition(new Entity2JooqDatabase(), "testName");
     var javaType = generator.getJavaType(
-        new EntityDataTypeDefinition(schema, String.class, null, null)
+        new EntityDataTypeDefinition(schema, String.class, null)
     );
 
     Assertions.assertEquals(String.class.getName(), javaType);
@@ -59,7 +59,7 @@ class Entity2JooqJavaGeneratorTest {
   void getJavaTypeTwoParamTest() {
     var schema = new EntitySchemaDefinition(new Entity2JooqDatabase(), "testName");
     var javaType = generator.getJavaType(
-        new EntityDataTypeDefinition(schema, String.class, null, null),
+        new EntityDataTypeDefinition(schema, String.class, null),
         Mode.DEFAULT
     );
 
@@ -69,11 +69,10 @@ class Entity2JooqJavaGeneratorTest {
   @Test
   void getJavaTypeReferenceTest() {
     var schema = new EntitySchemaDefinition(new Entity2JooqDatabase(), "testName");
-    var javaTypeReference = generator.getJavaTypeReference(
-        new Entity2JooqDatabase(),
-        new EntityDataTypeDefinition(schema, String.class, SQLDialect.POSTGRES.getName(), null)
-    );
+    EntityDataTypeDefinition type = new EntityDataTypeDefinition(schema, String.class, null);
+    type.setDialect(SQLDialect.POSTGRES.getName());
 
+    var javaTypeReference = generator.getJavaTypeReference(new Entity2JooqDatabase(), type);
     Assertions.assertEquals(
         "new org.jooq.impl.DefaultDataType(org.jooq.SQLDialect.POSTGRES, java.lang.String.class, \"OTHER\")",
         javaTypeReference

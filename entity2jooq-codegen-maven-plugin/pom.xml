@@ -35,7 +35,6 @@
     <maven-plugin-annotations.version>3.9.0</maven-plugin-annotations.version>
     <maven-core.version>3.9.0</maven-core.version>
     <maven-plugin-plugin.version>3.9.0</maven-plugin-plugin.version>
-    <jooq-codegen.version>3.12.2</jooq-codegen.version>
     <junit-jupiter.version>5.10.0</junit-jupiter.version>
   </properties>
 

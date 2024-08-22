@@ -14,41 +14,44 @@
  *    limitations under the License.
  */
 
-package io.github.devastool.entity2jooq.codegen.generate.code.operator;
+package io.github.devastool.entity2jooq.codegen.generate.code;
 
-import io.github.devastool.entity2jooq.codegen.generate.code.CodeTarget;
+import io.github.devastool.entity2jooq.codegen.generate.code.operator.OperatorCodeGenerator;
 
 /**
- * Implementation of {@link OperatorCodeGenerator} to generate variable definition.
+ * Generator of source code of public, final field.
  *
  * @author Andrey_Yurzanov
  * @since 1.0.0
  */
-public class VarDefCodeGenerator implements OperatorCodeGenerator {
-  private final OperatorCodeGenerator assignment;
+public class FieldCodeGenerator implements CodeGenerator {
   private final String name;
   private final Class<?> type;
+  private final OperatorCodeGenerator assignment;
 
+  private static final String ACCESS_MODIFIER = "public";
+  private static final String FINAL_MODIFIER = "final";
   private static final String ASSIGN_OPERATOR = "=";
+  private static final String END_OPERATOR = ";";
 
   /**
-   * Constructs new instance of {@link VarDefCodeGenerator}.
+   * Constructs new instance of {@link FieldCodeGenerator}.
    *
-   * @param name name of the variable
-   * @param type type of the variable
+   * @param name name of the field
+   * @param type type of the field
    */
-  public VarDefCodeGenerator(String name, Class<?> type) {
+  public FieldCodeGenerator(String name, Class<?> type) {
     this(name, type, null);
   }
 
   /**
-   * Constructs new instance of {@link VarDefCodeGenerator}.
+   * Constructs new instance of {@link FieldCodeGenerator}.
    *
-   * @param name       name of the variable
-   * @param type       type of the variable
-   * @param assignment assignment value to the variable
+   * @param name       name of the field
+   * @param type       type of the field
+   * @param assignment assignment value to the field
    */
-  public VarDefCodeGenerator(String name, Class<?> type, OperatorCodeGenerator assignment) {
+  public FieldCodeGenerator(String name, Class<?> type, OperatorCodeGenerator assignment) {
     this.name = name;
     this.type = type;
     this.assignment = assignment;
@@ -57,6 +60,10 @@ public class VarDefCodeGenerator implements OperatorCodeGenerator {
   @Override
   public void generate(CodeTarget target) {
     target
+        .write(ACCESS_MODIFIER)
+        .space()
+        .write(FINAL_MODIFIER)
+        .space()
         .write(type.getCanonicalName())
         .space()
         .write(name);
@@ -69,5 +76,6 @@ public class VarDefCodeGenerator implements OperatorCodeGenerator {
 
       assignment.generate(target);
     }
+    target.writeln(END_OPERATOR);
   }
 }

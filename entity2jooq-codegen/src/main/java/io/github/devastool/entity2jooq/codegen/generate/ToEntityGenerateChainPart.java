@@ -22,6 +22,7 @@ import io.github.devastool.entity2jooq.codegen.generate.code.CodeTarget;
 import io.github.devastool.entity2jooq.codegen.generate.code.MethodCodeGenerator;
 import io.github.devastool.entity2jooq.codegen.generate.code.operator.EndLineCodeOperator;
 import io.github.devastool.entity2jooq.codegen.generate.code.operator.InvokeMethodCodeGenerator;
+import io.github.devastool.entity2jooq.codegen.generate.code.operator.NewCodeGenerator;
 import io.github.devastool.entity2jooq.codegen.generate.code.operator.ReturnCodeGenerator;
 import io.github.devastool.entity2jooq.codegen.generate.code.operator.VarDefCodeGenerator;
 import io.github.devastool.entity2jooq.codegen.generate.code.operator.VarMemberCodeGenerator;
@@ -49,15 +50,15 @@ public class ToEntityGenerateChainPart implements GenerateChainPart {
     if (Objects.equals(EntityTableDefinition.class, table.getClass())) {
       EntityTableDefinition entity = (EntityTableDefinition) table;
       if (entity.isMapping()) {
-        Class<?> entityType = entity.getEntityType();
+        Class<?> type = entity.getEntityType();
 
         MethodCodeGenerator generator = new MethodCodeGenerator()
             .setName(METHOD_NAME)
-            .setReturnType(entityType)
+            .setReturnType(type)
             .setParam(PARAM_NAME, Record.class)
             .setOperator(
                 new EndLineCodeOperator(
-                    new VarDefCodeGenerator(VARIABLE_NAME, entityType)
+                    new VarDefCodeGenerator(VARIABLE_NAME, type, new NewCodeGenerator(type))
                 )
             );
 
@@ -77,6 +78,7 @@ public class ToEntityGenerateChainPart implements GenerateChainPart {
     }
   }
 
+  // Generates code: tableName.setValue(record.get(TABLE_NAME.VALUE))
   private void generateSetValue(
       MethodCodeGenerator generator,
       EntityTableDefinition table,

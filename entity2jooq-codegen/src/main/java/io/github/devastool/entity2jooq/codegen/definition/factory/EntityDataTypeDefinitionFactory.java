@@ -19,10 +19,12 @@ package io.github.devastool.entity2jooq.codegen.definition.factory;
 import io.github.devastool.entity2jooq.annotation.type.NoSuchTypeException;
 import io.github.devastool.entity2jooq.annotation.type.Type;
 import io.github.devastool.entity2jooq.codegen.definition.EntityDataTypeDefinition;
+import io.github.devastool.entity2jooq.codegen.definition.EntitySchemaDefinition;
 import io.github.devastool.entity2jooq.codegen.properties.CodegenProperties;
 import io.github.devastool.entity2jooq.codegen.properties.CodegenProperty;
 import io.github.devastool.entity2jooq.codegen.type.RouteTypeMapper;
 import java.lang.reflect.Field;
+import org.jooq.Converter;
 
 /**
  * The factory for {@link EntityDataTypeDefinition} building.
@@ -47,22 +49,31 @@ public class EntityDataTypeDefinitionFactory
   public EntityDataTypeDefinition build(Field field, CodegenProperties properties)
       throws NoSuchTypeException, IllegalArgumentException {
     String sqlType = "";
+    Converter converter = null;
     Class<?> classType = field.getType();
 
     Type annotation = field.getAnnotation(Type.class);
     if (annotation != null) {
       sqlType = annotation.value();
+
+      Class<? extends Converter> converterType = annotation.converter();
+      if (!Converter.class.equals(converterType)) {
+        FactoryContext context = getContext();
+        converter = context.getInstance(converterType);
+        classType = converter.fromType();
+      }
     }
 
     String dialect = properties.require(CodegenProperty.DIALECT);
     if (sqlType.isEmpty()) {
       sqlType = route.getSqlType(dialect, classType);
     }
-    return new EntityDataTypeDefinition(
-        properties.require(CodegenProperty.SCHEMA),
-        classType,
-        dialect,
-        sqlType
-    );
+
+    EntitySchemaDefinition schema = properties.require(CodegenProperty.SCHEMA);
+    EntityDataTypeDefinition type = new EntityDataTypeDefinition(schema, classType, sqlType);
+    type.setDialect(dialect);
+    type.setTypeConverter(converter);
+
+    return type;
   }
 }

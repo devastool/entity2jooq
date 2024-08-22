@@ -31,6 +31,7 @@
     <maven-surefire-plugin.version>3.1.2</maven-surefire-plugin.version>
     <maven-checkstyle-plugin.version>3.1.2</maven-checkstyle-plugin.version>
     <jacoco.version>0.8.7</jacoco.version>
+    <jooq-codegen.version>3.12.2</jooq-codegen.version>
   </properties>
 
   <modules>
@@ -40,6 +41,27 @@
     <module>entity2jooq-example</module>
   </modules>
   <packaging>pom</packaging>
+
+  <dependencyManagement>
+    <dependencies>
+      <!-- Jooq -->
+      <dependency>
+        <groupId>org.jooq</groupId>
+        <artifactId>jooq</artifactId>
+        <version>${jooq-codegen.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jooq</groupId>
+        <artifactId>jooq-codegen-maven</artifactId>
+        <version>${jooq-codegen.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jooq</groupId>
+        <artifactId>jooq-codegen</artifactId>
+        <version>${jooq-codegen.version}</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
 
   <build>
     <pluginManagement>

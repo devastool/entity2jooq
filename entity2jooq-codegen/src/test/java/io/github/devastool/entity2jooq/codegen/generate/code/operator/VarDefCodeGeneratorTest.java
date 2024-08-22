@@ -28,11 +28,12 @@ import org.junit.jupiter.api.Test;
  */
 class VarDefCodeGeneratorTest {
   private static final String VARIABLE_NAME = "myVariable";
-  private static final String EXPECTED_VALUE =
+  private static final String WITHOUT_ASSIGNMENT_EXPECTED = "java.util.ArrayList myVariable";
+  private static final String WITH_ASSIGNMENT_EXPECTED =
       "java.util.ArrayList myVariable = new java.util.ArrayList()";
 
   @Test
-  void generateTest() {
+  void generateWithoutAssignmentTest() {
     VarDefCodeGenerator operator = new VarDefCodeGenerator(
         VARIABLE_NAME,
         ArrayList.class
@@ -41,6 +42,20 @@ class VarDefCodeGeneratorTest {
     BufferedCodeTarget target = new BufferedCodeTarget();
     operator.generate(target);
 
-    Assertions.assertEquals(EXPECTED_VALUE, target.getBuffer());
+    Assertions.assertEquals(WITHOUT_ASSIGNMENT_EXPECTED, target.getBuffer());
+  }
+
+  @Test
+  void generateWithAssignmentTest() {
+    VarDefCodeGenerator operator = new VarDefCodeGenerator(
+        VARIABLE_NAME,
+        ArrayList.class,
+        new NewCodeGenerator(ArrayList.class)
+    );
+
+    BufferedCodeTarget target = new BufferedCodeTarget();
+    operator.generate(target);
+
+    Assertions.assertEquals(WITH_ASSIGNMENT_EXPECTED, target.getBuffer());
   }
 }

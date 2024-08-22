@@ -24,7 +24,25 @@ package io.github.devastool.entity2jooq.annotation.naming;
  * @author Andrey_Yurzanov
  */
 public class SnakeCaseStrategy implements NamingStrategy {
+  private final boolean upper;
+
   private static final char SEPARATOR = '_';
+
+  /**
+   * Constructs new instance of {@link SnakeCaseStrategy}, resolved name will lowercase.
+   */
+  public SnakeCaseStrategy() {
+    this(false);
+  }
+
+  /**
+   * Constructs new instance of {@link SnakeCaseStrategy}.
+   *
+   * @param upper flag of uppercase/lowercase
+   */
+  public SnakeCaseStrategy(boolean upper) {
+    this.upper = upper;
+  }
 
   @Override
   public String resolve(String... original) {
@@ -42,7 +60,12 @@ public class SnakeCaseStrategy implements NamingStrategy {
       if (isUpper && i > 0) {
         buffer.append(SEPARATOR);
       }
-      buffer.append(Character.toLowerCase(symbols[i]));
+
+      if (upper) {
+        buffer.append(Character.toUpperCase(symbols[i]));
+      } else {
+        buffer.append(Character.toLowerCase(symbols[i]));
+      }
     }
 
     if (match) {
