@@ -96,7 +96,7 @@ public class TestInheritEntityTest {
   @Order(1)
   void insertTest() throws SQLException {
     Connection connection = pool.getConnection();
-    DSLContext context = DSL.using(connection, SQLDialect.H2);
+    DSLContext context = DSL.using(connection, SQLDialect.MySQL);
 
     var insert = context
         .insertInto(TEST_INHERIT_ENTITY)
@@ -118,7 +118,7 @@ public class TestInheritEntityTest {
   @Order(2)
   void selectTest() throws SQLException {
     Connection connection = pool.getConnection();
-    DSLContext context = DSL.using(connection, SQLDialect.H2);
+    DSLContext context = DSL.using(connection, SQLDialect.MySQL);
 
     var select = context
         .select(
@@ -148,7 +148,7 @@ public class TestInheritEntityTest {
   @Order(3)
   void updateTest() throws SQLException {
     Connection connection = pool.getConnection();
-    DSLContext context = DSL.using(connection, SQLDialect.H2);
+    DSLContext context = DSL.using(connection, SQLDialect.MySQL);
 
     ArrayList<UpdateSetMoreStep<?>> updates = new ArrayList<>();
     for (TestInheritEntity entity : DATA) {
@@ -167,7 +167,7 @@ public class TestInheritEntityTest {
   @Order(4)
   void deleteTest() throws SQLException {
     Connection connection = pool.getConnection();
-    DSLContext context = DSL.using(connection, SQLDialect.H2);
+    DSLContext context = DSL.using(connection, SQLDialect.MySQL);
 
     DeleteConditionStep<Record> delete = context
         .delete(TEST_INHERIT_ENTITY)
