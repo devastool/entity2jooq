@@ -50,7 +50,7 @@ public class SQLiteTypeMapper extends DialectTypeMapper {
             new TypePair(Byte.class, "integer"),
             new TypePair(Integer.class, "integer"),
             new TypePair(Long.class, "integer"),
-            new TypePair(BigDecimal.class, "integer"),
+            new TypePair(BigDecimal.class, "text"),
             new TypePair(Float.class, "real"),
             new TypePair(Double.class, "real"),
             // Character types
