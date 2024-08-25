@@ -16,6 +16,7 @@
 
 package io.github.devastool.entity2jooq.codegen.type.dialect;
 
+import java.sql.Time;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
@@ -60,5 +61,10 @@ public class MySQLTypeMapperTest {
   void getZonedDateTimeSqlTypeTest() {
     String sqlType = mapper.getSqlType("MySQL", ZonedDateTime.class);
     Assertions.assertEquals("datetime", sqlType);
+  }
+  @Test
+  void getTimeSqlTypeTest() {
+    String sqlType = mapper.getSqlType("MySQL", Time.class);
+    Assertions.assertEquals("time", sqlType);
   }
 }
