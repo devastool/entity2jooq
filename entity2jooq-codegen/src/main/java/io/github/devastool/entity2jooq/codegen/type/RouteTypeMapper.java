@@ -21,6 +21,7 @@ import io.github.devastool.entity2jooq.annotation.type.TypeMapper;
 import io.github.devastool.entity2jooq.codegen.type.dialect.DefaultTypeMapper;
 import io.github.devastool.entity2jooq.codegen.type.dialect.H2TypeMapper;
 import io.github.devastool.entity2jooq.codegen.type.dialect.PostgresTypeMapper;
+import io.github.devastool.entity2jooq.codegen.type.dialect.SQLiteTypeMapper;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -69,9 +70,8 @@ public class RouteTypeMapper implements TypeMapper {
     //    MySQLTypeMapper mySQLMapper = new MySQLTypeMapper();
     //    dialects.put(mySQLMapper.getDialect(), mySQLMapper);
 
-    //    TODO. SQLite dialect
-    //    SQLiteTypeMapper sqliteMapper = new SQLiteTypeMapper();
-    //    dialects.put(sqliteMapper.getDialect(), sqliteMapper);
+    SQLiteTypeMapper sqliteMapper = new SQLiteTypeMapper();
+    dialects.put(sqliteMapper.getDialect(), sqliteMapper);
   }
 
   @Override
