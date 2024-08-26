@@ -34,7 +34,6 @@ class EntityDataTypeDefinitionTest {
     EntityDataTypeDefinition definition = new EntityDataTypeDefinition(
         new EntitySchemaDefinition(new Entity2JooqDatabase(), "test_schema"),
         String.class,
-        "",
         "varchar"
     );
 

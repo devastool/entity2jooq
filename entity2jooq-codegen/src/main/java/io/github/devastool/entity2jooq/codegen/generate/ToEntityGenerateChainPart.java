@@ -17,19 +17,22 @@
 package io.github.devastool.entity2jooq.codegen.generate;
 
 import io.github.devastool.entity2jooq.codegen.definition.EntityColumnDefinition;
+import io.github.devastool.entity2jooq.codegen.definition.EntityDataTypeDefinition;
 import io.github.devastool.entity2jooq.codegen.definition.EntityTableDefinition;
-import io.github.devastool.entity2jooq.codegen.generate.code.CodeTarget;
 import io.github.devastool.entity2jooq.codegen.generate.code.MethodCodeGenerator;
 import io.github.devastool.entity2jooq.codegen.generate.code.operator.EndLineCodeOperator;
 import io.github.devastool.entity2jooq.codegen.generate.code.operator.InvokeMethodCodeGenerator;
+import io.github.devastool.entity2jooq.codegen.generate.code.operator.NewCodeGenerator;
+import io.github.devastool.entity2jooq.codegen.generate.code.operator.OperatorCodeGenerator;
 import io.github.devastool.entity2jooq.codegen.generate.code.operator.ReturnCodeGenerator;
 import io.github.devastool.entity2jooq.codegen.generate.code.operator.VarDefCodeGenerator;
 import io.github.devastool.entity2jooq.codegen.generate.code.operator.VarMemberCodeGenerator;
 import java.util.Objects;
 import java.util.TreeSet;
+import org.jooq.Converter;
 import org.jooq.Record;
 import org.jooq.meta.ColumnDefinition;
-import org.jooq.meta.TableDefinition;
+import org.jooq.meta.DataTypeDefinition;
 
 /**
  * Implementation of {@link GenerateChainPart} for 'toEntity' method generating. Method 'toEntity'
@@ -45,62 +48,87 @@ public class ToEntityGenerateChainPart implements GenerateChainPart {
   private static final String PARAM_METHOD_NAME = "get";
 
   @Override
-  public void generate(TableDefinition table, CodeTarget target) {
-    if (Objects.equals(EntityTableDefinition.class, table.getClass())) {
-      EntityTableDefinition entity = (EntityTableDefinition) table;
-      if (entity.isMapping()) {
-        Class<?> entityType = entity.getEntityType();
+  public void generate(GenerateContext context) {
+    EntityTableDefinition table = context.getTable();
+    if (table.isMapping()) {
+      Class<?> type = table.getEntityType();
 
-        MethodCodeGenerator generator = new MethodCodeGenerator()
-            .setName(METHOD_NAME)
-            .setReturnType(entityType)
-            .setParam(PARAM_NAME, Record.class)
-            .setOperator(
-                new EndLineCodeOperator(
-                    new VarDefCodeGenerator(VARIABLE_NAME, entityType)
-                )
-            );
+      MethodCodeGenerator generator = new MethodCodeGenerator()
+          .setName(METHOD_NAME)
+          .setReturnType(type)
+          .setParam(PARAM_NAME, Record.class)
+          .setOperator(
+              new EndLineCodeOperator(
+                  new VarDefCodeGenerator(VARIABLE_NAME, type, new NewCodeGenerator(type))
+              )
+          );
 
-        for (ColumnDefinition column : new TreeSet<>(entity.getColumns())) {
-          if (Objects.equals(EntityColumnDefinition.class, column.getClass())) {
-            generateSetValue(generator, entity, (EntityColumnDefinition) column);
-          }
+      for (ColumnDefinition column : new TreeSet<>(table.getColumns())) {
+        if (Objects.equals(EntityColumnDefinition.class, column.getClass())) {
+          EntityColumnDefinition entityColumn = (EntityColumnDefinition) column;
+
+          OperatorCodeGenerator valueGetter = getRecordValueGetter(context, table, entityColumn);
+          generator.setOperator(getValueSetter(entityColumn, valueGetter));
         }
-        generator
-            .setOperator(
-                new EndLineCodeOperator(
-                    new ReturnCodeGenerator(VARIABLE_NAME)
-                )
-            )
-            .generate(target);
       }
+
+      generator
+          .setOperator(
+              new EndLineCodeOperator(
+                  new ReturnCodeGenerator(VARIABLE_NAME)
+              )
+          )
+          .generate(context.getTarget());
     }
   }
 
-  private void generateSetValue(
-      MethodCodeGenerator generator,
+  // Generates code: tableName.setValue(recordValueGetter)
+  private OperatorCodeGenerator getValueSetter(
+      EntityColumnDefinition column,
+      OperatorCodeGenerator recordValueGetter
+  ) {
+    return new EndLineCodeOperator(
+        new VarMemberCodeGenerator(
+            VARIABLE_NAME,
+            new InvokeMethodCodeGenerator(column.getSetterName(), recordValueGetter)
+        )
+    );
+  }
+
+  // Generates code: record.get(TABLE_NAME.VALUE) or record.get(TABLE_NAME.VALUE, CONVERTER)
+  private OperatorCodeGenerator getRecordValueGetter(
+      GenerateContext context,
       EntityTableDefinition table,
       EntityColumnDefinition column
   ) {
     String tableName = table.getName();
     String columnName = column.getName();
-    generator.setOperator(
-        new EndLineCodeOperator(
+
+    DataTypeDefinition type = column.getType();
+    if (EntityDataTypeDefinition.class.equals(type.getClass())) {
+      Converter converter = ((EntityDataTypeDefinition) type).getTypeConverter();
+      if (converter != null) {
+        String converterField = context.getVariable(converter.getClass(), String.class);
+        return new VarMemberCodeGenerator(
+            PARAM_NAME,
+            new InvokeMethodCodeGenerator(
+                PARAM_METHOD_NAME,
+                new VarMemberCodeGenerator(
+                    tableName.toUpperCase(),
+                    target -> target.write(columnName.toUpperCase())
+                ),
+                target -> target.write(converterField)
+            )
+        );
+      }
+    }
+    return new VarMemberCodeGenerator(
+        PARAM_NAME,
+        new InvokeMethodCodeGenerator(
+            PARAM_METHOD_NAME,
             new VarMemberCodeGenerator(
-                VARIABLE_NAME,
-                new InvokeMethodCodeGenerator(
-                    column.getSetterName(),
-                    new VarMemberCodeGenerator(
-                        PARAM_NAME,
-                        new InvokeMethodCodeGenerator(
-                            PARAM_METHOD_NAME,
-                            new VarMemberCodeGenerator(
-                                tableName.toUpperCase(),
-                                target -> target.write(columnName.toUpperCase())
-                            )
-                        )
-                    )
-                )
+                tableName.toUpperCase(),
+                target -> target.write(columnName.toUpperCase())
             )
         )
     );

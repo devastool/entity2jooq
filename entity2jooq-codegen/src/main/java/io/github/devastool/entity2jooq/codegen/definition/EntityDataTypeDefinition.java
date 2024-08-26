@@ -17,6 +17,7 @@
 package io.github.devastool.entity2jooq.codegen.definition;
 
 import java.util.Arrays;
+import org.jooq.Converter;
 import org.jooq.SQLDialect;
 import org.jooq.impl.DSL;
 import org.jooq.meta.DefaultDataTypeDefinition;
@@ -29,7 +30,8 @@ import org.jooq.meta.SchemaDefinition;
  * @since 1.0.0
  */
 public class EntityDataTypeDefinition extends DefaultDataTypeDefinition {
-  private final SQLDialect dialect;
+  private SQLDialect dialect;
+  private Converter typeConverter;
 
   private static final String JAVA_TYPE_REFERENCE_TEMPLATE =
       "new org.jooq.impl.DefaultDataType(org.jooq.SQLDialect.%s, %s.class, \"%s\")";
@@ -44,7 +46,6 @@ public class EntityDataTypeDefinition extends DefaultDataTypeDefinition {
   public EntityDataTypeDefinition(
       SchemaDefinition schema,
       Class<?> typeJava,
-      String dialect,
       String typeSql
   ) {
     super(
@@ -61,7 +62,15 @@ public class EntityDataTypeDefinition extends DefaultDataTypeDefinition {
         null,
         typeJava.getCanonicalName()
     );
+    this.dialect = SQLDialect.DEFAULT;
+  }
 
+  /**
+   * Sets SQL-dialect.
+   *
+   * @param dialect SQL-dialect
+   */
+  public void setDialect(String dialect) {
     this.dialect = Arrays
         .stream(SQLDialect.values())
         .filter(SQLDialect::supported)
@@ -71,15 +80,40 @@ public class EntityDataTypeDefinition extends DefaultDataTypeDefinition {
   }
 
   /**
+   * Returns instance of {@link Converter}.
+   *
+   * @return instance of {@link Converter}
+   */
+  public Converter getTypeConverter() {
+    return typeConverter;
+  }
+
+  /**
+   * Sets instance of {@link Converter}.
+   *
+   * @param typeConverter instance of {@link Converter}
+   */
+  public void setTypeConverter(Converter typeConverter) {
+    this.typeConverter = typeConverter;
+  }
+
+  /**
    * Returns reference of the Java type.
    *
    * @return Java type reference
    */
   public String getJavaTypeReference() {
+    String javaType = getJavaType();
+    if (typeConverter != null) {
+      javaType = typeConverter
+          .fromType()
+          .getCanonicalName();
+    }
+
     return String.format(
         JAVA_TYPE_REFERENCE_TEMPLATE,
         dialect,
-        getJavaType(),
+        javaType,
         getType()
     );
   }

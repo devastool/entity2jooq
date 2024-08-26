@@ -14,32 +14,34 @@
  *    limitations under the License.
  */
 
-package io.github.devastool.entity2jooq.annotation.type;
+package io.github.devastool.entity2jooq.example.converter;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
 import org.jooq.Converter;
 
 /**
- * Type of the column.
+ * Converter entity, see tests.
  *
  * @author Andrey_Yurzanov
  * @since 1.0.0
  */
-@Documented
-@Target(ElementType.FIELD)
-@Retention(RetentionPolicy.RUNTIME)
-public @interface Type {
-  /**
-   * Name of SQL type.
-   */
-  String value() default "";
+public class TestConverter implements Converter<String, Integer> {
+  @Override
+  public Integer from(String s) {
+    return Integer.parseInt(s);
+  }
 
-  /**
-   * Converter for converting user type to built-in type.
-   */
-  Class<? extends Converter> converter() default Converter.class;
+  @Override
+  public String to(Integer integer) {
+    return String.valueOf(integer);
+  }
+
+  @Override
+  public Class<String> fromType() {
+    return String.class;
+  }
+
+  @Override
+  public Class<Integer> toType() {
+    return Integer.class;
+  }
 }

@@ -14,22 +14,39 @@
  *    limitations under the License.
  */
 
-package io.github.devastool.entity2jooq.codegen.generate;
+package io.github.devastool.entity2jooq.codegen.generate.code.operator;
 
 import io.github.devastool.entity2jooq.codegen.generate.code.CodeTarget;
-import org.jooq.meta.TableDefinition;
 
 /**
- * Abstraction of source code generation of a specific feature, for example method or constant.
+ * Implementation of {@link OperatorCodeGenerator} to generate code of instance creation.
  *
  * @author Andrey_Yurzanov
  * @since 1.0.0
  */
-public interface GenerateChainPart {
+public class NewCodeGenerator implements OperatorCodeGenerator {
+  private final Class<?> type;
+
+  private static final String NEW_KEYWORD = "new";
+  private static final String PARAMS_BEGIN = "(";
+  private static final String PARAMS_END = ")";
+
   /**
-   * Generates source code of a specific feature.
+   * Constructs new instance of {@link NewCodeGenerator}.
    *
-   * @param context context for source code generating
+   * @param type type for new operator
    */
-  void generate(GenerateContext context);
+  public NewCodeGenerator(Class<?> type) {
+    this.type = type;
+  }
+
+  @Override
+  public void generate(CodeTarget target) {
+    target
+        .write(NEW_KEYWORD)
+        .space()
+        .write(type.getCanonicalName())
+        .write(PARAMS_BEGIN)
+        .write(PARAMS_END);
+  }
 }

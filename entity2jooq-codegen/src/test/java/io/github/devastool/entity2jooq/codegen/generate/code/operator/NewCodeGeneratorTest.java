@@ -14,32 +14,27 @@
  *    limitations under the License.
  */
 
-package io.github.devastool.entity2jooq.annotation.type;
+package io.github.devastool.entity2jooq.codegen.generate.code.operator;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-import org.jooq.Converter;
+import io.github.devastool.entity2jooq.codegen.generate.code.BufferedCodeTarget;
+import java.util.ArrayList;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
- * Type of the column.
+ * Tests of {@link NewCodeGenerator}.
  *
  * @author Andrey_Yurzanov
- * @since 1.0.0
  */
-@Documented
-@Target(ElementType.FIELD)
-@Retention(RetentionPolicy.RUNTIME)
-public @interface Type {
-  /**
-   * Name of SQL type.
-   */
-  String value() default "";
+class NewCodeGeneratorTest {
+  private static final String EXPECTED_VALUE = "new java.util.ArrayList()";
 
-  /**
-   * Converter for converting user type to built-in type.
-   */
-  Class<? extends Converter> converter() default Converter.class;
+  @Test
+  void generateTest() {
+    BufferedCodeTarget target = new BufferedCodeTarget();
+    NewCodeGenerator operator = new NewCodeGenerator(ArrayList.class);
+    operator.generate(target);
+
+    Assertions.assertEquals(EXPECTED_VALUE, target.getBuffer());
+  }
 }

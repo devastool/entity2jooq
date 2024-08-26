@@ -14,32 +14,21 @@
  *    limitations under the License.
  */
 
-package io.github.devastool.entity2jooq.annotation.type;
+package io.github.devastool.entity2jooq.codegen.generate;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-import org.jooq.Converter;
+import java.util.Comparator;
 
 /**
- * Type of the column.
+ * Compares classes by simple names.
  *
  * @author Andrey_Yurzanov
  * @since 1.0.0
  */
-@Documented
-@Target(ElementType.FIELD)
-@Retention(RetentionPolicy.RUNTIME)
-public @interface Type {
-  /**
-   * Name of SQL type.
-   */
-  String value() default "";
-
-  /**
-   * Converter for converting user type to built-in type.
-   */
-  Class<? extends Converter> converter() default Converter.class;
+class ClassComparator implements Comparator<Class<?>> {
+  @Override
+  public int compare(Class<?> first, Class<?> second) {
+    return first
+        .getSimpleName()
+        .compareTo(second.getSimpleName());
+  }
 }
