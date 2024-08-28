@@ -29,7 +29,6 @@ import java.util.Objects;
 @Table(inheritance = true)
 @Schema("test_inherit_schema")
 public class TestInheritEntity extends TestEntityParent {
-
   /**
    * Constructs new instance of {@link TestInheritEntity}.
    */
