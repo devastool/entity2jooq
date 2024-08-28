@@ -14,35 +14,30 @@
  *    limitations under the License.
  */
 
-package io.github.devastool.entity2jooq.example.embedded;
+package io.github.devastool.entity2jooq.codegen.generate.code.operator;
 
-import io.github.devastool.entity2jooq.annotation.Embedded;
+import io.github.devastool.entity2jooq.codegen.generate.code.CodeTarget;
 
 /**
- * Example Embedded entity, see tests.
+ * Implementation of {@link OperatorCodeGenerator} to generate variable.
  *
  * @author Sergey_Konovalov
  * @since 1.0.0
  */
-@Embedded
-public class TestEntityLocation {
-  private String point;
-
-  public TestEntityLocation() {
-  }
+public class VarCodeGenerator implements OperatorCodeGenerator {
+  private final String variableName;
 
   /**
-   * Constructs new instance of {@link TestEntityLocation}.
+   * Constructs new instance of {@link VarMemberCodeGenerator}.
+   *
+   * @param variableName name of the variable
    */
-  public TestEntityLocation(String point) {
-    this.point = point;
+  public VarCodeGenerator(String variableName) {
+    this.variableName = variableName;
   }
 
-  public String getPoint() {
-    return point;
-  }
-
-  public void setPoint(String point) {
-    this.point = point;
+  @Override
+  public void generate(CodeTarget target) {
+    target.write(variableName);
   }
 }

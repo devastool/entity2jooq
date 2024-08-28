@@ -35,7 +35,14 @@ public class TestEntityLocation {
     this.point = point;
   }
 
+  public TestEntityLocation() {
+  }
+
   public String getPoint() {
     return point;
+  }
+
+  public void setPoint(String point) {
+    this.point = point;
   }
 }

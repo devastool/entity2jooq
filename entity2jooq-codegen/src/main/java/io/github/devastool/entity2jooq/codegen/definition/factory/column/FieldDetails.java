@@ -17,7 +17,10 @@
 package io.github.devastool.entity2jooq.codegen.definition.factory.column;
 
 import java.lang.reflect.Field;
+import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * Represents details about a being processed field.
@@ -27,8 +30,11 @@ import java.util.List;
  */
 public class FieldDetails {
   private final Field processedField;
-  private final Field parentfield;
-  private final List<String> parentFieldsName;
+  private final Field parentField;
+  private final List<String> parentFieldNames;
+
+  private static final int FIRST_INDEX = 0;
+  private static final int SECOND_INDEX = 1;
 
   /**
    * Creates a new instance of FieldDetails using the specified being processed field name, parent
@@ -44,8 +50,8 @@ public class FieldDetails {
       parentFieldsName.add(parentField.getName());
     }
     this.processedField = processedField;
-    this.parentfield = parentField;
-    this.parentFieldsName = parentFieldsName;
+    this.parentField = parentField;
+    this.parentFieldNames = parentFieldsName;
   }
 
   /**
@@ -55,6 +61,24 @@ public class FieldDetails {
    */
   public Field getProcessedField() {
     return processedField;
+  }
+
+  /**
+   * Returns the parent field.
+   *
+   * @return the field
+   */
+  public Field getParentField() {
+    return parentField;
+  }
+
+  /**
+   * Returns the parent field.
+   *
+   * @return the field
+   */
+  public boolean isEmbedded() {
+    return Objects.nonNull(parentField);
   }
 
   /**
@@ -80,7 +104,47 @@ public class FieldDetails {
    *
    * @return the list of parent field names
    */
-  public List<String> getParentFieldsName() {
-    return parentFieldsName;
+  public List<String> getParentFieldNames() {
+    return parentFieldNames;
+  }
+
+  /**
+   * Returns the entity name.
+   *
+   * @return the entity name
+   */
+  public String getEntityName() {
+    return joinToCamelCase(parentFieldNames);
+  }
+
+  /**
+   * Returns the parent entity name.
+   *
+   * @return the parent entity name
+   */
+  public String getParentEntityName() {
+    var fieldsNames = parentFieldNames.subList(
+            FIRST_INDEX,
+            parentFieldNames.size() - SECOND_INDEX
+        );
+    return joinToCamelCase(fieldsNames);
+  }
+
+  // Joins a collection of strings into a camel case format.
+  private String joinToCamelCase(Collection<String> names) {
+    String name = names
+        .stream()
+        .map(
+            word -> word
+                .substring(FIRST_INDEX, SECOND_INDEX)
+                .toUpperCase()
+                .concat(word.substring(SECOND_INDEX))
+        )
+        .collect(Collectors.joining());
+
+    return name
+        .substring(FIRST_INDEX, SECOND_INDEX)
+        .toLowerCase()
+        .concat(name.substring(SECOND_INDEX));
   }
 }

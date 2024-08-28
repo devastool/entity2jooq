@@ -14,35 +14,28 @@
  *    limitations under the License.
  */
 
-package io.github.devastool.entity2jooq.example.embedded;
+package io.github.devastool.entity2jooq.codegen.generate.code.operator;
 
-import io.github.devastool.entity2jooq.annotation.Embedded;
+import io.github.devastool.entity2jooq.codegen.generate.code.BufferedCodeTarget;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
- * Example Embedded entity, see tests.
+ * Tests of {@link VarCodeGenerator}.
  *
  * @author Sergey_Konovalov
- * @since 1.0.0
  */
-@Embedded
-public class TestEntityLocation {
-  private String point;
+class VarCodeGeneratorTest {
+  private static final String VARIABLE_NAME = "myVariable";
 
-  public TestEntityLocation() {
-  }
+  @Test
+  void generate() {
 
-  /**
-   * Constructs new instance of {@link TestEntityLocation}.
-   */
-  public TestEntityLocation(String point) {
-    this.point = point;
-  }
+    var operator = new VarCodeGenerator(VARIABLE_NAME);
 
-  public String getPoint() {
-    return point;
-  }
+    BufferedCodeTarget target = new BufferedCodeTarget();
+    operator.generate(target);
 
-  public void setPoint(String point) {
-    this.point = point;
+    Assertions.assertEquals(VARIABLE_NAME, target.getBuffer());
   }
 }

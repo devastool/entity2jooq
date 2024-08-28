@@ -38,7 +38,7 @@ import java.util.Map;
 /**
  * The factory for {@link EntityColumnDefinition} building.
  *
- * @author Andrey_Yurzanov
+ * @author Andrey_Yurzanov, Sergey_Konovalov
  * @since 1.0.0
  */
 public class EntityColumnDefinitionFactory extends
@@ -75,14 +75,14 @@ public class EntityColumnDefinitionFactory extends
 
       if (processedType.isAnnotationPresent(Embedded.class)) {
         for (Field declaredField : processedType.getDeclaredFields()) {
-          List<String> fieldsName = new ArrayList<>(fieldDetails.getParentFieldsName());
+          List<String> fieldsName = new ArrayList<>(fieldDetails.getParentFieldNames());
 
           queue.push(new FieldDetails(declaredField, fieldDetails.getProcessedField(), fieldsName));
         }
       } else {
         String name = fieldDetails.getName();
         Class<? extends NamingStrategy> naming = properties.require(NAMING_STRATEGY);
-        var fieldNames = fieldDetails.getParentFieldsName();
+        var fieldNames = fieldDetails.getParentFieldNames();
 
         Field processedField = fieldDetails.getProcessedField();
         Column column = processedField.getAnnotation(Column.class);
@@ -106,7 +106,7 @@ public class EntityColumnDefinitionFactory extends
 
         columns.add(new EntityColumnDefinition(
             properties.require(TABLE),
-            field,
+            fieldDetails,
             strategy.resolve(name),
             typeFactory.build(processedField, properties)
         ));

@@ -16,6 +16,7 @@
 
 package io.github.devastool.entity2jooq.codegen.generate;
 
+import io.github.devastool.entity2jooq.annotation.Embedded;
 import io.github.devastool.entity2jooq.annotation.Table;
 import io.github.devastool.entity2jooq.annotation.type.Type;
 import io.github.devastool.entity2jooq.codegen.Entity2JooqDatabase;
@@ -73,7 +74,17 @@ class ToEntityGenerateChainPartTest {
       System.lineSeparator(),
       "        io.github.devastool.entity2jooq.codegen.generate.ToEntityGenerateChainPartTest.TestEntity entity = new io.github.devastool.entity2jooq.codegen.generate.ToEntityGenerateChainPartTest.TestEntity();",
       System.lineSeparator(),
+      "        io.github.devastool.entity2jooq.codegen.generate.ToEntityGenerateChainPartTest.TestEmbedded embeddedName = new io.github.devastool.entity2jooq.codegen.generate.ToEntityGenerateChainPartTest.TestEmbedded();",
+      System.lineSeparator(),
+      "        io.github.devastool.entity2jooq.codegen.generate.ToEntityGenerateChainPartTest.TestEntity embedded = new io.github.devastool.entity2jooq.codegen.generate.ToEntityGenerateChainPartTest.TestEntity();",
+      System.lineSeparator(),
+      "        embedded.setEmbedded_name(embeddedName);",
+      System.lineSeparator(),
+      "        entity.setEmbedded(embedded);",
+      System.lineSeparator(),
       "        entity.setCount(record.get(TEST_ENTITY.COUNT, null));",
+      System.lineSeparator(),
+      "        embeddedName.setName(record.get(TEST_ENTITY.EMBEDDED_NAME));",
       System.lineSeparator(),
       "        entity.setId(record.get(TEST_ENTITY.ID, null));",
       System.lineSeparator(),
@@ -122,6 +133,7 @@ class ToEntityGenerateChainPartTest {
     private String secondId;
     @Type(converter = IntegerToString.class)
     private Integer count;
+    private TestEmbedded embedded;
   }
 
   @Table
@@ -172,5 +184,11 @@ class ToEntityGenerateChainPartTest {
     public Class<String> toType() {
       return String.class;
     }
+  }
+
+  @Embedded
+  static class TestEmbedded{
+    private String name;
+
   }
 }
