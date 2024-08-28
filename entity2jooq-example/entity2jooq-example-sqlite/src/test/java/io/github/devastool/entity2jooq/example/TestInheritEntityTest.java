@@ -16,8 +16,6 @@
 
 package io.github.devastool.entity2jooq.example;
 
-import static org.jooq.generated.test_inherit_schema.Tables.TEST_INHERIT_ENTITY;
-
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -25,14 +23,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
-import org.h2.jdbcx.JdbcConnectionPool;
 import org.jooq.DSLContext;
 import org.jooq.DeleteConditionStep;
 import org.jooq.Record;
 import org.jooq.SQLDialect;
-import org.jooq.Table;
 import org.jooq.UpdateSetMoreStep;
-import org.jooq.generated.DefaultCatalog;
 import org.jooq.impl.DSL;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
@@ -41,6 +36,11 @@ import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
+import org.sqlite.SQLiteDataSource;
+
+import static org.jooq.generated.test_inherit_schema.Tables.TEST_INHERIT_ENTITY;
+import static org.jooq.impl.DSL.field;
+import static org.jooq.impl.DSL.table;
 
 /**
  * Tests of {@link TestInheritEntity} DDL.
@@ -49,16 +49,9 @@ import org.junit.jupiter.api.TestMethodOrder;
  * @since 1.0.0
  */
 @TestMethodOrder(OrderAnnotation.class)
-public class TestInheritEntityTest {
-  private static JdbcConnectionPool pool;
-  private static final String DB_URL = String.join(
-      "",
-      "jdbc:h2:mem:db1;",
-      "DB_CLOSE_DELAY=-1;",
-      "MODE=PostgreSQL;",
-      "DATABASE_TO_LOWER=TRUE;",
-      "DEFAULT_NULL_ORDERING=HIGH"
-  );
+class TestInheritEntityTest {
+  private static final String DB_URL = "jdbc:sqlite::memory:";
+  private static Connection connection;
 
   private static final List<TestInheritEntity> DATA = Arrays.asList(
       new TestInheritEntity(),
@@ -68,38 +61,31 @@ public class TestInheritEntityTest {
 
   @BeforeAll
   static void init() throws SQLException {
-    pool = JdbcConnectionPool.create(DB_URL, "", "");
+    SQLiteDataSource dataSource = new SQLiteDataSource();
+    dataSource.setUrl(DB_URL);
+    connection = dataSource.getConnection();
 
-    Connection connection = pool.getConnection();
-    DSLContext context = DSL.using(connection);
+    DSLContext context = DSL.using(connection, SQLDialect.SQLITE);
     context
-        .createSchemaIfNotExists(DefaultCatalog.DEFAULT_CATALOG.TEST_INHERIT_SCHEMA)
+        .createTableIfNotExists(TEST_INHERIT_ENTITY.getName())
+        .column(TEST_INHERIT_ENTITY.INHERIT_FIELD.getName(), TEST_INHERIT_ENTITY.INHERIT_FIELD.getDataType())
         .execute();
-
-    Table<Record> table = TEST_INHERIT_ENTITY.asTable();
-    context
-        .createTableIfNotExists(table)
-        .column(TEST_INHERIT_ENTITY.INHERIT_FIELD)
-        .execute();
-
-    connection.close();
   }
 
   @AfterAll
-  static void destroy() {
-    pool.dispose();
+  static void destroy() throws SQLException {
+    connection.close();
   }
 
   @Test
   @Order(1)
-  void insertTest() throws SQLException {
-    Connection connection = pool.getConnection();
-    DSLContext context = DSL.using(connection, SQLDialect.H2);
+  void insertTest() {
+    DSLContext context = DSL.using(connection, SQLDialect.SQLITE);
 
     var insert = context
-        .insertInto(TEST_INHERIT_ENTITY)
+        .insertInto(table(TEST_INHERIT_ENTITY.getName()))
         .columns(
-            TEST_INHERIT_ENTITY.INHERIT_FIELD
+            field(TEST_INHERIT_ENTITY.INHERIT_FIELD.getName())
         );
 
     for (TestInheritEntity entity : DATA) {
@@ -107,23 +93,21 @@ public class TestInheritEntityTest {
           entity.getInheritField()
       );
     }
-    Assertions.assertDoesNotThrow(insert::execute);
 
-    connection.close();
+    Assertions.assertDoesNotThrow(insert::execute);
   }
 
   @Test
   @Order(2)
-  void selectTest() throws SQLException {
-    Connection connection = pool.getConnection();
-    DSLContext context = DSL.using(connection, SQLDialect.H2);
+  void selectTest() {
+    DSLContext context = DSL.using(connection, SQLDialect.SQLITE);
 
     var select = context
         .select(
-            TEST_INHERIT_ENTITY.INHERIT_FIELD
+            field(TEST_INHERIT_ENTITY.INHERIT_FIELD.getName())
         )
-        .from(TEST_INHERIT_ENTITY)
-        .where(TEST_INHERIT_ENTITY.INHERIT_FIELD.isNotNull());
+        .from(table(TEST_INHERIT_ENTITY.getName()))
+        .where(field(TEST_INHERIT_ENTITY.INHERIT_FIELD.getName()).isNotNull());
 
     List<TestInheritEntity> results = select.fetch(
         records -> new TestInheritEntity(
@@ -139,46 +123,41 @@ public class TestInheritEntityTest {
               .anyMatch(result -> Objects.equals(result.getInheritField(), inheritField))
       );
     }
-    connection.close();
   }
 
   @Test
   @Order(3)
-  void updateTest() throws SQLException {
-    Connection connection = pool.getConnection();
-    DSLContext context = DSL.using(connection, SQLDialect.H2);
+  void updateTest() {
+    DSLContext context = DSL.using(connection, SQLDialect.SQLITE);
 
     ArrayList<UpdateSetMoreStep<?>> updates = new ArrayList<>();
     for (TestInheritEntity entity : DATA) {
       updates.add(
           context
-              .update(TEST_INHERIT_ENTITY)
-              .set(TEST_INHERIT_ENTITY.INHERIT_FIELD, entity.getInheritField())
+              .update(table(TEST_INHERIT_ENTITY.getName()))
+              .set(field(TEST_INHERIT_ENTITY.INHERIT_FIELD.getName()), entity.getInheritField())
       );
     }
-    Assertions.assertDoesNotThrow(() -> context.batch(updates).execute());
 
-    connection.close();
+    Assertions.assertDoesNotThrow(() -> context.batch(updates).execute());
   }
 
   @Test
   @Order(4)
-  void deleteTest() throws SQLException {
-    Connection connection = pool.getConnection();
-    DSLContext context = DSL.using(connection, SQLDialect.H2);
+  void deleteTest() {
+    DSLContext context = DSL.using(connection, SQLDialect.SQLITE);
 
     DeleteConditionStep<Record> delete = context
-        .delete(TEST_INHERIT_ENTITY)
+        .delete(table(TEST_INHERIT_ENTITY.getName()))
         .where(
-            TEST_INHERIT_ENTITY.INHERIT_FIELD.in(
+            field(TEST_INHERIT_ENTITY.INHERIT_FIELD.getName()).in(
                 DATA
                     .stream()
                     .map(TestInheritEntity::getInheritField)
                     .collect(Collectors.toList())
             )
         );
-    Assertions.assertDoesNotThrow(delete::execute);
 
-    connection.close();
+    Assertions.assertDoesNotThrow(delete::execute);
   }
 }
