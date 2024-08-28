@@ -70,6 +70,16 @@ public class EntityColumnDefinition extends DefaultColumnDefinition
   }
 
   /**
+   * Returns name of field setter.
+   *
+   * @return name of field setter
+   */
+  public String getSetterName() {
+    String name = getMethodNamePostfix(fieldDetails.getName());
+    return SETTER_PREFIX.concat(name);
+  }
+
+  /**
    * Checks if the field are embedded.
    *
    * @return returns true if embedded
@@ -85,16 +95,6 @@ public class EntityColumnDefinition extends DefaultColumnDefinition
    */
   public FieldDetails getFieldDetails() {
     return this.fieldDetails;
-  }
-
-  /**
-   * Returns name of field setter.
-   *
-   * @return name of field setter
-   */
-  public String getSetterName() {
-    String name = getMethodNamePostfix(fieldDetails.getName());
-    return SETTER_PREFIX.concat(name);
   }
 
   private String getMethodNamePostfix(String name) {
