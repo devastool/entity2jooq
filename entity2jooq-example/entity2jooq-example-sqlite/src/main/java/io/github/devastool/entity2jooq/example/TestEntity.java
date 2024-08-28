@@ -26,7 +26,7 @@ import java.util.Random;
 /**
  * Example entity, see tests.
  *
- * @author Andrey_Yurzanov
+ * @author Filkov_Artem
  * @since 1.0.0
  */
 @Table

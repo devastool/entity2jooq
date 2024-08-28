@@ -21,7 +21,7 @@ import io.github.devastool.entity2jooq.annotation.Embedded;
 /**
  * Example Embedded entity, see tests.
  *
- * @author Sergey_Konovalov
+ * @author Filkov_Artem
  * @since 1.0.0
  */
 @Embedded

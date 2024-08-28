@@ -23,7 +23,7 @@ import java.util.Objects;
  * Example entity parent.
  *
  * @since 1.0.0
- * @author Andrey_Yurzanov, Artem Filkov
+ * @author Filkov_Artem
  */
 @Table
 public class TestEntityParent {

@@ -45,7 +45,7 @@ import static org.jooq.impl.DSL.table;
 /**
  * Tests of {@link TestEntity} DDL.
  *
- * @author Andrey_Yurzanov, Artem_Filkov
+ * @author Filkov_Artem
  */
 @TestMethodOrder(OrderAnnotation.class)
 class TestEntityTest {
