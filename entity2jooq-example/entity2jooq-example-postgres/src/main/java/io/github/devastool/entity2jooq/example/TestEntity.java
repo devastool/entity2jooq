@@ -44,7 +44,6 @@ import java.util.UUID;
 public class TestEntity extends TestEntityParent {
   private Short shortField;
   @Column
-  @Column("intFieldAlias")
   private Integer intField;
   private Long longField;
   private BigDecimal bigDecimalField;

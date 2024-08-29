@@ -27,6 +27,7 @@ import org.junit.jupiter.api.Test;
 class SnakeCaseStrategyTest {
   private static final String RESOLVE_TEST_VALUE = "myVariableName";
   private static final String RESOLVE_TEST_EXPECTED = "my_variable_name";
+  private static final String RESOLVE_UPPER_TEST_EXPECTED = "MY_VARIABLE_NAME";
 
   @Test
   void resolveSuccessTest() {
@@ -38,5 +39,11 @@ class SnakeCaseStrategyTest {
   void resolveAlreadyResolvedValueSuccessTest() {
     SnakeCaseStrategy strategy = new SnakeCaseStrategy();
     Assertions.assertEquals(RESOLVE_TEST_EXPECTED, strategy.resolve(RESOLVE_TEST_VALUE));
+  }
+
+  @Test
+  void resolveSuccessUpperTest() {
+    SnakeCaseStrategy strategy = new SnakeCaseStrategy(true);
+    Assertions.assertEquals(RESOLVE_UPPER_TEST_EXPECTED, strategy.resolve(RESOLVE_TEST_VALUE));
   }
 }

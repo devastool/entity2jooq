@@ -16,12 +16,10 @@
 
 package io.github.devastool.entity2jooq.annotation;
 
-import io.github.devastool.entity2jooq.annotation.Column.Columns;
 import io.github.devastool.entity2jooq.annotation.naming.NamingStrategy;
 import io.github.devastool.entity2jooq.annotation.naming.SnakeCaseStrategy;
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
-import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
@@ -33,7 +31,6 @@ import java.lang.annotation.Target;
  * @author Andrey_Yurzanov
  */
 @Documented
-@Repeatable(Columns.class)
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Column {
@@ -46,20 +43,4 @@ public @interface Column {
    * Naming strategy for column name resolving. By default {@link SnakeCaseStrategy}.
    */
   Class<? extends NamingStrategy> naming() default SnakeCaseStrategy.class;
-
-  /**
-   * Container of {@link Column} annotations.
-   *
-   * @author Andrey_Yurzanov
-   * @since 1.0.0
-   */
-  @Documented
-  @Target(ElementType.FIELD)
-  @Retention(RetentionPolicy.RUNTIME)
-  @interface Columns {
-    /**
-     * Set of {@link Column} annotations.
-     */
-    Column[] value();
-  }
 }
