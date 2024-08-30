@@ -17,10 +17,7 @@
 package io.github.devastool.entity2jooq.codegen.definition.factory.column;
 
 import java.lang.reflect.Field;
-import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 /**
  * Represents details about a being processed field.
@@ -30,28 +27,23 @@ import java.util.stream.Collectors;
  */
 public class FieldDetails {
   private final Field processedField;
-  private final Field parentField;
-  private final List<String> parentFieldNames;
+  private final List<Field> parentFields;
+  private final List<String> nameSegments;
 
-  private static final int FIRST_INDEX = 0;
-  private static final int SECOND_INDEX = 1;
+  private static final int INDEX_LAST = 1;
 
   /**
    * Creates a new instance of FieldDetails using the specified being processed field name, parent
    * field name, and parent field chain names.
    *
-   * @param processedField   the being processed field.
-   * @param parentField      the parent field of the being processed field, or {@code null} if there
-   *                         is no parent field
-   * @param parentFieldsName the list of parent field names
+   * @param processedField   the being processed field
+   * @param parentFields     the parent fields of the being processed field
+   * @param nameSegments     the list containing the field name segments
    */
-  public FieldDetails(Field processedField, Field parentField, List<String> parentFieldsName) {
-    if (parentField != null) {
-      parentFieldsName.add(parentField.getName());
-    }
+  public FieldDetails(Field processedField, List<Field> parentFields, List<String> nameSegments) {
     this.processedField = processedField;
-    this.parentField = parentField;
-    this.parentFieldNames = parentFieldsName;
+    this.parentFields = parentFields;
+    this.nameSegments = nameSegments;
   }
 
   /**
@@ -64,21 +56,21 @@ public class FieldDetails {
   }
 
   /**
-   * Returns the parent field.
+   * Returns the last parent field.
    *
    * @return the field
    */
-  public Field getParentField() {
-    return parentField;
+  public Field getLastParentField() {
+    return parentFields.get(parentFields.size() - INDEX_LAST);
   }
 
   /**
-   * Returns the parent field.
+   * Checks if the current object is embedded.
    *
-   * @return the field
+   * @return true if the current object is embedded, false otherwise
    */
   public boolean isEmbedded() {
-    return Objects.nonNull(parentField);
+    return !parentFields.isEmpty();
   }
 
   /**
@@ -100,51 +92,20 @@ public class FieldDetails {
   }
 
   /**
-   * Returns the list of parent field names.
+   * Retrieves the list of field name segments.
    *
-   * @return the list of parent field names
+   * @return the list containing the field name segments
    */
-  public List<String> getParentFieldNames() {
-    return parentFieldNames;
+  public List<String> getNameSegments() {
+    return nameSegments;
   }
 
   /**
-   * Returns the entity name.
+   * Returns the list of parent fields.
    *
-   * @return the entity name
+   * @return the list of parent fields
    */
-  public String getEntityName() {
-    return joinToCamelCase(parentFieldNames);
-  }
-
-  /**
-   * Returns the parent entity name.
-   *
-   * @return the parent entity name
-   */
-  public String getParentEntityName() {
-    var fieldsNames = parentFieldNames.subList(
-            FIRST_INDEX,
-            parentFieldNames.size() - SECOND_INDEX
-        );
-    return joinToCamelCase(fieldsNames);
-  }
-
-  // Joins a collection of strings into a camel case format.
-  private String joinToCamelCase(Collection<String> names) {
-    String name = names
-        .stream()
-        .map(
-            word -> word
-                .substring(FIRST_INDEX, SECOND_INDEX)
-                .toUpperCase()
-                .concat(word.substring(SECOND_INDEX))
-        )
-        .collect(Collectors.joining());
-
-    return name
-        .substring(FIRST_INDEX, SECOND_INDEX)
-        .toLowerCase()
-        .concat(name.substring(SECOND_INDEX));
+  public List<Field> getParentFields() {
+    return parentFields;
   }
 }

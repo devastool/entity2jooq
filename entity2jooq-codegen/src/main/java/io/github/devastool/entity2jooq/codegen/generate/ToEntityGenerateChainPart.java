@@ -19,23 +19,23 @@ package io.github.devastool.entity2jooq.codegen.generate;
 import io.github.devastool.entity2jooq.codegen.definition.EntityColumnDefinition;
 import io.github.devastool.entity2jooq.codegen.definition.EntityDataTypeDefinition;
 import io.github.devastool.entity2jooq.codegen.definition.EntityTableDefinition;
-import io.github.devastool.entity2jooq.codegen.definition.factory.column.FieldDetails;
 import io.github.devastool.entity2jooq.codegen.generate.code.MethodCodeGenerator;
 import io.github.devastool.entity2jooq.codegen.generate.code.operator.EndLineCodeOperator;
 import io.github.devastool.entity2jooq.codegen.generate.code.operator.InvokeMethodCodeGenerator;
 import io.github.devastool.entity2jooq.codegen.generate.code.operator.NewCodeGenerator;
 import io.github.devastool.entity2jooq.codegen.generate.code.operator.OperatorCodeGenerator;
 import io.github.devastool.entity2jooq.codegen.generate.code.operator.ReturnCodeGenerator;
-import io.github.devastool.entity2jooq.codegen.generate.code.operator.VarCodeGenerator;
 import io.github.devastool.entity2jooq.codegen.generate.code.operator.VarDefCodeGenerator;
 import io.github.devastool.entity2jooq.codegen.generate.code.operator.VarMemberCodeGenerator;
 import java.lang.reflect.Field;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Map.Entry;
+import java.util.HashSet;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
+import org.apache.commons.lang3.tuple.Pair;
 import org.jooq.Converter;
 import org.jooq.Record;
 import org.jooq.meta.ColumnDefinition;
@@ -56,6 +56,9 @@ public class ToEntityGenerateChainPart implements GenerateChainPart {
   private static final String SETTER_PREFIX = "set";
   private static final int FIRST_INDEX = 0;
   private static final int SECOND_INDEX = 1;
+  private static final int COUNTER_DEFAULT = 0;
+  private static final int COUNTER_INCREMENT = 1;
+  private static final String SEPARATOR = "_";
 
   @Override
   public void generate(GenerateContext context) {
@@ -73,61 +76,25 @@ public class ToEntityGenerateChainPart implements GenerateChainPart {
               )
           );
 
+      Map<String, Integer> nameCounter = new HashMap<>();
+      Map<Field, String> nameResolver = new HashMap<>();
+      Set<Pair<String, String>> entityLinks = new HashSet<>();
+
       var embeddedColumns = table
           .getColumns()
           .stream()
-          .map(column -> (EntityColumnDefinition) column)
+          .map(colum -> (EntityColumnDefinition) colum)
           .filter(EntityColumnDefinition::isEmbedded)
           .collect(Collectors.toList());
 
-      var embeddedFieldMap = getFieldMap(embeddedColumns);
+      for (EntityColumnDefinition column : embeddedColumns) {
+        var fieldDetails = column.getFieldDetails();
+        Field parentField = null;
 
-      // Create embedded instances
-      for (Entry<String, Field> fieldEntry : embeddedFieldMap.entrySet()) {
-        String fieldName = fieldEntry.getKey();
-        Field field = fieldEntry.getValue();
-        Class<?> fieldType = field.getDeclaringClass();
-        generator.setOperator(
-            new EndLineCodeOperator(
-                new VarDefCodeGenerator(fieldName, fieldType, new NewCodeGenerator(fieldType))
-            )
-        );
-      }
-
-      // Embedded instances initialization
-      for (Entry<String, Field> field : embeddedFieldMap.entrySet()) {
-        String fieldName = field.getKey();
-        var foundColumn = embeddedColumns
-            .stream()
-            .filter(column -> isFieldMatchingByName(fieldName, column))
-            .findFirst()
-            .orElse(null);
-
-        if (foundColumn != null) {
-          FieldDetails fieldDetails = foundColumn.getFieldDetails();
-          generator.setOperator(
-              new EndLineCodeOperator(
-                  new VarMemberCodeGenerator(
-                      fieldDetails.getParentEntityName(),
-                      new InvokeMethodCodeGenerator(
-                          getGetterName(foundColumn.getName()),
-                          new VarCodeGenerator(fieldDetails.getEntityName())
-                      )
-                  )
-              )
-          );
-        } else {
-          generator.setOperator(
-              new EndLineCodeOperator(
-                  new VarMemberCodeGenerator(
-                      VARIABLE_NAME,
-                      new InvokeMethodCodeGenerator(
-                          getGetterName(field.getKey()),
-                          new VarCodeGenerator(field.getKey())
-                      )
-                  )
-              )
-          );
+        for (Field field : fieldDetails.getParentFields()) {
+          generateEntity(field, nameCounter, nameResolver, generator);
+          generateSetterLink(field, parentField, nameResolver, entityLinks, generator);
+          parentField = field;
         }
       }
 
@@ -136,7 +103,7 @@ public class ToEntityGenerateChainPart implements GenerateChainPart {
           EntityColumnDefinition entityColumn = (EntityColumnDefinition) column;
 
           OperatorCodeGenerator valueGetter = getRecordValueGetter(context, table, entityColumn);
-          generator.setOperator(getValueSetter(entityColumn, valueGetter));
+          generator.setOperator(getValueSetter(entityColumn, valueGetter, nameResolver));
         }
       }
 
@@ -153,13 +120,14 @@ public class ToEntityGenerateChainPart implements GenerateChainPart {
   // Generates code: tableName.setValue(recordValueGetter)
   private OperatorCodeGenerator getValueSetter(
       EntityColumnDefinition column,
-      OperatorCodeGenerator recordValueGetter
+      OperatorCodeGenerator recordValueGetter,
+      Map<Field, String> resolver
   ) {
     var fieldDetails = column.getFieldDetails();
     String variableName;
 
     if (fieldDetails.isEmbedded()) {
-      variableName = fieldDetails.getEntityName();
+      variableName = resolver.get(fieldDetails.getLastParentField());
     } else {
       variableName = VARIABLE_NAME;
     }
@@ -211,37 +179,93 @@ public class ToEntityGenerateChainPart implements GenerateChainPart {
     );
   }
 
-  // Creates a mapping where the key is the entity name and the value is the field entity.
-  private HashMap<String, Field> getFieldMap(List<EntityColumnDefinition> embeddedColumns) {
-    var fieldMap = new HashMap<String, Field>();
+  // Generates code: Entity entity = new Entity();
+  private void generateEntity(
+      Field field,
+      Map<String, Integer> counter,
+      Map<Field, String> resolver,
+      MethodCodeGenerator generator
+  ) {
+    var entityName = field.getName();
+    var postfix = String.valueOf(
+        counter.compute(entityName, (key, value) -> incrementOrDefault(value))
+    );
 
-    for (EntityColumnDefinition column : embeddedColumns) {
-      FieldDetails fieldDetails = column.getFieldDetails();
-      String parentKey = fieldDetails.getParentEntityName();
-      String fieldKey = fieldDetails.getEntityName();
-      Field parentField = fieldDetails.getParentField();
-      Field field = fieldDetails.getProcessedField();
+    if (Objects.isNull(resolver.get(field))) {
+      entityName = entityName.concat(SEPARATOR).concat(postfix);
+      var entityType = field.getType();
+      resolver.put(field, entityName);
 
-      fieldMap.put(parentKey, parentField);
-      fieldMap.put(fieldKey, field);
+      generator.setOperator(
+          new EndLineCodeOperator(
+              new VarDefCodeGenerator(entityName, entityType, new NewCodeGenerator(entityType)
+              )
+          )
+      );
     }
-    return fieldMap;
   }
 
-  // Checks if the given field name matches the field name of the specified column.
-  private boolean isFieldMatchingByName(String fieldName, EntityColumnDefinition column) {
-    String columnFieldName = column
-        .getFieldDetails()
-        .getEntityName();
-    return Objects.equals(fieldName, columnFieldName);
+  // Generates code: entity.setValue(value);
+  private void generateSetterLink(
+      Field field,
+      Field parentField,
+      Map<Field, String> nameResolver,
+      Set<Pair<String, String>> entityLinks,
+      MethodCodeGenerator generator
+  ) {
+    Pair<String, String> link;
+    String entityName = nameResolver.get(field);
+
+    if (Objects.nonNull(parentField)) {
+      String parentEntityName = nameResolver.get(parentField);
+      link = Pair.of(parentEntityName, entityName);
+
+      if (!entityLinks.contains(link)) {
+        generator.setOperator(
+            new EndLineCodeOperator(
+                new VarMemberCodeGenerator(
+                    parentEntityName,
+                    new InvokeMethodCodeGenerator(
+                        getSetterName(field.getName()),
+                        target -> target.write(entityName)
+                    )
+                )
+            )
+        );
+      }
+    } else {
+      link = Pair.of(VARIABLE_NAME, entityName);
+      if (!entityLinks.contains(link)) {
+        generator.setOperator(
+            new EndLineCodeOperator(
+                new VarMemberCodeGenerator(
+                    VARIABLE_NAME,
+                    new InvokeMethodCodeGenerator(
+                        getSetterName(field.getName()),
+                        target -> target.write(entityName)
+                    )
+                )
+            )
+        );
+      }
+    }
+    entityLinks.add(link);
   }
 
-  // Constructs the getter method name from the provided name.
-  private String getGetterName(String name) {
+  // Constructs the setter method name from the provided name.
+  private String getSetterName(String name) {
     name = name
         .substring(FIRST_INDEX, SECOND_INDEX)
         .toUpperCase()
         .concat(name.substring(SECOND_INDEX));
     return SETTER_PREFIX.concat(name);
+  }
+
+  // The increment method increases the value of counter or returning default if counter is null.
+  private int incrementOrDefault(Integer counter) {
+    if (counter == null) {
+      return COUNTER_DEFAULT;
+    }
+    return counter + COUNTER_INCREMENT;
   }
 }
