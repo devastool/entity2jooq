@@ -20,7 +20,6 @@ import io.github.devastool.entity2jooq.codegen.generate.code.CodeTarget;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Iterator;
 
 /**
  * Implementation of {@link OperatorCodeGenerator} to generate method invocation.
@@ -34,7 +33,7 @@ public class InvokeMethodCodeGenerator implements OperatorCodeGenerator {
 
   private static final String PARAMS_BEGIN = "(";
   private static final String PARAMS_END = ")";
-  private static final String PARAMS_SEPARATOR = ",";
+  private static final String PARAMS_SEPARATOR = ", ";
 
   /**
    * Constructs new instance of {@link InvokeMethodCodeGenerator}.
@@ -56,21 +55,8 @@ public class InvokeMethodCodeGenerator implements OperatorCodeGenerator {
   public void generate(CodeTarget target) {
     target
         .write(methodName)
-        .write(PARAMS_BEGIN);
-
-    if (args != null) {
-      Iterator<OperatorCodeGenerator> iterator = args.iterator();
-      while (iterator.hasNext()) {
-        OperatorCodeGenerator param = iterator.next();
-        param.generate(target);
-
-        if (iterator.hasNext()) {
-          target
-              .write(PARAMS_SEPARATOR)
-              .space();
-        }
-      }
-    }
-    target.write(PARAMS_END);
+        .write(PARAMS_BEGIN)
+        .writeAll(args, codeTarget -> codeTarget.write(PARAMS_SEPARATOR))
+        .write(PARAMS_END);
   }
 }

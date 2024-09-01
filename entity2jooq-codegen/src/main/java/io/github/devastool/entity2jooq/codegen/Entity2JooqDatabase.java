@@ -38,9 +38,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.stream.Collectors;
+import org.jooq.Converter;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.jooq.impl.DSL;
+import org.jooq.impl.EnumConverter;
 import org.jooq.meta.AbstractDatabase;
 import org.jooq.meta.ArrayDefinition;
 import org.jooq.meta.CatalogDefinition;
@@ -73,8 +75,14 @@ public class Entity2JooqDatabase extends AbstractDatabase {
   public Entity2JooqDatabase() {
     super();
 
+    // TODO. Load from pom.xml?
+    Map<Class<?>, Class<? extends Converter>> converters = Map.of(
+        Enum.class,
+        EnumConverter.class
+    );
+
     FactoryContext context = new FactoryContext();
-    EntityDataTypeDefinitionFactory type = new EntityDataTypeDefinitionFactory(context);
+    EntityDataTypeDefinitionFactory type = new EntityDataTypeDefinitionFactory(context, converters);
     EntitySchemaDefinitionFactory schemas = new EntitySchemaDefinitionFactory(context);
     EntityColumnDefinitionFactory columns = new EntityColumnDefinitionFactory(type, context);
 

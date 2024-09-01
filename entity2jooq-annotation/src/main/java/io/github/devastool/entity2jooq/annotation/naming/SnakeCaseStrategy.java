@@ -16,6 +16,9 @@
 
 package io.github.devastool.entity2jooq.annotation.naming;
 
+import java.util.Iterator;
+import java.util.List;
+
 /**
  * Implementation of {@link NamingStrategy} for a data extraction. The name represents in the form
  * of snake_case.
@@ -46,30 +49,28 @@ public class SnakeCaseStrategy implements NamingStrategy {
 
   @Override
   public String resolve(String... original) {
-    boolean match = true;
-
-    String name = String.join(Character.toString(SEPARATOR), original);
     StringBuilder buffer = new StringBuilder();
-    char[] symbols = name.toCharArray();
-    for (int i = 0; i < symbols.length; i++) {
-      boolean isUpper = Character.isUpperCase(symbols[i]);
-      if (match && SEPARATOR != symbols[i]) {
-        match = isUpper;
+
+    Iterator<String> iterator = List.of(original).iterator();
+    while (iterator.hasNext()) {
+      String name = iterator.next();
+      char[] symbols = name.toCharArray();
+      for (int i = 0; i < symbols.length; i++) {
+        boolean isUpper = Character.isUpperCase(symbols[i]);
+        if (isUpper && i > 0) {
+          buffer.append(SEPARATOR);
+        }
+
+        if (upper) {
+          buffer.append(Character.toUpperCase(symbols[i]));
+        } else {
+          buffer.append(Character.toLowerCase(symbols[i]));
+        }
       }
 
-      if (isUpper && i > 0) {
+      if (iterator.hasNext()) {
         buffer.append(SEPARATOR);
       }
-
-      if (upper) {
-        buffer.append(Character.toUpperCase(symbols[i]));
-      } else {
-        buffer.append(Character.toLowerCase(symbols[i]));
-      }
-    }
-
-    if (match) {
-      return name;
     }
     return buffer.toString();
   }

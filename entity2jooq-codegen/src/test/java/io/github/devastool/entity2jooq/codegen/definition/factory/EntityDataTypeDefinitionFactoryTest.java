@@ -18,15 +18,17 @@ package io.github.devastool.entity2jooq.codegen.definition.factory;
 
 import io.github.devastool.entity2jooq.annotation.type.NoSuchTypeException;
 import io.github.devastool.entity2jooq.annotation.type.Type;
-import io.github.devastool.entity2jooq.codegen.Entity2JooqDatabase;
-import io.github.devastool.entity2jooq.codegen.definition.EntityDataTypeDefinition;
-import io.github.devastool.entity2jooq.codegen.definition.EntitySchemaDefinition;
+import io.github.devastool.entity2jooq.codegen.definition.type.ConverterDefinition;
+import io.github.devastool.entity2jooq.codegen.definition.type.EntityDataTypeDefinition;
+import io.github.devastool.entity2jooq.codegen.model.TestEntity;
+import io.github.devastool.entity2jooq.codegen.model.TestEntityConverter;
+import io.github.devastool.entity2jooq.codegen.model.TestEntityDefaultConverter;
+import io.github.devastool.entity2jooq.codegen.model.TestEntityPrimitiveTypes;
 import io.github.devastool.entity2jooq.codegen.properties.CodegenProperties;
 import io.github.devastool.entity2jooq.codegen.properties.CodegenProperty;
+import io.github.devastool.entity2jooq.codegen.type.RouteTypeMapper;
 import java.lang.reflect.Field;
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.Map;
+import java.util.Collection;
 import org.jooq.Converter;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -36,100 +38,96 @@ import org.junit.jupiter.api.Test;
  *
  * @author Andrey_Yurzanov
  */
-class EntityDataTypeDefinitionFactoryTest {
-  private final EntityDataTypeDefinitionFactory factory =
-      new EntityDataTypeDefinitionFactory(new FactoryContext());
-  private static final EntitySchemaDefinition SCHEMA_DEFINITION =
-      new EntitySchemaDefinition(new Entity2JooqDatabase(), "test_schema");
-  private static final CodegenProperties PROPERTIES = new CodegenProperties(
-      Map.of(
-          CodegenProperty.DIALECT, "",
-          CodegenProperty.SCHEMA, SCHEMA_DEFINITION
-      )
-  );
-
+class EntityDataTypeDefinitionFactoryTest extends CommonFactoryTest {
   @Test
-  void buildSuccessTest() {
-    Map<Class<?>, String> types = Map.of(
-        Integer.class, "integer",
-        BigDecimal.class, "decimal",
-        LocalDateTime.class, "timestamp"
-    );
-
+  void buildTest() {
+    EntityDataTypeDefinitionFactory factory = getTypeFactory();
+    CodegenProperties properties = getProperties();
     for (Field field : TestEntity.class.getDeclaredFields()) {
-      EntityDataTypeDefinition definition =
-          Assertions.assertDoesNotThrow(() -> factory.build(field, PROPERTIES));
+      EntityDataTypeDefinition definition = Assertions.assertDoesNotThrow(
+          () -> factory.build(field, properties)
+      );
 
-      Assertions.assertEquals(types.get(field.getType()), definition.getType());
+      Type annotation = field.getAnnotation(Type.class);
+      if (annotation != null) {
+        Assertions.assertEquals(annotation.value(), definition.getType());
+      }
     }
   }
-
   @Test
-  void buildWithoutTypeSuccessTest() {
-    Map<Class<?>, String> types = Map.of(
-        Integer.class, "integer",
-        BigDecimal.class, "decimal",
-        LocalDateTime.class, "timestamp"
-    );
+  void buildWithoutTypeTest() {
+    EntityDataTypeDefinitionFactory factory = getTypeFactory();
+    CodegenProperties properties = getProperties();
+    String dialect = properties.require(CodegenProperty.DIALECT);
 
-    for (Field field : TestEntityWithoutType.class.getDeclaredFields()) {
-      EntityDataTypeDefinition definition =
-          Assertions.assertDoesNotThrow(() -> factory.build(field, PROPERTIES));
+    RouteTypeMapper typeMapper = new RouteTypeMapper();
+    for (Field field : TestEntity.class.getDeclaredFields()) {
+      EntityDataTypeDefinition definition = Assertions.assertDoesNotThrow(
+          () -> factory.build(field, properties)
+      );
 
-      Assertions.assertEquals(types.get(field.getType()), definition.getType());
+      if (field.getAnnotation(Type.class) == null) {
+        String sqlType = typeMapper.getSqlType(dialect, field.getType());
+        Assertions.assertEquals(sqlType, definition.getType());
+      }
     }
   }
-
   @Test
-  void buildNotFoundTypeFailureTest() {
-    for (Field field : TestEntityNotFoundType.class.getDeclaredFields()) {
+  void buildNotFoundTypeTest() {
+    EntityDataTypeDefinitionFactory factory = getTypeFactory();
+    CodegenProperties properties = getProperties();
+    for (Field field : TestEntityPrimitiveTypes.class.getDeclaredFields()) {
       Assertions.assertThrows(
           NoSuchTypeException.class,
-          () -> factory.build(field, PROPERTIES)
+          () -> factory.build(field, properties)
       );
     }
   }
+  @Test
+  void buildConverterTypeTest() {
+    EntityDataTypeDefinitionFactory factory = getTypeFactory();
+    CodegenProperties properties = getProperties();
+    for (Field field : TestEntityConverter.class.getDeclaredFields()) {
+      EntityDataTypeDefinition definition = Assertions.assertDoesNotThrow(
+          () -> factory.build(field, properties)
+      );
 
-  static class TestEntity {
-    @Type(value = "integer", converter = TestConverter.class)
-    private Integer id;
-    @Type("decimal")
-    private BigDecimal amount;
-    @Type("timestamp")
-    private LocalDateTime insertType;
-  }
+      Type annotation = field.getAnnotation(Type.class);
+      if (annotation != null) {
+        ConverterDefinition converterDefinition = definition.getConverterDefinition();
+        Assertions.assertNotNull(converterDefinition);
+        Assertions.assertEquals(annotation.converter(), converterDefinition.getConverterType());
 
-  static class TestEntityWithoutType {
-    private Integer id;
-    private BigDecimal amount;
-    private LocalDateTime insertType;
-  }
-
-  static class TestEntityNotFoundType {
-    private Object field;
-  }
-
-  static class TestConverter implements Converter<Integer, Integer> {
-    public TestConverter() {}
-
-    @Override
-    public Integer from(Integer integer) {
-      return integer;
+        Converter converter = converterDefinition.getConverter();
+        Assertions.assertEquals(
+            converter.fromType().getCanonicalName(),
+            definition.getJavaType()
+        );
+      }
     }
+  }
+  @Test
+  void buildDefaultConverterTypeTest() {
+    EntityDataTypeDefinitionFactory factory = getTypeFactory();
+    Collection<Class<? extends Converter>> defaultConverters = factory
+        .getDefaultConverters()
+        .values();
 
-    @Override
-    public Integer to(Integer integer) {
-      return integer;
-    }
+    CodegenProperties properties = getProperties();
+    for (Field field : TestEntityDefaultConverter.class.getDeclaredFields()) {
+      EntityDataTypeDefinition definition = Assertions.assertDoesNotThrow(
+          () -> factory.build(field, properties)
+      );
 
-    @Override
-    public Class<Integer> fromType() {
-      return Integer.class;
-    }
+      ConverterDefinition converterDefinition = definition.getConverterDefinition();
+      Assertions.assertNotNull(converterDefinition);
 
-    @Override
-    public Class<Integer> toType() {
-      return Integer.class;
+      Converter converter = converterDefinition.getConverter();
+      Assertions.assertTrue(defaultConverters.contains(converter.getClass()));
+      Assertions.assertEquals(
+          converter.fromType().getCanonicalName(),
+          definition.getJavaType()
+      );
     }
   }
 }

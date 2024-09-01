@@ -16,9 +16,9 @@
 
 package io.github.devastool.entity2jooq.codegen;
 
-import io.github.devastool.entity2jooq.codegen.definition.EntityDataTypeDefinition;
 import io.github.devastool.entity2jooq.codegen.definition.EntitySchemaDefinition;
 import io.github.devastool.entity2jooq.codegen.definition.EntityTableDefinition;
+import io.github.devastool.entity2jooq.codegen.definition.type.EntityDataTypeDefinition;
 import io.github.devastool.entity2jooq.codegen.generate.code.BufferedCodeTarget;
 import java.io.File;
 import java.util.ArrayList;

@@ -17,8 +17,8 @@
 package io.github.devastool.entity2jooq.codegen.generate;
 
 import io.github.devastool.entity2jooq.codegen.definition.EntityColumnDefinition;
-import io.github.devastool.entity2jooq.codegen.definition.EntityDataTypeDefinition;
 import io.github.devastool.entity2jooq.codegen.definition.EntityTableDefinition;
+import io.github.devastool.entity2jooq.codegen.definition.type.EntityDataTypeDefinition;
 import io.github.devastool.entity2jooq.codegen.generate.code.MethodCodeGenerator;
 import io.github.devastool.entity2jooq.codegen.generate.code.operator.EndLineCodeOperator;
 import io.github.devastool.entity2jooq.codegen.generate.code.operator.InvokeMethodCodeGenerator;
@@ -106,7 +106,7 @@ public class ToEntityGenerateChainPart implements GenerateChainPart {
 
     DataTypeDefinition type = column.getType();
     if (EntityDataTypeDefinition.class.equals(type.getClass())) {
-      Converter converter = ((EntityDataTypeDefinition) type).getTypeConverter();
+      Converter converter = null;
       if (converter != null) {
         String converterField = context.getVariable(converter.getClass(), String.class);
         return new VarMemberCodeGenerator(

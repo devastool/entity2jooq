@@ -42,7 +42,10 @@ class ToEntityGenerateChainPartTest {
   private final FactoryContext context = new FactoryContext();
   private final EntityTableDefinitionFactory factory = new EntityTableDefinitionFactory(
       new EntitySchemaDefinitionFactory(context),
-      new EntityColumnDefinitionFactory(new EntityDataTypeDefinitionFactory(context), context),
+      new EntityColumnDefinitionFactory(
+          new EntityDataTypeDefinitionFactory(context, Map.of()),
+          context
+      ),
       context
   );
   private static final CodegenProperties PROPERTIES = new CodegenProperties(
@@ -73,11 +76,11 @@ class ToEntityGenerateChainPartTest {
       System.lineSeparator(),
       "        io.github.devastool.entity2jooq.codegen.generate.ToEntityGenerateChainPartTest.TestEntity entity = new io.github.devastool.entity2jooq.codegen.generate.ToEntityGenerateChainPartTest.TestEntity();",
       System.lineSeparator(),
-      "        entity.setCount(record.get(TEST_ENTITY.COUNT, null));",
+      "        entity.setCount(record.get(TEST_ENTITY.COUNT));",
       System.lineSeparator(),
-      "        entity.setId(record.get(TEST_ENTITY.ID, null));",
+      "        entity.setId(record.get(TEST_ENTITY.ID));",
       System.lineSeparator(),
-      "        entity.setSecondId(record.get(TEST_ENTITY.SECOND_ID, null));",
+      "        entity.setSecondId(record.get(TEST_ENTITY.SECOND_ID));",
       System.lineSeparator(),
       "        return entity;",
       System.lineSeparator(),
