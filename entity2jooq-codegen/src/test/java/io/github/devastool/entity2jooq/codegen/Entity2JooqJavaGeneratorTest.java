@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import org.jooq.SQLDialect;
 import org.jooq.codegen.GeneratorStrategy.Mode;
 import org.jooq.codegen.JavaWriter;
+import org.jooq.meta.AbstractTableDefinition;
 import org.jooq.meta.DefaultDataTypeDefinition;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -113,5 +114,28 @@ class Entity2JooqJavaGeneratorTest {
     );
 
     Assertions.assertFalse(target.getBuffer().isEmpty());
+  }
+
+  @Test
+  void generateTableClassFooterSkipTest(@TempDir File root) {
+    EntitySchemaDefinition schema = new EntitySchemaDefinition(
+        new Entity2JooqDatabase(),
+        "test_schema"
+    );
+
+    BufferedCodeTarget target = new BufferedCodeTarget();
+    generator.generateTableClassFooter(
+        new AbstractTableDefinition(schema, "test_table", "") {
+        },
+        new JavaWriter(new File(root, FILE_NAME), null) {
+          @Override
+          public JavaWriter print(String value) {
+            target.write(value);
+            return this;
+          }
+        }
+    );
+
+    Assertions.assertTrue(target.getBuffer().isEmpty());
   }
 }
