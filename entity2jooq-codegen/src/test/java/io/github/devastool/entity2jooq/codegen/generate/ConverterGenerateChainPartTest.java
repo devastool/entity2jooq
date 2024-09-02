@@ -42,7 +42,7 @@ class ConverterGenerateChainPartTest extends CommonFactoryTest {
   );
   private static final String GENERICS_EXPECTED = String.join(
       "",
-      "    public final io.github.devastool.entity2jooq.annotation.type.converter.EnumConverter<io.github.devastool.entity2jooq.codegen.model.TestEnum> TEST_ENUM_ENUM_CONVERTER = new io.github.devastool.entity2jooq.annotation.type.converter.EnumConverter<io.github.devastool.entity2jooq.codegen.model.TestEnum>();",
+      "    public final io.github.devastool.entity2jooq.annotation.type.converter.EnumConverter<io.github.devastool.entity2jooq.codegen.model.TestEnum> TEST_ENUM_ENUM_CONVERTER = new io.github.devastool.entity2jooq.annotation.type.converter.EnumConverter<io.github.devastool.entity2jooq.codegen.model.TestEnum>(io.github.devastool.entity2jooq.codegen.model.TestEnum.class);",
       System.lineSeparator()
   );
 

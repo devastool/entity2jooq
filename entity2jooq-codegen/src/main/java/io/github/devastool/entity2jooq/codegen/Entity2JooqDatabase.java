@@ -22,6 +22,7 @@ import static io.github.devastool.entity2jooq.codegen.properties.CodegenProperty
 import static io.github.devastool.entity2jooq.codegen.properties.CodegenProperty.DIALECT;
 import static io.github.devastool.entity2jooq.codegen.properties.CodegenProperty.TEST_CLASSES;
 
+import io.github.devastool.entity2jooq.annotation.type.converter.EnumConverter;
 import io.github.devastool.entity2jooq.codegen.definition.factory.EntityColumnDefinitionFactory;
 import io.github.devastool.entity2jooq.codegen.definition.factory.EntityDataTypeDefinitionFactory;
 import io.github.devastool.entity2jooq.codegen.definition.factory.EntitySchemaDefinitionFactory;
@@ -42,7 +43,6 @@ import org.jooq.Converter;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.jooq.impl.DSL;
-import org.jooq.impl.EnumConverter;
 import org.jooq.meta.AbstractDatabase;
 import org.jooq.meta.ArrayDefinition;
 import org.jooq.meta.CatalogDefinition;

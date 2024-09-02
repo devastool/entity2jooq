@@ -109,6 +109,22 @@ public interface CodeTarget {
   }
 
   /**
+   * Writes name of the class with postfix '.class'.
+   *
+   * @param type class for writing
+   * @return current instance
+   */
+  default CodeTarget writeClass(Class<?> type) {
+    String name = type.getCanonicalName();
+    if (name.startsWith("java.lang")) {
+      name = type.getSimpleName();
+    }
+
+    write(name + ".class");
+    return this;
+  }
+
+  /**
    * Writes space.
    *
    * @return current instance

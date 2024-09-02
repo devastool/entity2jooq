@@ -19,6 +19,7 @@ package io.github.devastool.entity2jooq.codegen.definition.factory;
 import io.github.devastool.entity2jooq.annotation.Schema;
 import io.github.devastool.entity2jooq.codegen.definition.EntitySchemaDefinition;
 import io.github.devastool.entity2jooq.codegen.model.TestEntity;
+import io.github.devastool.entity2jooq.codegen.model.TestEntityEmptySchema;
 import io.github.devastool.entity2jooq.codegen.model.TestEntitySchema;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -39,6 +40,18 @@ class EntitySchemaDefinitionFactoryTest extends CommonFactoryTest {
 
     Schema annotation = TestEntitySchema.class.getAnnotation(Schema.class);
     Assertions.assertEquals(annotation.value(), built.getName());
+  }
+
+  @Test
+  void buildEmptySchemaAnnotationTest() {
+    EntitySchemaDefinitionFactory factory = getSchemaFactory();
+    EntitySchemaDefinition built = Assertions.assertDoesNotThrow(
+        () -> factory.build(TestEntityEmptySchema.class, getProperties())
+    );
+    Assertions.assertNotNull(built);
+
+    String packageName = TestEntityEmptySchema.class.getPackageName();
+    Assertions.assertTrue(packageName.endsWith(built.getName()));
   }
 
   @Test

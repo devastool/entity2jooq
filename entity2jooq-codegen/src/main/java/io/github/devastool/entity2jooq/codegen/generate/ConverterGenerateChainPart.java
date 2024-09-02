@@ -62,19 +62,29 @@ public class ConverterGenerateChainPart implements GenerateChainPart {
         String name = getConverterName(converter);
         context.setVariable(converter, name);
 
-        Class<?> converterType = converter.getConverterType();
-        NewCodeGenerator assignment = new NewCodeGenerator(converterType);
-        FieldCodeGenerator field = new FieldCodeGenerator(name, converterType, assignment);
-
         Optional<Class<?>> toType = converter.getGenericToType();
         if (toType.isPresent()) {
           Class<?> type = toType.get();
+          Class<?> converterType = converter.getConverterType();
 
-          field.setGenericTypes(type);
+          NewCodeGenerator assignment = new NewCodeGenerator(
+              converterType,
+              codeTarget -> target.writeClass(type)
+          );
           assignment.setGenericTypes(type);
-        }
 
-        field.generate(target);
+          FieldCodeGenerator field = new FieldCodeGenerator(name, converterType, assignment);
+          field.setGenericTypes(type);
+          field.generate(target);
+        } else {
+          Class<?> converterType = converter.getConverterType();
+          FieldCodeGenerator field = new FieldCodeGenerator(
+              name,
+              converterType,
+              new NewCodeGenerator(converterType)
+          );
+          field.generate(target);
+        }
       }
     }
   }
