@@ -48,7 +48,6 @@ public class TestEmbeddedEntity {
   }
 
   public TestEmbeddedEntity() {
-
   }
 
   public String getName() {

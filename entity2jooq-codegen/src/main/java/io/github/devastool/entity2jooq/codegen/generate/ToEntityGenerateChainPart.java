@@ -19,6 +19,8 @@ package io.github.devastool.entity2jooq.codegen.generate;
 import io.github.devastool.entity2jooq.codegen.definition.EntityColumnDefinition;
 import io.github.devastool.entity2jooq.codegen.definition.EntityDataTypeDefinition;
 import io.github.devastool.entity2jooq.codegen.definition.EntityTableDefinition;
+import io.github.devastool.entity2jooq.codegen.definition.factory.column.FieldDetails;
+import io.github.devastool.entity2jooq.codegen.generate.code.CodeTarget;
 import io.github.devastool.entity2jooq.codegen.generate.code.MethodCodeGenerator;
 import io.github.devastool.entity2jooq.codegen.generate.code.operator.EndLineCodeOperator;
 import io.github.devastool.entity2jooq.codegen.generate.code.operator.InvokeMethodCodeGenerator;
@@ -27,15 +29,15 @@ import io.github.devastool.entity2jooq.codegen.generate.code.operator.OperatorCo
 import io.github.devastool.entity2jooq.codegen.generate.code.operator.ReturnCodeGenerator;
 import io.github.devastool.entity2jooq.codegen.generate.code.operator.VarDefCodeGenerator;
 import io.github.devastool.entity2jooq.codegen.generate.code.operator.VarMemberCodeGenerator;
+import io.github.devastool.entity2jooq.codegen.generate.params.CodeGeneratorAccumulator;
+import io.github.devastool.entity2jooq.codegen.generate.params.EntityGenerationParams;
+import io.github.devastool.entity2jooq.codegen.generate.params.LinkPair;
 import java.lang.reflect.Field;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.stream.Collectors;
-import org.apache.commons.lang3.tuple.Pair;
 import org.jooq.Converter;
 import org.jooq.Record;
 import org.jooq.meta.ColumnDefinition;
@@ -65,47 +67,59 @@ public class ToEntityGenerateChainPart implements GenerateChainPart {
     EntityTableDefinition table = context.getTable();
     if (table.isMapping()) {
       Class<?> type = table.getEntityType();
+      EntityGenerationParams params = new EntityGenerationParams();
 
       MethodCodeGenerator generator = new MethodCodeGenerator()
           .setName(METHOD_NAME)
           .setReturnType(type)
-          .setParam(PARAM_NAME, Record.class)
-          .setOperator(
-              new EndLineCodeOperator(
-                  new VarDefCodeGenerator(VARIABLE_NAME, type, new NewCodeGenerator(type))
-              )
-          );
-
-      Map<String, Integer> nameCounter = new HashMap<>();
-      Map<Field, String> nameResolver = new HashMap<>();
-      Set<Pair<String, String>> entityLinks = new HashSet<>();
-
-      var embeddedColumns = table
-          .getColumns()
-          .stream()
-          .map(colum -> (EntityColumnDefinition) colum)
-          .filter(EntityColumnDefinition::isEmbedded)
-          .collect(Collectors.toList());
-
-      for (EntityColumnDefinition column : embeddedColumns) {
-        var fieldDetails = column.getFieldDetails();
-        Field parentField = null;
-
-        for (Field field : fieldDetails.getParentFields()) {
-          generateEntity(field, nameCounter, nameResolver, generator);
-          generateSetterLink(field, parentField, nameResolver, entityLinks, generator);
-          parentField = field;
-        }
-      }
+          .setParam(PARAM_NAME, Record.class);
 
       for (ColumnDefinition column : new TreeSet<>(table.getColumns())) {
         if (Objects.equals(EntityColumnDefinition.class, column.getClass())) {
           EntityColumnDefinition entityColumn = (EntityColumnDefinition) column;
 
-          OperatorCodeGenerator valueGetter = getRecordValueGetter(context, table, entityColumn);
-          generator.setOperator(getValueSetter(entityColumn, valueGetter, nameResolver));
+          if (entityColumn.isEmbedded()) {
+            FieldDetails fieldDetails = entityColumn.getFieldDetails();
+            Field parentField = null;
+
+            for (Field field : fieldDetails.getParentFields()) {
+              getGeneratedEntity(field, params);
+
+              if (Objects.nonNull(fieldDetails.getLastParentField())) {
+                OperatorCodeGenerator valueGetter
+                    = getRecordValueGetter(context, table, entityColumn);
+                getValueSetter(entityColumn, valueGetter, params);
+              }
+
+              getSetterLink(field, parentField, params);
+              parentField = field;
+            }
+          } else {
+            OperatorCodeGenerator valueGetter = getRecordValueGetter(context, table, entityColumn);
+            getValueSetter(entityColumn, valueGetter, params);
+          }
         }
       }
+
+      CodeGeneratorAccumulator accumulator = params.getCodeAccumulator();
+      for (String entityName : accumulator.getReversedKeys()) {
+        accumulator
+            .findByKey(entityName)
+            .forEach(generator::setOperator);
+        generator
+            .setOperator(CodeTarget::writeln);
+      }
+
+      generator
+          .setOperator(
+          new EndLineCodeOperator(
+              new VarDefCodeGenerator(VARIABLE_NAME, type, new NewCodeGenerator(type))
+          )
+      );
+
+      params
+          .getRootCodeAccumulator()
+          .forEach(generator::setOperator);
 
       generator
           .setOperator(
@@ -118,26 +132,39 @@ public class ToEntityGenerateChainPart implements GenerateChainPart {
   }
 
   // Generates code: tableName.setValue(recordValueGetter)
-  private OperatorCodeGenerator getValueSetter(
+  private void getValueSetter(
       EntityColumnDefinition column,
       OperatorCodeGenerator recordValueGetter,
-      Map<Field, String> resolver
+      EntityGenerationParams params
   ) {
-    var fieldDetails = column.getFieldDetails();
-    String variableName;
+    Map<Field, String> resolver = params.getNameResolver();
+    FieldDetails fieldDetails = column.getFieldDetails();
 
     if (fieldDetails.isEmbedded()) {
-      variableName = resolver.get(fieldDetails.getLastParentField());
-    } else {
-      variableName = VARIABLE_NAME;
-    }
-
-    return new EndLineCodeOperator(
-        new VarMemberCodeGenerator(
+      String variableName = resolver.get(fieldDetails.getLastParentField());
+      if (Objects.nonNull(variableName)) {
+        CodeGeneratorAccumulator accumulator = params.getCodeAccumulator();
+        accumulator.accumulate(
             variableName,
-            new InvokeMethodCodeGenerator(column.getSetterName(), recordValueGetter)
-        )
-    );
+            new EndLineCodeOperator(
+                new VarMemberCodeGenerator(
+                    variableName,
+                    new InvokeMethodCodeGenerator(column.getSetterName(), recordValueGetter)
+                )
+            )
+        );
+      }
+    } else {
+      List<OperatorCodeGenerator> accumulator = params.getRootCodeAccumulator();
+      accumulator.add(
+          new EndLineCodeOperator(
+              new VarMemberCodeGenerator(
+                  VARIABLE_NAME,
+                  new InvokeMethodCodeGenerator(column.getSetterName(), recordValueGetter)
+              )
+          )
+      );
+    }
   }
 
   // Generates code: record.get(TABLE_NAME.VALUE) or record.get(TABLE_NAME.VALUE, CONVERTER)
@@ -180,23 +207,26 @@ public class ToEntityGenerateChainPart implements GenerateChainPart {
   }
 
   // Generates code: Entity entity = new Entity();
-  private void generateEntity(
+  private void getGeneratedEntity(
       Field field,
-      Map<String, Integer> counter,
-      Map<Field, String> resolver,
-      MethodCodeGenerator generator
+      EntityGenerationParams params
   ) {
-    var entityName = field.getName();
-    var postfix = String.valueOf(
+    Map<String, Integer> counter = params.getNameCounter();
+    Map<Field, String> resolver = params.getNameResolver();
+
+    String entityName = field.getName();
+    String postfix = String.valueOf(
         counter.compute(entityName, (key, value) -> incrementOrDefault(value))
     );
 
     if (Objects.isNull(resolver.get(field))) {
       entityName = entityName.concat(SEPARATOR).concat(postfix);
-      var entityType = field.getType();
+      Class<?> entityType = field.getType();
       resolver.put(field, entityName);
 
-      generator.setOperator(
+      CodeGeneratorAccumulator accumulator = params.getCodeAccumulator();
+      accumulator.accumulate(
+          entityName,
           new EndLineCodeOperator(
               new VarDefCodeGenerator(entityName, entityType, new NewCodeGenerator(entityType)
               )
@@ -206,22 +236,24 @@ public class ToEntityGenerateChainPart implements GenerateChainPart {
   }
 
   // Generates code: entity.setValue(value);
-  private void generateSetterLink(
+  private void getSetterLink(
       Field field,
       Field parentField,
-      Map<Field, String> nameResolver,
-      Set<Pair<String, String>> entityLinks,
-      MethodCodeGenerator generator
+      EntityGenerationParams params
   ) {
-    Pair<String, String> link;
+    LinkPair link;
+    Set<LinkPair> entityLinks = params.getEntityLinks();
+    Map<Field, String> nameResolver = params.getNameResolver();
     String entityName = nameResolver.get(field);
 
     if (Objects.nonNull(parentField)) {
       String parentEntityName = nameResolver.get(parentField);
-      link = Pair.of(parentEntityName, entityName);
+      link = new LinkPair(parentEntityName, entityName);
 
       if (!entityLinks.contains(link)) {
-        generator.setOperator(
+        CodeGeneratorAccumulator accumulator = params.getCodeAccumulator();
+        accumulator.accumulate(
+            parentEntityName,
             new EndLineCodeOperator(
                 new VarMemberCodeGenerator(
                     parentEntityName,
@@ -234,9 +266,10 @@ public class ToEntityGenerateChainPart implements GenerateChainPart {
         );
       }
     } else {
-      link = Pair.of(VARIABLE_NAME, entityName);
+      link = new LinkPair(VARIABLE_NAME, entityName);
       if (!entityLinks.contains(link)) {
-        generator.setOperator(
+        List<OperatorCodeGenerator> rootAccumulator = params.getRootCodeAccumulator();
+        rootAccumulator.add(
             new EndLineCodeOperator(
                 new VarMemberCodeGenerator(
                     VARIABLE_NAME,
