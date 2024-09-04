@@ -31,6 +31,7 @@ import io.github.devastool.entity2jooq.codegen.properties.CodegenProperties;
 import io.github.devastool.entity2jooq.codegen.properties.CodegenProperty;
 import java.util.Map;
 import org.jooq.Converter;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -71,15 +72,17 @@ class ToEntityGenerateChainPartTest {
       "",
       "    public io.github.devastool.entity2jooq.codegen.generate.ToEntityGenerateChainPartTest.TestEntity toEntity(org.jooq.Record record) {",
       System.lineSeparator(),
-      "        io.github.devastool.entity2jooq.codegen.generate.ToEntityGenerateChainPartTest.TestEntity entity = new io.github.devastool.entity2jooq.codegen.generate.ToEntityGenerateChainPartTest.TestEntity();",
-      System.lineSeparator(),
       "        io.github.devastool.entity2jooq.codegen.generate.ToEntityGenerateChainPartTest.TestEmbedded embedded_0 = new io.github.devastool.entity2jooq.codegen.generate.ToEntityGenerateChainPartTest.TestEmbedded();",
       System.lineSeparator(),
-      "        entity.setEmbedded(embedded_0);",
+      "        embedded_0.setName(record.get(TEST_ENTITY.EMBEDDED_NAME));",
+      System.lineSeparator(),
+      "        ",
+      System.lineSeparator(),
+      "        io.github.devastool.entity2jooq.codegen.generate.ToEntityGenerateChainPartTest.TestEntity entity = new io.github.devastool.entity2jooq.codegen.generate.ToEntityGenerateChainPartTest.TestEntity();",
       System.lineSeparator(),
       "        entity.setCount(record.get(TEST_ENTITY.COUNT, null));",
       System.lineSeparator(),
-      "        embedded_0.setName(record.get(TEST_ENTITY.EMBEDDED_NAME));",
+      "        entity.setEmbedded(embedded_0);",
       System.lineSeparator(),
       "        entity.setId(record.get(TEST_ENTITY.ID, null));",
       System.lineSeparator(),
@@ -103,7 +106,7 @@ class ToEntityGenerateChainPartTest {
         )
     );
 
-    //Assertions.assertEquals(WITHOUT_CONVERTERS_EXPECTED, target.getBuffer());
+    Assertions.assertEquals(WITHOUT_CONVERTERS_EXPECTED, target.getBuffer());
   }
 
   @Test
@@ -117,7 +120,7 @@ class ToEntityGenerateChainPartTest {
         )
     );
 
-    //Assertions.assertEquals(WITH_CONVERTERS_EXPECTED, target.getBuffer());
+    Assertions.assertEquals(WITH_CONVERTERS_EXPECTED, target.getBuffer());
   }
 
   @Table
@@ -184,6 +187,5 @@ class ToEntityGenerateChainPartTest {
   @Embedded
   static class TestEmbedded{
     private String name;
-
   }
 }
