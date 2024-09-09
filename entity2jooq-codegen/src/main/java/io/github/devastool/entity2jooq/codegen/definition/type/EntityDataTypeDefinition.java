@@ -14,10 +14,10 @@
  *    limitations under the License.
  */
 
-package io.github.devastool.entity2jooq.codegen.definition;
+package io.github.devastool.entity2jooq.codegen.definition.type;
 
+import io.github.devastool.entity2jooq.codegen.definition.EntityColumnDefinition;
 import java.util.Arrays;
-import org.jooq.Converter;
 import org.jooq.SQLDialect;
 import org.jooq.impl.DSL;
 import org.jooq.meta.DefaultDataTypeDefinition;
@@ -31,7 +31,7 @@ import org.jooq.meta.SchemaDefinition;
  */
 public class EntityDataTypeDefinition extends DefaultDataTypeDefinition {
   private SQLDialect dialect;
-  private Converter typeConverter;
+  private ConverterDefinition converterDefinition;
 
   private static final String JAVA_TYPE_REFERENCE_TEMPLATE =
       "new org.jooq.impl.DefaultDataType(org.jooq.SQLDialect.%s, %s.class, \"%s\")";
@@ -80,21 +80,21 @@ public class EntityDataTypeDefinition extends DefaultDataTypeDefinition {
   }
 
   /**
-   * Returns instance of {@link Converter}.
+   * Returns instance of {@link ConverterDefinition}.
    *
-   * @return instance of {@link Converter}
+   * @return instance of {@link ConverterDefinition}
    */
-  public Converter getTypeConverter() {
-    return typeConverter;
+  public ConverterDefinition getConverterDefinition() {
+    return converterDefinition;
   }
 
   /**
-   * Sets instance of {@link Converter}.
+   * Sets instance of {@link ConverterDefinition}.
    *
-   * @param typeConverter instance of {@link Converter}
+   * @param converterDefinition instance of {@link ConverterDefinition}
    */
-  public void setTypeConverter(Converter typeConverter) {
-    this.typeConverter = typeConverter;
+  public void setConverterDefinition(ConverterDefinition converterDefinition) {
+    this.converterDefinition = converterDefinition;
   }
 
   /**
@@ -104,8 +104,9 @@ public class EntityDataTypeDefinition extends DefaultDataTypeDefinition {
    */
   public String getJavaTypeReference() {
     String javaType = getJavaType();
-    if (typeConverter != null) {
-      javaType = typeConverter
+    if (converterDefinition != null) {
+      javaType = converterDefinition
+          .getConverter()
           .fromType()
           .getCanonicalName();
     }

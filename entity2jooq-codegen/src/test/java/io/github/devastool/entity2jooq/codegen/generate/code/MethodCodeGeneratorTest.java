@@ -31,7 +31,7 @@ class MethodCodeGeneratorTest {
   private static final String PARAM_NAME = "testParam";
   private static final String WITH_RETURN_TYPE_EXPECTED = String.join(
       "",
-      "public java.lang.String testMethod(java.lang.String testParam) {",
+      "public String testMethod(String testParam) {",
       System.lineSeparator(),
       "return \"Test\";",
       System.lineSeparator(),

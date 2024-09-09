@@ -47,11 +47,8 @@ public class EndLineCodeOperator implements OperatorCodeGenerator {
 
   @Override
   public void generate(CodeTarget target) {
-    if (operators != null) {
-      for (OperatorCodeGenerator operator : operators) {
-        operator.generate(target);
-      }
-    }
-    target.writeln(END_OPERATOR);
+    target
+        .writeAll(operators, null)
+        .writeln(END_OPERATOR);
   }
 }

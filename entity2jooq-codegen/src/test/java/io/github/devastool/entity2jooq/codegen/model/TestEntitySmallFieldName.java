@@ -14,21 +14,18 @@
  *    limitations under the License.
  */
 
-package io.github.devastool.entity2jooq.codegen.generate;
+package io.github.devastool.entity2jooq.codegen.model;
 
-import java.util.Comparator;
+import io.github.devastool.entity2jooq.annotation.Table;
 
 /**
- * Compares classes by simple names.
+ * Example entity with small names of fields, see tests.
  *
  * @author Andrey_Yurzanov
  * @since 1.0.0
  */
-class ClassComparator implements Comparator<Class<?>> {
-  @Override
-  public int compare(Class<?> first, Class<?> second) {
-    return first
-        .getSimpleName()
-        .compareTo(second.getSimpleName());
-  }
+@Table
+public class TestEntitySmallFieldName {
+  private Integer i;
+  private String s;
 }

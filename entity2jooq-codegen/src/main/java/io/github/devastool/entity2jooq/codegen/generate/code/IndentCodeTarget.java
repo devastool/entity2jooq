@@ -28,6 +28,9 @@ public class IndentCodeTarget implements CodeTarget {
   private final int indentCount;
   private final CodeTarget target;
 
+  private static final String START_BLOCK = "{";
+  private static final String END_BLOCK = "}";
+
   /**
    * Default indents count.
    */
@@ -64,9 +67,9 @@ public class IndentCodeTarget implements CodeTarget {
 
   @Override
   public CodeTarget write(String value) {
-    if ("{".equalsIgnoreCase(value)) {
+    if (START_BLOCK.equalsIgnoreCase(value)) {
       level++;
-    } else if ("}".equalsIgnoreCase(value)) {
+    } else if (END_BLOCK.equalsIgnoreCase(value)) {
       level--;
     }
 

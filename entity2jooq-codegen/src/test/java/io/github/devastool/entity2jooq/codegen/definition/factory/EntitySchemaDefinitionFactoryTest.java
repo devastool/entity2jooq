@@ -17,13 +17,10 @@
 package io.github.devastool.entity2jooq.codegen.definition.factory;
 
 import io.github.devastool.entity2jooq.annotation.Schema;
-import io.github.devastool.entity2jooq.annotation.Table;
-import io.github.devastool.entity2jooq.annotation.naming.SnakeCaseStrategy;
-import io.github.devastool.entity2jooq.codegen.Entity2JooqDatabase;
 import io.github.devastool.entity2jooq.codegen.definition.EntitySchemaDefinition;
-import io.github.devastool.entity2jooq.codegen.properties.CodegenProperties;
-import io.github.devastool.entity2jooq.codegen.properties.CodegenProperty;
-import java.util.Map;
+import io.github.devastool.entity2jooq.codegen.model.TestEntity;
+import io.github.devastool.entity2jooq.codegen.model.TestEntityEmptySchema;
+import io.github.devastool.entity2jooq.codegen.model.TestEntitySchema;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -32,40 +29,40 @@ import org.junit.jupiter.api.Test;
  *
  * @author Andrey_Yurzanov
  */
-class EntitySchemaDefinitionFactoryTest {
-  private final EntitySchemaDefinitionFactory factory =
-      new EntitySchemaDefinitionFactory(new FactoryContext());
-  private static final String TEST_SCHEMA = "test_schema";
-  private static final String PACKAGE_NAME = "factory";
-  private static final CodegenProperties PROPERTIES = new CodegenProperties(
-      Map.of(
-          CodegenProperty.NAMING_STRATEGY, SnakeCaseStrategy.class,
-          CodegenProperty.DIALECT, "",
-          CodegenProperty.DATABASE, new Entity2JooqDatabase()
-      )
-  );
-
+class EntitySchemaDefinitionFactoryTest extends CommonFactoryTest {
   @Test
   void buildSuccessTest() {
-    EntitySchemaDefinition built =
-        Assertions.assertDoesNotThrow(() -> factory.build(TestEntity.class, PROPERTIES));
-
+    EntitySchemaDefinitionFactory factory = getSchemaFactory();
+    EntitySchemaDefinition built = Assertions.assertDoesNotThrow(
+        () -> factory.build(TestEntitySchema.class, getProperties())
+    );
     Assertions.assertNotNull(built);
-    Assertions.assertEquals(TEST_SCHEMA, built.getName());
+
+    Schema annotation = TestEntitySchema.class.getAnnotation(Schema.class);
+    Assertions.assertEquals(annotation.value(), built.getName());
   }
 
   @Test
-  void buildWithTableAnnotationSuccessTest() {
+  void buildEmptySchemaAnnotationTest() {
+    EntitySchemaDefinitionFactory factory = getSchemaFactory();
     EntitySchemaDefinition built = Assertions.assertDoesNotThrow(
-        () -> factory.build(TestEntityWithTableAnnotation.class, PROPERTIES)
+        () -> factory.build(TestEntityEmptySchema.class, getProperties())
     );
-
     Assertions.assertNotNull(built);
-    Assertions.assertEquals(PACKAGE_NAME, built.getName());
+
+    String packageName = TestEntityEmptySchema.class.getPackageName();
+    Assertions.assertTrue(packageName.endsWith(built.getName()));
   }
 
-  @Schema(value = TEST_SCHEMA)
-  static final class TestEntity {}
-  @Table
-  static final class TestEntityWithTableAnnotation {}
+  @Test
+  void buildWithoutSchemaAnnotationTest() {
+    EntitySchemaDefinitionFactory factory = getSchemaFactory();
+    EntitySchemaDefinition built = Assertions.assertDoesNotThrow(
+        () -> factory.build(TestEntity.class, getProperties())
+    );
+    Assertions.assertNotNull(built);
+
+    String packageName = TestEntity.class.getPackageName();
+    Assertions.assertTrue(packageName.endsWith(built.getName()));
+  }
 }

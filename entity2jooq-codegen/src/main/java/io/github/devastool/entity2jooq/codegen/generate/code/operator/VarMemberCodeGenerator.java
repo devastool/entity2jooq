@@ -45,8 +45,7 @@ public class VarMemberCodeGenerator implements OperatorCodeGenerator {
   public void generate(CodeTarget target) {
     target
         .write(variableName)
-        .write(RESOLVE_MEMBER_OPERATOR);
-
-    member.generate(target);
+        .write(RESOLVE_MEMBER_OPERATOR)
+        .write(member);
   }
 }

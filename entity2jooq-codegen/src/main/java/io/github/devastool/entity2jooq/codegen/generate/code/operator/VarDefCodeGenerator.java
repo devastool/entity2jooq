@@ -57,7 +57,7 @@ public class VarDefCodeGenerator implements OperatorCodeGenerator {
   @Override
   public void generate(CodeTarget target) {
     target
-        .write(type.getCanonicalName())
+        .write(type)
         .space()
         .write(name);
 
@@ -65,9 +65,8 @@ public class VarDefCodeGenerator implements OperatorCodeGenerator {
       target
           .space()
           .write(ASSIGN_OPERATOR)
-          .space();
-
-      assignment.generate(target);
+          .space()
+          .write(assignment);
     }
   }
 }

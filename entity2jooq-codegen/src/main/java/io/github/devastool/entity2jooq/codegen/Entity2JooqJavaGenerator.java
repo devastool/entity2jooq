@@ -16,8 +16,8 @@
 
 package io.github.devastool.entity2jooq.codegen;
 
-import io.github.devastool.entity2jooq.codegen.definition.EntityDataTypeDefinition;
 import io.github.devastool.entity2jooq.codegen.definition.EntityTableDefinition;
+import io.github.devastool.entity2jooq.codegen.definition.type.EntityDataTypeDefinition;
 import io.github.devastool.entity2jooq.codegen.generate.ConverterGenerateChainPart;
 import io.github.devastool.entity2jooq.codegen.generate.GenerateChainPart;
 import io.github.devastool.entity2jooq.codegen.generate.GenerateContext;

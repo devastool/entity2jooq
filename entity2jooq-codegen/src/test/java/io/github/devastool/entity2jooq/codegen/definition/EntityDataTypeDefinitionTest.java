@@ -17,6 +17,7 @@
 package io.github.devastool.entity2jooq.codegen.definition;
 
 import io.github.devastool.entity2jooq.codegen.Entity2JooqDatabase;
+import io.github.devastool.entity2jooq.codegen.definition.type.EntityDataTypeDefinition;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

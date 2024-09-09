@@ -16,20 +16,14 @@
 
 package io.github.devastool.entity2jooq.codegen.generate;
 
-import io.github.devastool.entity2jooq.annotation.Table;
-import io.github.devastool.entity2jooq.annotation.type.Type;
-import io.github.devastool.entity2jooq.codegen.Entity2JooqDatabase;
-import io.github.devastool.entity2jooq.codegen.definition.factory.EntityColumnDefinitionFactory;
-import io.github.devastool.entity2jooq.codegen.definition.factory.EntityDataTypeDefinitionFactory;
-import io.github.devastool.entity2jooq.codegen.definition.factory.EntitySchemaDefinitionFactory;
+import io.github.devastool.entity2jooq.codegen.definition.factory.CommonFactoryTest;
 import io.github.devastool.entity2jooq.codegen.definition.factory.EntityTableDefinitionFactory;
-import io.github.devastool.entity2jooq.codegen.definition.factory.FactoryContext;
 import io.github.devastool.entity2jooq.codegen.generate.code.BufferedCodeTarget;
 import io.github.devastool.entity2jooq.codegen.generate.code.IndentCodeTarget;
+import io.github.devastool.entity2jooq.codegen.model.TestEntity;
+import io.github.devastool.entity2jooq.codegen.model.TestEntityConverter;
+import io.github.devastool.entity2jooq.codegen.model.TestEntityDefaultConverter;
 import io.github.devastool.entity2jooq.codegen.properties.CodegenProperties;
-import io.github.devastool.entity2jooq.codegen.properties.CodegenProperty;
-import java.util.Map;
-import org.jooq.Converter;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -39,114 +33,67 @@ import org.junit.jupiter.api.Test;
  * @author Andrey_Yurzanov
  * @since 1.0.0
  */
-class ConverterGenerateChainPartTest {
-  private final FactoryContext context = new FactoryContext();
-  private final EntityTableDefinitionFactory factory = new EntityTableDefinitionFactory(
-      new EntitySchemaDefinitionFactory(context),
-      new EntityColumnDefinitionFactory(new EntityDataTypeDefinitionFactory(context), context),
-      context
-  );
-  private static final CodegenProperties PROPERTIES = new CodegenProperties(
-      Map.of(
-          CodegenProperty.DIALECT, "",
-          CodegenProperty.DATABASE, new Entity2JooqDatabase()
-      )
-  );
-  private static final String WITH_CONVERTERS_EXPECTED = String.join(
+class ConverterGenerateChainPartTest extends CommonFactoryTest {
+  private static final String EXPECTED = String.join(
       "",
-      "    public final io.github.devastool.entity2jooq.codegen.generate.ConverterGenerateChainPartTest.IntegerToString INTEGER_TO_STRING = new io.github.devastool.entity2jooq.codegen.generate.ConverterGenerateChainPartTest.IntegerToString();",
-      System.lineSeparator(),
-      "    public final io.github.devastool.entity2jooq.codegen.generate.ConverterGenerateChainPartTest.StringToInteger STRING_TO_INTEGER = new io.github.devastool.entity2jooq.codegen.generate.ConverterGenerateChainPartTest.StringToInteger();",
+      "    public final io.github.devastool.entity2jooq.codegen.model.converter.StringToIntegerConverter STRING_TO_INTEGER_CONVERTER = new io.github.devastool.entity2jooq.codegen.model.converter.StringToIntegerConverter();",
       System.lineSeparator()
 
   );
-  private static final String WITHOUT_CONVERTERS_EXPECTED = "";
+  private static final String GENERICS_EXPECTED = String.join(
+      "",
+      "    public final io.github.devastool.entity2jooq.annotation.type.converter.EnumConverter<io.github.devastool.entity2jooq.codegen.model.TestEnum> TEST_ENUM_ENUM_CONVERTER = new io.github.devastool.entity2jooq.annotation.type.converter.EnumConverter<io.github.devastool.entity2jooq.codegen.model.TestEnum>(io.github.devastool.entity2jooq.codegen.model.TestEnum.class);",
+      System.lineSeparator()
+  );
 
   @Test
-  void generateWithConvertersTest() {
+  void generateTest() {
+    CodegenProperties properties = getProperties();
+    EntityTableDefinitionFactory factory = getTableFactory();
+
     BufferedCodeTarget target = new BufferedCodeTarget();
     ConverterGenerateChainPart part = new ConverterGenerateChainPart();
     part.generate(
         new GenerateContext(
-            factory.build(TestEntity.class, PROPERTIES),
+            factory.build(TestEntityConverter.class, properties),
             new IndentCodeTarget(target)
         )
     );
 
-    Assertions.assertEquals(WITH_CONVERTERS_EXPECTED, target.getBuffer());
+    Assertions.assertEquals(EXPECTED, target.getBuffer());
   }
 
   @Test
-  void generateWithoutConvertersTest() {
+  void generateWithoutConverterTest() {
+    CodegenProperties properties = getProperties();
+    EntityTableDefinitionFactory factory = getTableFactory();
+
     BufferedCodeTarget target = new BufferedCodeTarget();
     ConverterGenerateChainPart part = new ConverterGenerateChainPart();
     part.generate(
         new GenerateContext(
-            factory.build(TestEntityWithoutConverters.class, PROPERTIES),
+            factory.build(TestEntity.class, properties),
             new IndentCodeTarget(target)
         )
     );
 
-    Assertions.assertEquals(WITHOUT_CONVERTERS_EXPECTED, target.getBuffer());
+    Assertions.assertEquals("", target.getBuffer());
   }
 
-  @Table
-  static class TestEntity {
-    @Type(converter = StringToInteger.class)
-    private String id;
-    @Type(converter = StringToInteger.class)
-    private String secondId;
-    @Type(converter = IntegerToString.class)
-    private Integer count;
-  }
+  @Test
+  void generateToTypeGenericTest() {
+    CodegenProperties properties = getProperties();
+    EntityTableDefinitionFactory factory = getTableFactory();
 
-  @Table
-  static class TestEntityWithoutConverters {
-    private String id;
-    private Integer count;
-  }
+    BufferedCodeTarget target = new BufferedCodeTarget();
+    ConverterGenerateChainPart part = new ConverterGenerateChainPart();
+    part.generate(
+        new GenerateContext(
+            factory.build(TestEntityDefaultConverter.class, properties),
+            new IndentCodeTarget(target)
+        )
+    );
 
-  public static class StringToInteger implements Converter<String, Integer> {
-    @Override
-    public Integer from(String value) {
-      return Integer.parseInt(value);
-    }
-
-    @Override
-    public String to(Integer value) {
-      return value.toString();
-    }
-
-    @Override
-    public Class<String> fromType() {
-      return String.class;
-    }
-
-    @Override
-    public Class<Integer> toType() {
-      return Integer.class;
-    }
-  }
-
-  public static class IntegerToString implements Converter<Integer, String> {
-    @Override
-    public String from(Integer value) {
-      return value.toString();
-    }
-
-    @Override
-    public Integer to(String value) {
-      return Integer.parseInt(value);
-    }
-
-    @Override
-    public Class<Integer> fromType() {
-      return Integer.class;
-    }
-
-    @Override
-    public Class<String> toType() {
-      return String.class;
-    }
+    Assertions.assertEquals(GENERICS_EXPECTED, target.getBuffer());
   }
 }

@@ -26,8 +26,10 @@ import org.junit.jupiter.api.Test;
  */
 class SnakeCaseStrategyTest {
   private static final String RESOLVE_TEST_VALUE = "myVariableName";
+  private static final String RESOLVE_FIRST_UPPER_TEST_VALUE = "MyVariableName";
   private static final String RESOLVE_TEST_EXPECTED = "my_variable_name";
   private static final String RESOLVE_UPPER_TEST_EXPECTED = "MY_VARIABLE_NAME";
+  private static final String RESOLVE_MULTI_TEST_EXPECTED = "my_variable_name_my_variable_name";
 
   @Test
   void resolveSuccessTest() {
@@ -45,5 +47,14 @@ class SnakeCaseStrategyTest {
   void resolveSuccessUpperTest() {
     SnakeCaseStrategy strategy = new SnakeCaseStrategy(true);
     Assertions.assertEquals(RESOLVE_UPPER_TEST_EXPECTED, strategy.resolve(RESOLVE_TEST_VALUE));
+  }
+
+  @Test
+  void resolveSuccessMultiTest() {
+    SnakeCaseStrategy strategy = new SnakeCaseStrategy();
+    Assertions.assertEquals(
+        RESOLVE_MULTI_TEST_EXPECTED,
+        strategy.resolve(RESOLVE_TEST_VALUE, RESOLVE_FIRST_UPPER_TEST_VALUE)
+    );
   }
 }

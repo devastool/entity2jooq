@@ -32,7 +32,6 @@ import io.github.devastool.entity2jooq.codegen.properties.CodegenProperties;
  */
 public class EntitySchemaDefinitionFactory
     extends DefinitionFactory<Class<?>, EntitySchemaDefinition> {
-
   /**
    * Constructs new instance of {@link EntitySchemaDefinitionFactory}.
    *
@@ -52,7 +51,7 @@ public class EntitySchemaDefinitionFactory
       naming = annotation.naming();
 
       String definedName = annotation.value();
-      if (definedName != null && !definedName.isEmpty()) {
+      if (!definedName.isEmpty()) {
         name = definedName;
       }
     }
@@ -64,6 +63,7 @@ public class EntitySchemaDefinitionFactory
     );
   }
 
+  // Returns last name of class package
   private String getLastPackageName(Package packageDefinition) {
     String name = packageDefinition.getName();
     int index = name.lastIndexOf('.');

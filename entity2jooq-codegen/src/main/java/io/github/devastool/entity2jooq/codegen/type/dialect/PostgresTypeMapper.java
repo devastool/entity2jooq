@@ -56,6 +56,7 @@ public class PostgresTypeMapper extends DialectTypeMapper {
             new TypePair(Double.class, "double precision"),
             // Character types
             new TypePair(String.class, "text"),
+            new TypePair(Enum.class, "text"),
             // Date/Time types
             new TypePair(LocalDate.class, "date"),
             new TypePair(Date.class, "date"),

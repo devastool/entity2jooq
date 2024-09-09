@@ -22,6 +22,7 @@ import static io.github.devastool.entity2jooq.codegen.properties.CodegenProperty
 import static io.github.devastool.entity2jooq.codegen.properties.CodegenProperty.DIALECT;
 import static io.github.devastool.entity2jooq.codegen.properties.CodegenProperty.TEST_CLASSES;
 
+import io.github.devastool.entity2jooq.annotation.type.converter.EnumConverter;
 import io.github.devastool.entity2jooq.codegen.definition.factory.EntityColumnDefinitionFactory;
 import io.github.devastool.entity2jooq.codegen.definition.factory.EntityDataTypeDefinitionFactory;
 import io.github.devastool.entity2jooq.codegen.definition.factory.EntitySchemaDefinitionFactory;
@@ -38,6 +39,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.stream.Collectors;
+import org.jooq.Converter;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.jooq.impl.DSL;
@@ -73,8 +75,14 @@ public class Entity2JooqDatabase extends AbstractDatabase {
   public Entity2JooqDatabase() {
     super();
 
+    // TODO. Load from pom.xml?
+    Map<Class<?>, Class<? extends Converter>> converters = Map.of(
+        Enum.class,
+        EnumConverter.class
+    );
+
     FactoryContext context = new FactoryContext();
-    EntityDataTypeDefinitionFactory type = new EntityDataTypeDefinitionFactory(context);
+    EntityDataTypeDefinitionFactory type = new EntityDataTypeDefinitionFactory(context, converters);
     EntitySchemaDefinitionFactory schemas = new EntitySchemaDefinitionFactory(context);
     EntityColumnDefinitionFactory columns = new EntityColumnDefinitionFactory(type, context);
 

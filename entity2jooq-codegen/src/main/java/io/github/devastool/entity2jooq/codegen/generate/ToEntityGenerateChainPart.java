@@ -17,9 +17,10 @@
 package io.github.devastool.entity2jooq.codegen.generate;
 
 import io.github.devastool.entity2jooq.codegen.definition.EntityColumnDefinition;
-import io.github.devastool.entity2jooq.codegen.definition.EntityDataTypeDefinition;
 import io.github.devastool.entity2jooq.codegen.definition.EntityTableDefinition;
 import io.github.devastool.entity2jooq.codegen.definition.factory.column.FieldDetails;
+import io.github.devastool.entity2jooq.codegen.definition.type.ConverterDefinition;
+import io.github.devastool.entity2jooq.codegen.definition.type.EntityDataTypeDefinition;
 import io.github.devastool.entity2jooq.codegen.generate.code.CodeTarget;
 import io.github.devastool.entity2jooq.codegen.generate.code.MethodCodeGenerator;
 import io.github.devastool.entity2jooq.codegen.generate.code.operator.EndLineCodeOperator;
@@ -38,7 +39,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
-import org.jooq.Converter;
 import org.jooq.Record;
 import org.jooq.meta.ColumnDefinition;
 import org.jooq.meta.DataTypeDefinition;
@@ -178,9 +178,10 @@ public class ToEntityGenerateChainPart implements GenerateChainPart {
 
     DataTypeDefinition type = column.getType();
     if (EntityDataTypeDefinition.class.equals(type.getClass())) {
-      Converter converter = ((EntityDataTypeDefinition) type).getTypeConverter();
-      if (converter != null) {
-        String converterField = context.getVariable(converter.getClass(), String.class);
+      EntityDataTypeDefinition entityType = (EntityDataTypeDefinition) type;
+      ConverterDefinition converterDefinition = entityType.getConverterDefinition();
+      if (converterDefinition != null) {
+        String converterField = context.getVariable(converterDefinition, String.class);
         return new VarMemberCodeGenerator(
             PARAM_NAME,
             new InvokeMethodCodeGenerator(

@@ -19,15 +19,16 @@ package io.github.devastool.entity2jooq.codegen.generate;
 import io.github.devastool.entity2jooq.annotation.naming.NamingStrategy;
 import io.github.devastool.entity2jooq.annotation.naming.SnakeCaseStrategy;
 import io.github.devastool.entity2jooq.codegen.definition.EntityColumnDefinition;
-import io.github.devastool.entity2jooq.codegen.definition.EntityDataTypeDefinition;
 import io.github.devastool.entity2jooq.codegen.definition.EntityTableDefinition;
+import io.github.devastool.entity2jooq.codegen.definition.type.ConverterDefinition;
+import io.github.devastool.entity2jooq.codegen.definition.type.EntityDataTypeDefinition;
 import io.github.devastool.entity2jooq.codegen.generate.code.CodeTarget;
 import io.github.devastool.entity2jooq.codegen.generate.code.FieldCodeGenerator;
 import io.github.devastool.entity2jooq.codegen.generate.code.operator.NewCodeGenerator;
+import java.util.ArrayList;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.TreeSet;
-import org.jooq.Converter;
 import org.jooq.meta.ColumnDefinition;
 
 /**
@@ -43,27 +44,47 @@ public class ConverterGenerateChainPart implements GenerateChainPart {
   public void generate(GenerateContext context) {
     EntityTableDefinition table = context.getTable();
     if (table.isMapping()) {
-      TreeSet<Class<?>> types = new TreeSet<>(new ClassComparator());
+      TreeSet<ConverterDefinition> converters = new TreeSet<>();
       for (ColumnDefinition column : table.getColumns()) {
         Optional<EntityDataTypeDefinition> extracted = getType(column);
         if (extracted.isPresent()) {
           EntityDataTypeDefinition type = extracted.get();
 
-          Converter converter = type.getTypeConverter();
+          ConverterDefinition converter = type.getConverterDefinition();
           if (converter != null) {
-            types.add(converter.getClass());
+            converters.add(converter);
           }
         }
       }
 
       CodeTarget target = context.getTarget();
-      for (Class<?> type : types) {
-        String name = naming.resolve(type.getSimpleName());
-        context.setVariable(type, name);
+      for (ConverterDefinition converter : converters) {
+        String name = getConverterName(converter);
+        context.setVariable(converter, name);
 
-        NewCodeGenerator assignment = new NewCodeGenerator(type);
-        FieldCodeGenerator field = new FieldCodeGenerator(name, type, assignment);
-        field.generate(target);
+        Optional<Class<?>> toType = converter.getGenericToType();
+        if (toType.isPresent()) {
+          Class<?> type = toType.get();
+          Class<?> converterType = converter.getConverterType();
+
+          NewCodeGenerator assignment = new NewCodeGenerator(
+              converterType,
+              codeTarget -> target.writeClass(type)
+          );
+          assignment.setGenericTypes(type);
+
+          FieldCodeGenerator field = new FieldCodeGenerator(name, converterType, assignment);
+          field.setGenericTypes(type);
+          field.generate(target);
+        } else {
+          Class<?> converterType = converter.getConverterType();
+          FieldCodeGenerator field = new FieldCodeGenerator(
+              name,
+              converterType,
+              new NewCodeGenerator(converterType)
+          );
+          field.generate(target);
+        }
       }
     }
   }
@@ -77,5 +98,19 @@ public class ConverterGenerateChainPart implements GenerateChainPart {
         .map(EntityColumnDefinition::getType)
         .filter(value -> Objects.equals(EntityDataTypeDefinition.class, value.getClass()))
         .map(EntityDataTypeDefinition.class::cast);
+  }
+
+  // Returns name of the converter
+  private String getConverterName(ConverterDefinition converter) {
+    ArrayList<String> names = new ArrayList<>();
+    Optional<Class<?>> toType = converter.getGenericToType();
+    if (toType.isPresent()) {
+      Class<?> type = toType.get();
+      names.add(type.getSimpleName());
+    }
+    Class<?> type = converter.getConverterType();
+    names.add(type.getSimpleName());
+
+    return naming.resolve(names.toArray(new String[]{}));
   }
 }

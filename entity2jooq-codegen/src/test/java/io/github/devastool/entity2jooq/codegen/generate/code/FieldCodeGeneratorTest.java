@@ -17,6 +17,7 @@
 package io.github.devastool.entity2jooq.codegen.generate.code;
 
 import io.github.devastool.entity2jooq.codegen.generate.code.operator.NewCodeGenerator;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.Assertions;
@@ -37,6 +38,11 @@ class FieldCodeGeneratorTest {
   private static final String WITHOUT_ASSIGNMENT_EXPECTED = String.join(
       "",
       "public final java.util.List TEST_FIELD;",
+      System.lineSeparator()
+  );
+  private static final String WITH_GENERICS_EXPECTED = String.join(
+      "",
+      "public final java.util.List<java.math.BigDecimal> TEST_FIELD;",
       System.lineSeparator()
   );
 
@@ -60,5 +66,15 @@ class FieldCodeGeneratorTest {
 
     generator.generate(target);
     Assertions.assertEquals(WITHOUT_ASSIGNMENT_EXPECTED, target.getBuffer());
+  }
+
+  @Test
+  void generateWithGenericsTest() {
+    BufferedCodeTarget target = new BufferedCodeTarget();
+    FieldCodeGenerator generator = new FieldCodeGenerator(FIELD_NAME, List.class);
+    generator.setGenericTypes(BigDecimal.class);
+
+    generator.generate(target);
+    Assertions.assertEquals(WITH_GENERICS_EXPECTED, target.getBuffer());
   }
 }

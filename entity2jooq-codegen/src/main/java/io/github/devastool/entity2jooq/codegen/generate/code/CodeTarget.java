@@ -16,6 +16,8 @@
 
 package io.github.devastool.entity2jooq.codegen.generate.code;
 
+import java.util.Iterator;
+
 /**
  * Abstraction of source code destination.
  *
@@ -40,6 +42,34 @@ public interface CodeTarget {
   CodeTarget write(String value);
 
   /**
+   * Writes the name of the class, if the class is contained in the java.lang package, it writes the
+   * simple name, otherwise the canonical name of the class.
+   *
+   * @param type class for writing
+   * @return current instance
+   */
+  default CodeTarget write(Class<?> type) {
+    String name = type.getCanonicalName();
+    if (name.startsWith("java.lang")) {
+      name = type.getSimpleName();
+    }
+
+    write(name);
+    return this;
+  }
+
+  /**
+   * Delegates writing to specified code generator.
+   *
+   * @param value code generator
+   * @return current instance
+   */
+  default CodeTarget write(CodeGenerator value) {
+    value.generate(this);
+    return this;
+  }
+
+  /**
    * Writes string and append new line after it.
    *
    * @param value string for writing
@@ -54,6 +84,44 @@ public interface CodeTarget {
    */
   default CodeTarget writeln() {
     return writeln("");
+  }
+
+  /**
+   * Writes all the elements of the iterator, after each element writes a separator, except for the
+   * last element.
+   *
+   * @param value     elements for writing
+   * @param separator elements separator
+   */
+  default CodeTarget writeAll(Iterable<? extends CodeGenerator> value, CodeGenerator separator) {
+    if (value != null) {
+      Iterator<? extends CodeGenerator> iterator = value.iterator();
+      while (iterator.hasNext()) {
+        CodeGenerator next = iterator.next();
+        next.generate(this);
+
+        if (separator != null && iterator.hasNext()) {
+          separator.generate(this);
+        }
+      }
+    }
+    return this;
+  }
+
+  /**
+   * Writes name of the class with postfix '.class'.
+   *
+   * @param type class for writing
+   * @return current instance
+   */
+  default CodeTarget writeClass(Class<?> type) {
+    String name = type.getCanonicalName();
+    if (name.startsWith("java.lang")) {
+      name = type.getSimpleName();
+    }
+
+    write(name + ".class");
+    return this;
   }
 
   /**

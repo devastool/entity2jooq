@@ -17,6 +17,8 @@
 package io.github.devastool.entity2jooq.codegen.generate.code;
 
 import io.github.devastool.entity2jooq.codegen.generate.code.operator.OperatorCodeGenerator;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Generator of source code of public, final field.
@@ -25,6 +27,7 @@ import io.github.devastool.entity2jooq.codegen.generate.code.operator.OperatorCo
  * @since 1.0.0
  */
 public class FieldCodeGenerator implements CodeGenerator {
+  private List<CodeGenerator> genericTypes;
   private final String name;
   private final Class<?> type;
   private final OperatorCodeGenerator assignment;
@@ -32,6 +35,9 @@ public class FieldCodeGenerator implements CodeGenerator {
   private static final String ACCESS_MODIFIER = "public";
   private static final String FINAL_MODIFIER = "final";
   private static final String ASSIGN_OPERATOR = "=";
+  private static final String GENERICS_BEGIN = "<";
+  private static final String GENERICS_END = ">";
+  private static final String GENERICS_SEPARATOR = ", ";
   private static final String END_OPERATOR = ";";
 
   /**
@@ -57,6 +63,22 @@ public class FieldCodeGenerator implements CodeGenerator {
     this.assignment = assignment;
   }
 
+  /**
+   * Sets types to replace expression of generics.
+   *
+   * @param genericTypes types to replace expression of generics
+   */
+  public FieldCodeGenerator setGenericTypes(Class<?>... genericTypes) {
+    if (this.genericTypes == null) {
+      this.genericTypes = new ArrayList<>();
+    }
+
+    for (Class<?> genericType : genericTypes) {
+      this.genericTypes.add(target -> target.write(genericType));
+    }
+    return this;
+  }
+
   @Override
   public void generate(CodeTarget target) {
     target
@@ -64,17 +86,28 @@ public class FieldCodeGenerator implements CodeGenerator {
         .space()
         .write(FINAL_MODIFIER)
         .space()
-        .write(type.getCanonicalName())
+        .write(type);
+
+    // Generics
+    if (genericTypes != null && !genericTypes.isEmpty()) {
+      target
+          .write(GENERICS_BEGIN)
+          .writeAll(genericTypes, codeTarget -> codeTarget.write(GENERICS_SEPARATOR))
+          .write(GENERICS_END);
+    }
+
+    // Name of the field
+    target
         .space()
         .write(name);
 
+    // Assignment operator
     if (assignment != null) {
       target
           .space()
           .write(ASSIGN_OPERATOR)
-          .space();
-
-      assignment.generate(target);
+          .space()
+          .write(assignment);
     }
     target.writeln(END_OPERATOR);
   }

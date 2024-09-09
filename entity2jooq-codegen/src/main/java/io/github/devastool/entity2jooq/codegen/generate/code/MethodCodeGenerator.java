@@ -18,11 +18,7 @@ package io.github.devastool.entity2jooq.codegen.generate.code;
 
 import io.github.devastool.entity2jooq.codegen.generate.code.operator.OperatorCodeGenerator;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 
 /**
  * Generator of method source code.
@@ -33,7 +29,7 @@ import java.util.Map.Entry;
 public class MethodCodeGenerator implements CodeGenerator {
   private String name;
   private Class<?> returnType;
-  private Map<String, Class<?>> params;
+  private List<CodeGenerator> params;
   private List<OperatorCodeGenerator> operators;
 
   private static final String ACCESS_KEYWORD = "public";
@@ -74,10 +70,15 @@ public class MethodCodeGenerator implements CodeGenerator {
    */
   public MethodCodeGenerator setParam(String name, Class<?> type) {
     if (this.params == null) {
-      this.params = new HashMap<>();
+      this.params = new ArrayList<>();
     }
-    this.params.put(name, type);
 
+    this.params.add(target ->
+        target
+            .write(type)
+            .space()
+            .write(name)
+    );
     return this;
   }
 
@@ -105,52 +106,23 @@ public class MethodCodeGenerator implements CodeGenerator {
     if (isVoid(returnType)) {
       target.write(void.class.getSimpleName());
     } else {
-      target.write(returnType.getCanonicalName());
+      target.write(returnType);
     }
+
     target
         .space()
-        .write(name);
-
-    generateParams(target);
-    target.space();
-    generateBody(target);
+        .write(name)
+        .write(PARAMS_BEGIN)
+        .writeAll(params, codeTarget -> codeTarget.write(PARAMS_SEPARATOR))
+        .write(PARAMS_END)
+        .space()
+        .writeln(BODY_BEGIN)
+        .writeAll(operators, null)
+        .writeln(BODY_END);
   }
 
+  // Checks type, it returns true if type is void, else false
   private boolean isVoid(Class<?> type) {
     return type == null || type == void.class || type == Void.class;
-  }
-
-  private void generateParams(CodeTarget target) {
-    target.write(PARAMS_BEGIN);
-    if (params != null && !params.isEmpty()) {
-      Iterator<Entry<String, Class<?>>> iterator = params.entrySet().iterator();
-      while (iterator.hasNext()) {
-        Entry<String, Class<?>> param = iterator.next();
-        String paramName = param.getKey();
-        Class<?> paramType = param.getValue();
-
-        target
-            .write(paramType.getCanonicalName())
-            .space()
-            .write(paramName);
-
-        if (iterator.hasNext()) {
-          target
-              .write(PARAMS_SEPARATOR)
-              .space();
-        }
-      }
-    }
-    target.write(PARAMS_END);
-  }
-
-  private void generateBody(CodeTarget target) {
-    target.writeln(BODY_BEGIN);
-    if (operators != null && !operators.isEmpty()) {
-      for (CodeGenerator operator : operators) {
-        operator.generate(target);
-      }
-    }
-    target.writeln(BODY_END);
   }
 }

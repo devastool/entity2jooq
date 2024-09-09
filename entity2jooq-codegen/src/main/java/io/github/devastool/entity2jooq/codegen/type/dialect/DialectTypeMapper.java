@@ -45,11 +45,18 @@ public abstract class DialectTypeMapper implements TypeMapper {
 
   @Override
   public String getSqlType(String dialect, Class<?> type) throws NoSuchTypeException {
+    Class<?> targetType;
+    if (Enum.class.isAssignableFrom(type)) {
+      targetType = Enum.class;
+    } else {
+      targetType = type;
+    }
+
     return types
         .stream()
-        .filter(data -> Objects.equals(data.getType(), type))
+        .filter(data -> Objects.equals(data.getType(), targetType))
         .findFirst()
-        .orElseThrow(() -> new NoSuchTypeException(dialect, type))
+        .orElseThrow(() -> new NoSuchTypeException(dialect, targetType))
         .getSqlType();
   }
 
