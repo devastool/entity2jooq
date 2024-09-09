@@ -28,6 +28,9 @@ import io.github.devastool.entity2jooq.annotation.Embedded;
 public class TestEntityLocation {
   private String point;
 
+  public TestEntityLocation() {
+  }
+
   /**
    * Constructs new instance of {@link TestEntityLocation}.
    */
@@ -37,5 +40,9 @@ public class TestEntityLocation {
 
   public String getPoint() {
     return point;
+  }
+
+  public void setPoint(String point) {
+    this.point = point;
   }
 }

@@ -37,11 +37,23 @@ public class TestEntityInfo {
     this.home = home;
   }
 
+  public TestEntityInfo() {
+
+  }
+
   public TestEntityLocation getWork() {
     return work;
   }
 
   public TestEntityLocation getHome() {
     return home;
+  }
+
+  public void setWork(TestEntityLocation work) {
+    this.work = work;
+  }
+
+  public void setHome(TestEntityLocation home) {
+    this.home = home;
   }
 }

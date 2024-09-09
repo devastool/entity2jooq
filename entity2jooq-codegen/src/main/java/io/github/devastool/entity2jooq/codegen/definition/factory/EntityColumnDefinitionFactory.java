@@ -38,7 +38,7 @@ import java.util.Map;
 /**
  * The factory for {@link EntityColumnDefinition} building.
  *
- * @author Andrey_Yurzanov
+ * @author Andrey_Yurzanov, Sergey_Konovalov
  * @since 1.0.0
  */
 public class EntityColumnDefinitionFactory extends
@@ -67,7 +67,7 @@ public class EntityColumnDefinitionFactory extends
     Deque<FieldDetails> queue = new ArrayDeque<>();
 
     Map<String, Column> overrideColumns = getOverrideColumns(field);
-    queue.push(new FieldDetails(field, null, new ArrayList<>()));
+    queue.push(new FieldDetails(field, new ArrayList<>(), new ArrayList<>()));
 
     while (!queue.isEmpty()) {
       FieldDetails fieldDetails = queue.pop();
@@ -75,18 +75,21 @@ public class EntityColumnDefinitionFactory extends
 
       if (processedType.isAnnotationPresent(Embedded.class)) {
         for (Field declaredField : processedType.getDeclaredFields()) {
-          List<String> fieldsName = new ArrayList<>(fieldDetails.getParentFieldsName());
+          List<String> nameSegments = new ArrayList<>(fieldDetails.getNameSegments());
+          List<Field> parentFields = new ArrayList<>(fieldDetails.getParentFields());
+          parentFields.add(fieldDetails.getProcessedField());
+          nameSegments.add(fieldDetails.getProcessedField().getName());
 
-          queue.push(new FieldDetails(declaredField, fieldDetails.getProcessedField(), fieldsName));
+          queue.push(new FieldDetails(declaredField, parentFields, nameSegments));
         }
       } else {
         String name = fieldDetails.getName();
         Class<? extends NamingStrategy> naming = properties.require(NAMING_STRATEGY);
-        var fieldNames = fieldDetails.getParentFieldsName();
+        var nameSegments = fieldDetails.getNameSegments();
 
         Field processedField = fieldDetails.getProcessedField();
         Column column = processedField.getAnnotation(Column.class);
-        Column overrideColum = overrideColumns.get(String.join(DOT, fieldNames) + DOT + name);
+        Column overrideColum = overrideColumns.get(String.join(DOT, nameSegments) + DOT + name);
 
         if (overrideColum != null) {
           naming = overrideColum.naming();
@@ -97,8 +100,8 @@ public class EntityColumnDefinitionFactory extends
             name = replaceValueIfNotEmpty(column.value(), name);
           }
 
-          fieldNames.add(name);
-          name = String.join(SEPARATOR, fieldNames);
+          nameSegments.add(name);
+          name = String.join(SEPARATOR, nameSegments);
         }
 
         FactoryContext context = getContext();
@@ -106,7 +109,7 @@ public class EntityColumnDefinitionFactory extends
 
         columns.add(new EntityColumnDefinition(
             properties.require(TABLE),
-            field,
+            fieldDetails,
             strategy.resolve(name),
             typeFactory.build(processedField, properties)
         ));

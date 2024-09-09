@@ -27,7 +27,7 @@ import io.github.devastool.entity2jooq.annotation.Table;
  * @author Sergey_Konovalov
  * @since 1.0.0
  */
-@Table(mapping = false)
+@Table
 @Schema("test_schema")
 public class TestEmbeddedEntity {
   private String name;
@@ -47,8 +47,23 @@ public class TestEmbeddedEntity {
     );
   }
 
+  public TestEmbeddedEntity() {
+  }
+
   public String getName() {
     return name;
+  }
+
+  public void setName(String name) {
+    this.name = name;
+  }
+
+  public TestEntityInfo getInfo() {
+    return info;
+  }
+
+  public void setInfo(TestEntityInfo info) {
+    this.info = info;
   }
 
   public String getHomeCity() {
