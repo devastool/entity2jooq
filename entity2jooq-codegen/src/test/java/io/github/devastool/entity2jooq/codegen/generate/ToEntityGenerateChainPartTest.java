@@ -16,13 +16,6 @@
 
 package io.github.devastool.entity2jooq.codegen.generate;
 
-import io.github.devastool.entity2jooq.annotation.Embedded;
-import io.github.devastool.entity2jooq.annotation.Table;
-import io.github.devastool.entity2jooq.annotation.type.Type;
-import io.github.devastool.entity2jooq.codegen.Entity2JooqDatabase;
-import io.github.devastool.entity2jooq.codegen.definition.factory.EntityColumnDefinitionFactory;
-import io.github.devastool.entity2jooq.codegen.definition.factory.EntityDataTypeDefinitionFactory;
-import io.github.devastool.entity2jooq.codegen.definition.factory.EntitySchemaDefinitionFactory;
 import io.github.devastool.entity2jooq.annotation.naming.SnakeCaseStrategy;
 import io.github.devastool.entity2jooq.codegen.definition.EntityTableDefinition;
 import io.github.devastool.entity2jooq.codegen.definition.factory.CommonFactoryTest;
@@ -33,6 +26,7 @@ import io.github.devastool.entity2jooq.codegen.generate.code.BufferedCodeTarget;
 import io.github.devastool.entity2jooq.codegen.generate.code.IndentCodeTarget;
 import io.github.devastool.entity2jooq.codegen.model.TestEntity;
 import io.github.devastool.entity2jooq.codegen.model.TestEntityConverter;
+import io.github.devastool.entity2jooq.codegen.model.TestEntityEmbedded;
 import org.jooq.meta.ColumnDefinition;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -57,6 +51,8 @@ class ToEntityGenerateChainPartTest extends CommonFactoryTest {
       System.lineSeparator(),
       "        entity.setDoubleField(record.get(TEST_ENTITY.DOUBLE_FIELD));",
       System.lineSeparator(),
+      "        entity.setStringField(record.get(TEST_ENTITY.ENTITY_NAME));",
+      System.lineSeparator(),
       "        entity.setFloatField(record.get(TEST_ENTITY.FLOAT_FIELD));",
       System.lineSeparator(),
       "        entity.setIntField(record.get(TEST_ENTITY.INT_FIELD));",
@@ -77,8 +73,6 @@ class ToEntityGenerateChainPartTest extends CommonFactoryTest {
       System.lineSeparator(),
       "        entity.setSqlDateField(record.get(TEST_ENTITY.SQL_DATE_FIELD));",
       System.lineSeparator(),
-      "        entity.setStringField(record.get(TEST_ENTITY.ENTITY_NAME));",
-      System.lineSeparator(),
       "        entity.setTimeField(record.get(TEST_ENTITY.TIME_FIELD));",
       System.lineSeparator(),
       "        entity.setTimestampField(record.get(TEST_ENTITY.TIMESTAMP_FIELD));",
@@ -94,24 +88,32 @@ class ToEntityGenerateChainPartTest extends CommonFactoryTest {
   private static final String WITH_CONVERTERS_EXPECTED = String.join(
       "",
       "    public io.github.devastool.entity2jooq.codegen.model.TestEntityConverter toEntity(org.jooq.Record record) {",
-      "    public io.github.devastool.entity2jooq.codegen.generate.ToEntityGenerateChainPartTest.TestEntity toEntity(org.jooq.Record record) {",
-      System.lineSeparator(),
-      "        io.github.devastool.entity2jooq.codegen.generate.ToEntityGenerateChainPartTest.TestEmbedded embedded_0 = new io.github.devastool.entity2jooq.codegen.generate.ToEntityGenerateChainPartTest.TestEmbedded();",
-      System.lineSeparator(),
-      "        embedded_0.setName(record.get(TEST_ENTITY.EMBEDDED_NAME));",
-      System.lineSeparator(),
-      "        ",
       System.lineSeparator(),
       "        io.github.devastool.entity2jooq.codegen.model.TestEntityConverter entity = new io.github.devastool.entity2jooq.codegen.model.TestEntityConverter();",
       System.lineSeparator(),
       "        entity.setIntField(record.get(TEST_ENTITY_CONVERTER.INT_FIELD, STRING_TO_INTEGER_CONVERTER));",
-      "        entity.setCount(record.get(TEST_ENTITY.COUNT, null));",
       System.lineSeparator(),
-      "        entity.setEmbedded(embedded_0);",
+      "        return entity;",
       System.lineSeparator(),
-      "        entity.setId(record.get(TEST_ENTITY.ID, null));",
+      "    }",
+      System.lineSeparator()
+  );
+
+  private static final String WITH_EMBEDDED_EXPECTED = String.join(
+      "",
+      "    public io.github.devastool.entity2jooq.codegen.model.TestEntityEmbedded toEntity(org.jooq.Record record) {",
       System.lineSeparator(),
-      "        entity.setSecondId(record.get(TEST_ENTITY.SECOND_ID, null));",
+      "        io.github.devastool.entity2jooq.codegen.model.TestEmbeddable embeddable_0 = new io.github.devastool.entity2jooq.codegen.model.TestEmbeddable();",
+      System.lineSeparator(),
+      "        embeddable_0.setIntField(record.get(TEST_ENTITY_EMBEDDED.EMBEDDABLE_INT_FIELD));",
+      System.lineSeparator(),
+      "        embeddable_0.setStringField(record.get(TEST_ENTITY_EMBEDDED.EMBEDDABLE_STRING_FIELD));",
+      System.lineSeparator(),
+      "        ",
+      System.lineSeparator(),
+      "        io.github.devastool.entity2jooq.codegen.model.TestEntityEmbedded entity = new io.github.devastool.entity2jooq.codegen.model.TestEntityEmbedded();",
+      System.lineSeparator(),
+      "        entity.setEmbeddable(embeddable_0);",
       System.lineSeparator(),
       "        return entity;",
       System.lineSeparator(),
@@ -155,69 +157,19 @@ class ToEntityGenerateChainPartTest extends CommonFactoryTest {
     Assertions.assertEquals(WITH_CONVERTERS_EXPECTED, target.getBuffer());
   }
 
-  @Table
-  static class TestEntity {
-    @Type(converter = StringToInteger.class)
-    private String id;
-    @Type(converter = StringToInteger.class)
-    private String secondId;
-    @Type(converter = IntegerToString.class)
-    private Integer count;
-    private TestEmbedded embedded;
-  }
+  @Test
+  void generateWithEmbeddedTest() {
+    EntityTableDefinitionFactory factory = getTableFactory();
 
-  @Table
-  static class TestEntityWithoutConverters {
-    private String id;
-    private Integer count;
-  }
+    BufferedCodeTarget target = new BufferedCodeTarget();
+    ToEntityGenerateChainPart part = new ToEntityGenerateChainPart();
+    part.generate(
+        new GenerateContext(
+            factory.build(TestEntityEmbedded.class, getProperties()),
+            new IndentCodeTarget(target)
+        )
+    );
 
-  public static class StringToInteger implements Converter<String, Integer> {
-    @Override
-    public Integer from(String value) {
-      return Integer.parseInt(value);
-    }
-
-    @Override
-    public String to(Integer value) {
-      return value.toString();
-    }
-
-    @Override
-    public Class<String> fromType() {
-      return String.class;
-    }
-
-    @Override
-    public Class<Integer> toType() {
-      return Integer.class;
-    }
-  }
-
-  public static class IntegerToString implements Converter<Integer, String> {
-    @Override
-    public String from(Integer value) {
-      return value.toString();
-    }
-
-    @Override
-    public Integer to(String value) {
-      return Integer.parseInt(value);
-    }
-
-    @Override
-    public Class<Integer> fromType() {
-      return Integer.class;
-    }
-
-    @Override
-    public Class<String> toType() {
-      return String.class;
-    }
-  }
-
-  @Embedded
-  static class TestEmbedded{
-    private String name;
+    Assertions.assertEquals(WITH_EMBEDDED_EXPECTED, target.getBuffer());
   }
 }
