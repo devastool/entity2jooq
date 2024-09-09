@@ -27,25 +27,23 @@ import java.util.List;
  */
 public class FieldDetails {
   private final Field processedField;
-  private final Field parentfield;
-  private final List<String> parentFieldsName;
+  private final List<Field> parentFields;
+  private final List<String> nameSegments;
+
+  private static final int INDEX_LAST = 1;
 
   /**
    * Creates a new instance of FieldDetails using the specified being processed field name, parent
    * field name, and parent field chain names.
    *
-   * @param processedField   the being processed field.
-   * @param parentField      the parent field of the being processed field, or {@code null} if there
-   *                         is no parent field
-   * @param parentFieldsName the list of parent field names
+   * @param processedField   the being processed field
+   * @param parentFields     the parent fields of the being processed field
+   * @param nameSegments     the list containing the field name segments
    */
-  public FieldDetails(Field processedField, Field parentField, List<String> parentFieldsName) {
-    if (parentField != null) {
-      parentFieldsName.add(parentField.getName());
-    }
+  public FieldDetails(Field processedField, List<Field> parentFields, List<String> nameSegments) {
     this.processedField = processedField;
-    this.parentfield = parentField;
-    this.parentFieldsName = parentFieldsName;
+    this.parentFields = parentFields;
+    this.nameSegments = nameSegments;
   }
 
   /**
@@ -55,6 +53,24 @@ public class FieldDetails {
    */
   public Field getProcessedField() {
     return processedField;
+  }
+
+  /**
+   * Returns the last parent field.
+   *
+   * @return the field
+   */
+  public Field getLastParentField() {
+    return parentFields.get(parentFields.size() - INDEX_LAST);
+  }
+
+  /**
+   * Checks if the current object is embedded.
+   *
+   * @return true if the current object is embedded, false otherwise
+   */
+  public boolean isEmbedded() {
+    return !parentFields.isEmpty();
   }
 
   /**
@@ -76,11 +92,20 @@ public class FieldDetails {
   }
 
   /**
-   * Returns the list of parent field names.
+   * Retrieves the list of field name segments.
    *
-   * @return the list of parent field names
+   * @return the list containing the field name segments
    */
-  public List<String> getParentFieldsName() {
-    return parentFieldsName;
+  public List<String> getNameSegments() {
+    return nameSegments;
+  }
+
+  /**
+   * Returns the list of parent fields.
+   *
+   * @return the list of parent fields
+   */
+  public List<Field> getParentFields() {
+    return parentFields;
   }
 }

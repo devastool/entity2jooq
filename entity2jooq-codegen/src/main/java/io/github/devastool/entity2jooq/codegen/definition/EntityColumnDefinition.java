@@ -16,7 +16,7 @@
 
 package io.github.devastool.entity2jooq.codegen.definition;
 
-import java.lang.reflect.Field;
+import io.github.devastool.entity2jooq.codegen.definition.factory.column.FieldDetails;
 import org.jooq.meta.DataTypeDefinition;
 import org.jooq.meta.DefaultColumnDefinition;
 import org.jooq.meta.TableDefinition;
@@ -25,12 +25,12 @@ import org.jooq.meta.TableDefinition;
  * Meta-information about column by annotation
  * {@link io.github.devastool.entity2jooq.annotation.Column}.
  *
- * @author Andrey_Yurzanov
+ * @author Andrey_Yurzanov, Sergey_Konovalov
  * @since 1.0.0
  */
 public class EntityColumnDefinition extends DefaultColumnDefinition
     implements Comparable<EntityColumnDefinition> {
-  private final Field field;
+  private final FieldDetails fieldDetails;
 
   private static final String GETTER_PREFIX = "get";
   private static final String SETTER_PREFIX = "set";
@@ -46,19 +46,17 @@ public class EntityColumnDefinition extends DefaultColumnDefinition
    */
   public EntityColumnDefinition(
       TableDefinition table,
-      Field field,
+      FieldDetails fieldDetails,
       String name,
       DataTypeDefinition type
   ) {
     super(table, name, 0, type, false, "");
-    this.field = field;
+    this.fieldDetails = fieldDetails;
   }
 
   @Override
   public int compareTo(EntityColumnDefinition other) {
-    return field
-        .getName()
-        .compareTo(other.field.getName());
+    return getName().compareTo(other.getName());
   }
 
   /**
@@ -67,7 +65,7 @@ public class EntityColumnDefinition extends DefaultColumnDefinition
    * @return name of field getter
    */
   public String getGetterName() {
-    String name = getMethodNamePostfix(field.getName());
+    String name = getMethodNamePostfix(fieldDetails.getName());
     return GETTER_PREFIX.concat(name);
   }
 
@@ -77,8 +75,26 @@ public class EntityColumnDefinition extends DefaultColumnDefinition
    * @return name of field setter
    */
   public String getSetterName() {
-    String name = getMethodNamePostfix(field.getName());
+    String name = getMethodNamePostfix(fieldDetails.getName());
     return SETTER_PREFIX.concat(name);
+  }
+
+  /**
+   * Checks if the field are embedded.
+   *
+   * @return returns true if embedded
+   */
+  public Boolean isEmbedded() {
+    return this.fieldDetails.isEmbedded();
+  }
+
+  /**
+   * Returns FieldDetails.
+   *
+   * @return returns FieldDetails
+   */
+  public FieldDetails getFieldDetails() {
+    return this.fieldDetails;
   }
 
   private String getMethodNamePostfix(String name) {

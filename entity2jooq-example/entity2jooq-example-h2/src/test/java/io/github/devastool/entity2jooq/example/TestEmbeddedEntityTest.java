@@ -130,13 +130,7 @@ class TestEmbeddedEntityTest {
         .from(TEST_EMBEDDED_ENTITY)
         .where(TEST_EMBEDDED_ENTITY.NAME.isNotNull());
 
-    List<TestEmbeddedEntity> results = select.fetch(
-        records -> new TestEmbeddedEntity(
-            records.get(TEST_EMBEDDED_ENTITY.NAME),
-            records.get(TEST_EMBEDDED_ENTITY.WORK),
-            records.get(TEST_EMBEDDED_ENTITY.HOME)
-        )
-    );
+    List<TestEmbeddedEntity> results = select.fetch(TEST_EMBEDDED_ENTITY::toEntity);
 
     for (TestEmbeddedEntity entity : DATA) {
       String name = entity.getName();

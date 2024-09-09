@@ -14,9 +14,7 @@
  *    limitations under the License.
  */
 
-package io.github.devastool.entity2jooq.example;
-
-import static org.jooq.generated.test_schema.tables.TestEmbeddedEntity.TEST_EMBEDDED_ENTITY;
+package example;
 
 import io.github.devastool.entity2jooq.example.embedded.TestEmbeddedEntity;
 import java.sql.Connection;
@@ -30,6 +28,7 @@ import org.h2.jdbcx.JdbcConnectionPool;
 import org.jooq.DSLContext;
 import org.jooq.DeleteConditionStep;
 import org.jooq.Record;
+import org.jooq.SQLDialect;
 import org.jooq.Table;
 import org.jooq.UpdateConditionStep;
 import org.jooq.generated.DefaultCatalog;
@@ -42,10 +41,12 @@ import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 
+import static org.jooq.generated.test_schema.tables.TestEmbeddedEntity.TEST_EMBEDDED_ENTITY;
+
 /**
  * Tests of {@link TestEmbeddedEntity} DDL.
  *
- * @author Sergey_Konovalov
+ * @author Sergey_Konovalov, Filkov_Artem
  */
 @TestMethodOrder(OrderAnnotation.class)
 class TestEmbeddedEntityTest {
@@ -54,7 +55,7 @@ class TestEmbeddedEntityTest {
       "",
       "jdbc:h2:mem:db1;",
       "DB_CLOSE_DELAY=-1;",
-      "MODE=PostgreSQL;",
+      "MODE=MySQL;",
       "DATABASE_TO_LOWER=TRUE;",
       "DEFAULT_NULL_ORDERING=HIGH"
   );
@@ -94,7 +95,7 @@ class TestEmbeddedEntityTest {
   @Order(1)
   void insertTest() throws SQLException {
     Connection connection = pool.getConnection();
-    DSLContext context = DSL.using(connection);
+    DSLContext context = DSL.using(connection, SQLDialect.MYSQL);
 
     var insert = context
         .insertInto(TEST_EMBEDDED_ENTITY)
@@ -120,7 +121,7 @@ class TestEmbeddedEntityTest {
   @Order(2)
   void selectTest() throws SQLException {
     Connection connection = pool.getConnection();
-    DSLContext context = DSL.using(connection);
+    DSLContext context = DSL.using(connection, SQLDialect.MYSQL);
 
     var select = context
         .select(
@@ -131,7 +132,13 @@ class TestEmbeddedEntityTest {
         .from(TEST_EMBEDDED_ENTITY)
         .where(TEST_EMBEDDED_ENTITY.NAME.isNotNull());
 
-    List<TestEmbeddedEntity> results = select.fetch(TEST_EMBEDDED_ENTITY::toEntity);
+    List<TestEmbeddedEntity> results = select.fetch(
+        records -> new TestEmbeddedEntity(
+            records.get(TEST_EMBEDDED_ENTITY.NAME),
+            records.get(TEST_EMBEDDED_ENTITY.WORK),
+            records.get(TEST_EMBEDDED_ENTITY.HOME)
+        )
+    );
 
     for (TestEmbeddedEntity entity : DATA) {
       String name = entity.getName();
@@ -154,7 +161,7 @@ class TestEmbeddedEntityTest {
   @Order(3)
   void updateTest() throws SQLException {
     Connection connection = pool.getConnection();
-    DSLContext context = DSL.using(connection);
+    DSLContext context = DSL.using(connection,  SQLDialect.MYSQL);
 
     ArrayList<UpdateConditionStep<?>> updates = new ArrayList<>();
     for (TestEmbeddedEntity entity : DATA) {
@@ -175,7 +182,7 @@ class TestEmbeddedEntityTest {
   @Order(4)
   void deleteTest() throws SQLException {
     Connection connection = pool.getConnection();
-    DSLContext context = DSL.using(connection);
+    DSLContext context = DSL.using(connection,  SQLDialect.MYSQL);
 
     DeleteConditionStep<Record> delete = context
         .delete(TEST_EMBEDDED_ENTITY)
