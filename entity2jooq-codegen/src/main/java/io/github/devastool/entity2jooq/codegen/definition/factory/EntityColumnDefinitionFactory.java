@@ -122,21 +122,16 @@ public class EntityColumnDefinitionFactory extends
   @Override
   public boolean canBuild(Field field) {
     Class<?> type = field.getType();
-    return !type.isPrimitive() && typeFactory.canBuild(field);
+    return !type.isPrimitive();
   }
 
-  /**
-   * Gets a map of overridden columns based on the annotations for the specified field.
-   *
-   * @param field the being processed field.
-   * @return Map of overridden columns
-   */
+  // Gets a map of overridden columns based on the annotations for the specified field.
   private Map<String, Column> getOverrideColumns(Field field) {
     ColumnOverrides columnOverrides = field.getAnnotation(ColumnOverrides.class);
     ColumnOverride columnOverride = field.getAnnotation(ColumnOverride.class);
+
     String fieldName = field.getName();
     Map<String, Column> overrideColumns = new HashMap<>();
-
     if (columnOverrides != null) {
       for (ColumnOverride override : columnOverrides.value()) {
         overrideColumns.put(
@@ -150,19 +145,12 @@ public class EntityColumnDefinitionFactory extends
           columnOverride.column()
       );
     }
-
     return overrideColumns;
   }
 
-  /**
-   * Replaces the original value with a new value if the new value is not empty.
-   *
-   * @param newValue     the new value
-   * @param currentValue the original value
-   * @return the new value if it is not empty, otherwise the original value
-   */
+  // Replaces the original value with a new value if the new value is not empty.
   private String replaceValueIfNotEmpty(String newValue, String currentValue) {
-    if (newValue != null && !newValue.isEmpty()) {
+    if (!newValue.isEmpty()) {
       currentValue = newValue;
     }
     return currentValue;

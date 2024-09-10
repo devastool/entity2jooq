@@ -18,6 +18,7 @@ package io.github.devastool.entity2jooq.codegen.definition.factory;
 
 import io.github.devastool.entity2jooq.annotation.Schema;
 import io.github.devastool.entity2jooq.codegen.definition.EntitySchemaDefinition;
+import io.github.devastool.entity2jooq.codegen.definition.factory.EntitySchemaDefinitionFactory.DefaultSchemaResolver;
 import io.github.devastool.entity2jooq.codegen.model.TestEntity;
 import io.github.devastool.entity2jooq.codegen.model.TestEntityEmptySchema;
 import io.github.devastool.entity2jooq.codegen.model.TestEntitySchema;
@@ -64,5 +65,15 @@ class EntitySchemaDefinitionFactoryTest extends CommonFactoryTest {
 
     String packageName = TestEntity.class.getPackageName();
     Assertions.assertTrue(packageName.endsWith(built.getName()));
+  }
+
+  @Test
+  void resolveDefaultSchemaTest() {
+    String packageName = TestEntity.class.getPackage().getName();
+    String lastName = packageName.substring(packageName.lastIndexOf('.') + 1);
+
+    DefaultSchemaResolver resolver = new DefaultSchemaResolver();
+    Assertions.assertEquals(lastName, resolver.apply(TestEntity.class, packageName));
+    Assertions.assertEquals(lastName, resolver.apply(TestEntity.class, lastName));
   }
 }

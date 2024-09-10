@@ -17,21 +17,18 @@
 package io.github.devastool.entity2jooq.codegen.model;
 
 import io.github.devastool.entity2jooq.annotation.Column;
-import io.github.devastool.entity2jooq.annotation.ColumnOverride;
 import io.github.devastool.entity2jooq.annotation.Table;
 
 /**
- * Example entity with embedded field, see tests.
+ * Example entity, see tests.
  *
  * @author Andrey_Yurzanov
  * @since 1.0.0
  */
 @Table
-public class TestEntityOverrideEmbedded {
-  @ColumnOverride(name = "intField", column = @Column("number"))
-  private TestEmbeddable embeddable;
-
-  @ColumnOverride(name = "intField", column = @Column("other_number"))
-  @ColumnOverride(name = "stringField", column = @Column("string"))
-  private TestEmbeddable otherEmbeddable;
+public class TestEntityDuplicateColumns {
+  @Column("duplicate")
+  private Short shortField;
+  @Column("duplicate")
+  private Integer intField;
 }
