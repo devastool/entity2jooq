@@ -17,12 +17,19 @@
 package io.github.devastool.entity2jooq.codegen.definition.factory;
 
 import io.github.devastool.entity2jooq.annotation.Column;
+import io.github.devastool.entity2jooq.annotation.ColumnOverride;
 import io.github.devastool.entity2jooq.annotation.naming.SnakeCaseStrategy;
 import io.github.devastool.entity2jooq.codegen.definition.EntityColumnDefinition;
+import io.github.devastool.entity2jooq.codegen.definition.factory.column.FieldDetails;
+import io.github.devastool.entity2jooq.codegen.model.TestEmbeddable;
 import io.github.devastool.entity2jooq.codegen.model.TestEntity;
+import io.github.devastool.entity2jooq.codegen.model.TestEntityEmbedded;
+import io.github.devastool.entity2jooq.codegen.model.TestEntityOverrideEmbedded;
 import io.github.devastool.entity2jooq.codegen.model.TestEntityPrimitiveTypes;
 import io.github.devastool.entity2jooq.codegen.properties.CodegenProperties;
 import java.lang.reflect.Field;
+import java.util.List;
+import java.util.Objects;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -50,62 +57,58 @@ class EntityColumnDefinitionFactoryTest extends CommonFactoryTest {
     }
   }
 
-//  TODO. After issue: #50
-//  @Test
-//  void buildEmbeddedTest() {
-//    int size = TestEmbeddable.class.getDeclaredFields().length
-//        * TestEntityEmbedded.class.getDeclaredFields().length;
-//
-//    SnakeCaseStrategy naming = new SnakeCaseStrategy();
-//    CodegenProperties properties = getProperties();
-//    EntityColumnDefinitionFactory factory = getColumnFactory();
-//    for (Field field : TestEntityEmbedded.class.getDeclaredFields()) {
-//      List<EntityColumnDefinition> definitions = factory.build(field, properties);
-//      Assertions.assertEquals(size, definitions.size());
-//
-//      Class<?> embeddableType = field.getType();
-//      for (Field embeddableField : embeddableType.getDeclaredFields()) {
-//        for (EntityColumnDefinition definition : definitions) {
-//          if (Objects.equals(definition.getField(), embeddableField)) {
-//            Assertions.assertEquals(
-//                naming.resolve(embeddableField.getName()),
-//                definition.getName()
-//            );
-//          }
-//        }
-//      }
-//    }
-//  }
-//
-//  @Test
-//  void buildEmbeddedOverrideTest() {
-//    int size = TestEmbeddable.class.getDeclaredFields().length
-//        * TestEntityOverrideEmbedded.class.getDeclaredFields().length;
-//
-//    CodegenProperties properties = getProperties();
-//    EntityColumnDefinitionFactory factory = getColumnFactory();
-//    for (Field field : TestEntityEmbedded.class.getDeclaredFields()) {
-//      List<EntityColumnDefinition> definitions = factory.build(field, properties);
-//      Assertions.assertEquals(size, definitions.size());
-//
-//      Class<?> embeddableType = field.getType();
-//      for (Field embeddableField : embeddableType.getDeclaredFields()) {
-//        for (EntityColumnDefinition definition : definitions) {
-//          if (Objects.equals(definition.getField(), embeddableField)) {
-//            ColumnOverride[] overrides = field.getAnnotationsByType(ColumnOverride.class);
-//            for (ColumnOverride override : overrides) {
-//              if (Objects.equals(override.name(), embeddableField.getName())) {
-//                Assertions.assertEquals(
-//                    override.column().value(),
-//                    definition.getName()
-//                );
-//              }
-//            }
-//          }
-//        }
-//      }
-//    }
-//  }
+  @Test
+  void buildEmbeddedTest() {
+    int size = TestEmbeddable.class.getDeclaredFields().length
+        * TestEntityEmbedded.class.getDeclaredFields().length;
+
+    SnakeCaseStrategy naming = new SnakeCaseStrategy();
+    CodegenProperties properties = getProperties();
+    EntityColumnDefinitionFactory factory = getColumnFactory();
+    for (Field field : TestEntityEmbedded.class.getDeclaredFields()) {
+      List<EntityColumnDefinition> definitions = factory.build(field, properties);
+      Assertions.assertEquals(size, definitions.size());
+
+      Class<?> embeddableType = field.getType();
+      for (Field embeddableField : embeddableType.getDeclaredFields()) {
+        for (EntityColumnDefinition definition : definitions) {
+          FieldDetails details = definition.getFieldDetails();
+          if (Objects.equals(details.getProcessedField(), embeddableField)) {
+            Assertions.assertEquals(
+                naming.resolve(details.getLastParentField().getName(), embeddableField.getName()),
+                definition.getName()
+            );
+          }
+        }
+      }
+    }
+  }
+
+  @Test
+  void buildEmbeddedOverrideTest() {
+    CodegenProperties properties = getProperties();
+    EntityColumnDefinitionFactory factory = getColumnFactory();
+    for (Field field : TestEntityOverrideEmbedded.class.getDeclaredFields()) {
+      List<EntityColumnDefinition> definitions = factory.build(field, properties);
+
+      Class<?> embeddableType = field.getType();
+      for (Field embeddableField : embeddableType.getDeclaredFields()) {
+        for (EntityColumnDefinition definition : definitions) {
+          if (Objects.equals(definition.getFieldDetails().getProcessedField(), embeddableField)) {
+            ColumnOverride[] overrides = field.getAnnotationsByType(ColumnOverride.class);
+            for (ColumnOverride override : overrides) {
+              if (Objects.equals(override.name(), embeddableField.getName())) {
+                Assertions.assertEquals(
+                    override.column().value(),
+                    definition.getName()
+                );
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 
   @Test
   void canBuildSuccessTest() {
