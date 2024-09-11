@@ -19,6 +19,7 @@ package io.github.devastool.entity2jooq.codegen.type.dialect;
 import java.math.BigDecimal;
 import java.sql.Time;
 import java.sql.Timestamp;
+import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.OffsetTime;
 import java.time.ZonedDateTime;
@@ -91,7 +92,7 @@ class HSQLDbTypeMapperTest {
   @Test
   void getStringTest() {
     String sqlType = mapper.getSqlType("HSQLDB", String.class);
-    Assertions.assertEquals("varchar", sqlType);
+    Assertions.assertEquals("longvarchar", sqlType);
   }
 
   @Test
@@ -105,10 +106,22 @@ class HSQLDbTypeMapperTest {
     String sqlType = mapper.getSqlType("HSQLDB", Date.class);
     Assertions.assertEquals("date", sqlType);
   }
+  @Test
+
+  void getSqlDateTest() {
+    String sqlType = mapper.getSqlType("HSQLDB", java.sql.Date.class);
+    Assertions.assertEquals("date", sqlType);
+  }
 
   @Test
   void getTimeTest() {
     String sqlType = mapper.getSqlType("HSQLDB", Time.class);
+    Assertions.assertEquals("time", sqlType);
+  }
+
+  @Test
+  void getLocalTimeTest() {
+    String sqlType = mapper.getSqlType("HSQLDB", LocalTime.class);
     Assertions.assertEquals("time", sqlType);
   }
 
