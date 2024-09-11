@@ -44,7 +44,7 @@ public class InvokeMethodCodeGenerator implements OperatorCodeGenerator {
   public InvokeMethodCodeGenerator(String methodName, OperatorCodeGenerator... args) {
     this.methodName = methodName;
 
-    if (args != null && args.length > 0) {
+    if (args.length > 0) {
       this.args = new ArrayList<>(Arrays.asList(args));
     } else {
       this.args = null;

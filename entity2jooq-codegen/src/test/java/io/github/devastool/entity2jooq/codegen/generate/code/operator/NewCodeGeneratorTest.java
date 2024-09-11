@@ -19,6 +19,7 @@ package io.github.devastool.entity2jooq.codegen.generate.code.operator;
 import io.github.devastool.entity2jooq.codegen.generate.code.BufferedCodeTarget;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.function.Function;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -30,7 +31,7 @@ import org.junit.jupiter.api.Test;
 class NewCodeGeneratorTest {
   private static final String EXPECTED = "new java.util.ArrayList()";
   private static final String WITH_GENERICS_EXPECTED =
-      "new java.util.ArrayList<java.math.BigDecimal>()";
+      "new java.util.function.Function<java.math.BigDecimal, java.math.BigDecimal>()";
 
   @Test
   void generateTest() {
@@ -44,7 +45,8 @@ class NewCodeGeneratorTest {
   @Test
   void generateWithGenericsTest() {
     BufferedCodeTarget target = new BufferedCodeTarget();
-    NewCodeGenerator operator = new NewCodeGenerator(ArrayList.class);
+    NewCodeGenerator operator = new NewCodeGenerator(Function.class);
+    operator.setGenericTypes(BigDecimal.class);
     operator.setGenericTypes(BigDecimal.class);
     operator.generate(target);
 

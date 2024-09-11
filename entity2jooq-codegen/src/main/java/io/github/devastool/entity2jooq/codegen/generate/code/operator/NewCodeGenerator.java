@@ -75,7 +75,7 @@ public class NewCodeGenerator implements OperatorCodeGenerator {
         .write(type);
 
     CodeGenerator separator = codeTarget -> codeTarget.write(SEPARATOR);
-    if (genericTypes != null && !genericTypes.isEmpty()) {
+    if (genericTypes != null) {
       target
           .write(GENERICS_BEGIN)
           .writeAll(genericTypes, separator)
