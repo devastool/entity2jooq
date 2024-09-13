@@ -14,9 +14,10 @@
  *    limitations under the License.
  */
 
-package example;
+package io.github.devastool.entity2jooq.example;
 
-import io.github.devastool.entity2jooq.example.TestEntity;
+import static org.jooq.generated.test_schema.Tables.TEST_ENTITY;
+
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -41,12 +42,10 @@ import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 
-import static org.jooq.generated.test_schema.Tables.TEST_ENTITY;
-
 /**
  * Tests of {@link TestEntity} DDL.
  *
- * @author Sergey_Konovalov
+ * @author Andrey_Yurzanov, Filkov_Artem
  */
 @TestMethodOrder(OrderAnnotation.class)
 class TestEntityTest {
@@ -55,7 +54,7 @@ class TestEntityTest {
       "",
       "jdbc:h2:mem:db1;",
       "DB_CLOSE_DELAY=-1;",
-      "MODE=MariaDB;",
+      "MODE=MySQL;",
       "DATABASE_TO_LOWER=TRUE;",
       "DEFAULT_NULL_ORDERING=HIGH"
   );

@@ -14,9 +14,11 @@
  *    limitations under the License.
  */
 
-package example;
+package io.github.devastool.entity2jooq.example;
 
-import io.github.devastool.entity2jooq.example.TestInheritEntity;
+import static org.jooq.generated.test_schema.tables.TestEmbeddedEntity.TEST_EMBEDDED_ENTITY;
+
+import io.github.devastool.entity2jooq.example.embedded.TestEmbeddedEntity;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -30,7 +32,7 @@ import org.jooq.DeleteConditionStep;
 import org.jooq.Record;
 import org.jooq.SQLDialect;
 import org.jooq.Table;
-import org.jooq.UpdateSetMoreStep;
+import org.jooq.UpdateConditionStep;
 import org.jooq.generated.DefaultCatalog;
 import org.jooq.impl.DSL;
 import org.junit.jupiter.api.AfterAll;
@@ -41,17 +43,13 @@ import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 
-import static org.jooq.generated.test_inherit_schema.Tables.TEST_INHERIT_ENTITY;
-
-
 /**
- * Tests of {@link TestInheritEntity} DDL.
+ * Tests of {@link TestEmbeddedEntity} DDL.
  *
  * @author Sergey_Konovalov
- * @since 1.0.0
  */
 @TestMethodOrder(OrderAnnotation.class)
-public class TestInheritEntityTest {
+class TestEmbeddedEntityTest {
   private static JdbcConnectionPool pool;
   private static final String DB_URL = String.join(
       "",
@@ -62,10 +60,9 @@ public class TestInheritEntityTest {
       "DEFAULT_NULL_ORDERING=HIGH"
   );
 
-  private static final List<TestInheritEntity> DATA = Arrays.asList(
-      new TestInheritEntity(),
-      new TestInheritEntity(),
-      new TestInheritEntity()
+  private static final List<TestEmbeddedEntity> DATA = Arrays.asList(
+      new TestEmbeddedEntity("Pablo", "Pablo work street", "Pablo home street"),
+      new TestEmbeddedEntity("Barry", "Barry work street", "Barry home street")
   );
 
   @BeforeAll
@@ -75,13 +72,15 @@ public class TestInheritEntityTest {
     Connection connection = pool.getConnection();
     DSLContext context = DSL.using(connection);
     context
-        .createSchemaIfNotExists(DefaultCatalog.DEFAULT_CATALOG.TEST_INHERIT_SCHEMA)
+        .createSchemaIfNotExists(DefaultCatalog.DEFAULT_CATALOG.TEST_SCHEMA)
         .execute();
 
-    Table<Record> table = TEST_INHERIT_ENTITY.asTable();
+    Table<Record> table = TEST_EMBEDDED_ENTITY.asTable();
     context
         .createTableIfNotExists(table)
-        .column(TEST_INHERIT_ENTITY.INHERIT_FIELD)
+        .column(TEST_EMBEDDED_ENTITY.NAME)
+        .column(TEST_EMBEDDED_ENTITY.WORK)
+        .column(TEST_EMBEDDED_ENTITY.HOME)
         .execute();
 
     connection.close();
@@ -99,14 +98,18 @@ public class TestInheritEntityTest {
     DSLContext context = DSL.using(connection, SQLDialect.MYSQL);
 
     var insert = context
-        .insertInto(TEST_INHERIT_ENTITY)
+        .insertInto(TEST_EMBEDDED_ENTITY)
         .columns(
-            TEST_INHERIT_ENTITY.INHERIT_FIELD
+            TEST_EMBEDDED_ENTITY.NAME,
+            TEST_EMBEDDED_ENTITY.WORK,
+            TEST_EMBEDDED_ENTITY.HOME
         );
 
-    for (TestInheritEntity entity : DATA) {
+    for (TestEmbeddedEntity entity : DATA) {
       insert.values(
-          entity.getInheritField()
+          entity.getName(),
+          entity.getWorkCity(),
+          entity.getHomeCity()
       );
     }
     Assertions.assertDoesNotThrow(insert::execute);
@@ -122,23 +125,33 @@ public class TestInheritEntityTest {
 
     var select = context
         .select(
-            TEST_INHERIT_ENTITY.INHERIT_FIELD
+            TEST_EMBEDDED_ENTITY.NAME,
+            TEST_EMBEDDED_ENTITY.WORK,
+            TEST_EMBEDDED_ENTITY.HOME
         )
-        .from(TEST_INHERIT_ENTITY)
-        .where(TEST_INHERIT_ENTITY.INHERIT_FIELD.isNotNull());
+        .from(TEST_EMBEDDED_ENTITY)
+        .where(TEST_EMBEDDED_ENTITY.NAME.isNotNull());
 
-    List<TestInheritEntity> results = select.fetch(
-        records -> new TestInheritEntity(
-            records.get(TEST_INHERIT_ENTITY.INHERIT_FIELD)
+    List<TestEmbeddedEntity> results = select.fetch(
+        records -> new TestEmbeddedEntity(
+            records.get(TEST_EMBEDDED_ENTITY.NAME),
+            records.get(TEST_EMBEDDED_ENTITY.WORK),
+            records.get(TEST_EMBEDDED_ENTITY.HOME)
         )
     );
 
-    for (TestInheritEntity entity : DATA) {
-      String inheritField = entity.getInheritField();
+    for (TestEmbeddedEntity entity : DATA) {
+      String name = entity.getName();
+      String workCity = entity.getWorkCity();
+      String homeCity = entity.getHomeCity();
       Assertions.assertTrue(
           results
               .stream()
-              .anyMatch(result -> Objects.equals(result.getInheritField(), inheritField))
+              .anyMatch(
+                  result -> Objects.equals(result.getName(), name)
+                      && Objects.equals(result.getWorkCity(), workCity)
+                      && Objects.equals(result.getHomeCity(), homeCity)
+              )
       );
     }
     connection.close();
@@ -148,14 +161,16 @@ public class TestInheritEntityTest {
   @Order(3)
   void updateTest() throws SQLException {
     Connection connection = pool.getConnection();
-    DSLContext context = DSL.using(connection, SQLDialect.MYSQL);
+    DSLContext context = DSL.using(connection,  SQLDialect.MYSQL);
 
-    ArrayList<UpdateSetMoreStep<?>> updates = new ArrayList<>();
-    for (TestInheritEntity entity : DATA) {
+    ArrayList<UpdateConditionStep<?>> updates = new ArrayList<>();
+    for (TestEmbeddedEntity entity : DATA) {
       updates.add(
           context
-              .update(TEST_INHERIT_ENTITY)
-              .set(TEST_INHERIT_ENTITY.INHERIT_FIELD, entity.getInheritField())
+              .update(TEST_EMBEDDED_ENTITY)
+              .set(TEST_EMBEDDED_ENTITY.NAME, entity.getName())
+              .set(TEST_EMBEDDED_ENTITY.WORK, entity.getWorkCity())
+              .where(TEST_EMBEDDED_ENTITY.HOME.eq(entity.getHomeCity()))
       );
     }
     Assertions.assertDoesNotThrow(() -> context.batch(updates).execute());
@@ -167,15 +182,15 @@ public class TestInheritEntityTest {
   @Order(4)
   void deleteTest() throws SQLException {
     Connection connection = pool.getConnection();
-    DSLContext context = DSL.using(connection, SQLDialect.MYSQL);
+    DSLContext context = DSL.using(connection,  SQLDialect.MYSQL);
 
     DeleteConditionStep<Record> delete = context
-        .delete(TEST_INHERIT_ENTITY)
+        .delete(TEST_EMBEDDED_ENTITY)
         .where(
-            TEST_INHERIT_ENTITY.INHERIT_FIELD.in(
+            TEST_EMBEDDED_ENTITY.NAME.in(
                 DATA
                     .stream()
-                    .map(TestInheritEntity::getInheritField)
+                    .map(TestEmbeddedEntity::getName)
                     .collect(Collectors.toList())
             )
         );

@@ -14,9 +14,8 @@
  *    limitations under the License.
  */
 
-package example;
+package io.github.devastool.entity2jooq.example;
 
-import io.github.devastool.entity2jooq.example.TestInheritEntity;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -47,7 +46,7 @@ import static org.jooq.generated.test_inherit_schema.Tables.TEST_INHERIT_ENTITY;
 /**
  * Tests of {@link TestInheritEntity} DDL.
  *
- * @author Filkov_Artem
+ * @author Sergey_Konovalov
  * @since 1.0.0
  */
 @TestMethodOrder(OrderAnnotation.class)
@@ -57,7 +56,7 @@ public class TestInheritEntityTest {
       "",
       "jdbc:h2:mem:db1;",
       "DB_CLOSE_DELAY=-1;",
-      "MODE=MySQL;",
+      "MODE=MariaDB;",
       "DATABASE_TO_LOWER=TRUE;",
       "DEFAULT_NULL_ORDERING=HIGH"
   );
