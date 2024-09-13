@@ -39,6 +39,7 @@
     <module>entity2jooq-example-postgres</module>
     <module>entity2jooq-example-h2</module>
     <module>entity2jooq-example-mysql</module>
+    <module>entity2jooq-example-mariadb</module>
   </modules>
   <packaging>pom</packaging>
 
