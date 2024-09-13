@@ -20,6 +20,7 @@ import io.github.devastool.entity2jooq.codegen.generate.code.operator.NewCodeGen
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -42,7 +43,7 @@ class FieldCodeGeneratorTest {
   );
   private static final String WITH_GENERICS_EXPECTED = String.join(
       "",
-      "public final java.util.List<java.math.BigDecimal> TEST_FIELD;",
+      "public final java.util.function.Function<java.math.BigDecimal, java.math.BigDecimal> TEST_FIELD;",
       System.lineSeparator()
   );
 
@@ -71,7 +72,8 @@ class FieldCodeGeneratorTest {
   @Test
   void generateWithGenericsTest() {
     BufferedCodeTarget target = new BufferedCodeTarget();
-    FieldCodeGenerator generator = new FieldCodeGenerator(FIELD_NAME, List.class);
+    FieldCodeGenerator generator = new FieldCodeGenerator(FIELD_NAME, Function.class);
+    generator.setGenericTypes(BigDecimal.class);
     generator.setGenericTypes(BigDecimal.class);
 
     generator.generate(target);
