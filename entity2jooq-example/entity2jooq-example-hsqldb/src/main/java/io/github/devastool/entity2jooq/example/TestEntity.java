@@ -49,7 +49,7 @@ public class TestEntity extends TestEntityParent {
   private BigDecimal bigDecimalField;
   private Float floatField;
   private Double doubleField;
-  @Type("text")
+  @Type("varchar")
   @Column(value = "entity_name")
   private String stringField;
   private LocalDate localDateField;
