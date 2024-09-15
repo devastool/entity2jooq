@@ -57,7 +57,7 @@ public class HSQLDbTypeMapper extends DialectTypeMapper {
             // Character types
             new TypePair(Character.class, "char"),
             new TypePair(String.class, "longvarchar"),
-            new TypePair(Enum.class, "varchar"),
+            new TypePair(Enum.class, "varchar(100)"),
             // Date/Time types
             new TypePair(Date.class, "date"),
             new TypePair(java.sql.Date.class, "date"),

@@ -19,13 +19,13 @@ package io.github.devastool.entity2jooq.example;
 import static org.jooq.generated.test_schema.Tables.TEST_ENTITY;
 
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
-import org.h2.jdbcx.JdbcConnectionPool;
 import org.jooq.DSLContext;
 import org.jooq.DeleteConditionStep;
 import org.jooq.Record;
@@ -49,16 +49,14 @@ import org.junit.jupiter.api.TestMethodOrder;
  */
 @TestMethodOrder(OrderAnnotation.class)
 class TestEntityTest {
-  private static JdbcConnectionPool pool;
+  private static Connection connection;
+  private static final String DB_USER = "SA";
+  private static final String DB_PASSWORD = "";
   private static final String DB_URL = String.join(
       "",
-      "jdbc:h2:mem:db1;",
-      "DB_CLOSE_DELAY=-1;",
-      "MODE=HSQLDB;",
-      "DATABASE_TO_LOWER=TRUE;",
-      "DEFAULT_NULL_ORDERING=HIGH"
+      "jdbc:hsqldb:mem:mydb;",
+      "shutdown=true;"
   );
-
   private static final List<TestEntity> DATA = Arrays.asList(
       new TestEntity(),
       new TestEntity(),
@@ -67,9 +65,7 @@ class TestEntityTest {
 
   @BeforeAll
   static void init() throws SQLException {
-    pool = JdbcConnectionPool.create(DB_URL, "", "");
-
-    Connection connection = pool.getConnection();
+    connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
     DSLContext context = DSL.using(connection, SQLDialect.POSTGRES);
     context
         .createSchemaIfNotExists(DefaultCatalog.DEFAULT_CATALOG.TEST_SCHEMA)
@@ -97,19 +93,16 @@ class TestEntityTest {
         .column(TEST_ENTITY.BOOLEAN_FIELD)
         .column(TEST_ENTITY.UUID_FIELD)
         .execute();
-
-    connection.close();
   }
 
   @AfterAll
-  static void destroy() {
-    pool.dispose();
+  static void destroy() throws SQLException {
+    connection.close();
   }
 
   @Test
   @Order(1)
-  void insertTest() throws SQLException {
-    Connection connection = pool.getConnection();
+  void insertTest() {
     DSLContext context = DSL.using(connection, SQLDialect.POSTGRES);
 
     var insert = context
@@ -158,14 +151,11 @@ class TestEntityTest {
       );
     }
     Assertions.assertDoesNotThrow(insert::execute);
-
-    connection.close();
   }
 
   @Test
   @Order(2)
-  void selectTest() throws SQLException {
-    Connection connection = pool.getConnection();
+  void selectTest() {
     DSLContext context = DSL.using(connection, SQLDialect.POSTGRES);
 
     List<TestEntity> results = context
@@ -201,13 +191,11 @@ class TestEntityTest {
               .anyMatch(result -> Objects.equals(result.getShortField(), shortField))
       );
     }
-    connection.close();
   }
 
   @Test
   @Order(3)
-  void updateTest() throws SQLException {
-    Connection connection = pool.getConnection();
+  void updateTest() {
     DSLContext context = DSL.using(connection, SQLDialect.POSTGRES);
 
     ArrayList<UpdateConditionStep<?>> updates = new ArrayList<>();
@@ -221,14 +209,11 @@ class TestEntityTest {
       );
     }
     Assertions.assertDoesNotThrow(() -> context.batch(updates).execute());
-
-    connection.close();
   }
 
   @Test
   @Order(4)
-  void deleteTest() throws SQLException {
-    Connection connection = pool.getConnection();
+  void deleteTest() {
     DSLContext context = DSL.using(connection, SQLDialect.POSTGRES);
 
     DeleteConditionStep<Record> delete = context
@@ -242,7 +227,5 @@ class TestEntityTest {
             )
         );
     Assertions.assertDoesNotThrow(delete::execute);
-
-    connection.close();
   }
 }

@@ -20,17 +20,16 @@ import static org.jooq.generated.enums.tables.TestEntityEnum.TEST_ENTITY_ENUM;
 
 import io.github.devastool.entity2jooq.annotation.type.converter.EnumConverter;
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
-import org.h2.jdbcx.JdbcConnectionPool;
 import org.jooq.DSLContext;
 import org.jooq.DeleteConditionStep;
 import org.jooq.Record;
-import org.jooq.SQLDialect;
 import org.jooq.Table;
 import org.jooq.UpdateConditionStep;
 import org.jooq.generated.DefaultCatalog;
@@ -50,14 +49,13 @@ import org.junit.jupiter.api.TestMethodOrder;
  */
 @TestMethodOrder(OrderAnnotation.class)
 class TestEntityEnumTest {
-  private static JdbcConnectionPool pool;
+  private static Connection connection;
+  private static final String DB_USER = "SA";
+  private static final String DB_PASSWORD = "";
   private static final String DB_URL = String.join(
       "",
-      "jdbc:h2:mem:db1;",
-      "DB_CLOSE_DELAY=-1;",
-      "MODE=HSQLDB;",
-      "DATABASE_TO_LOWER=TRUE;",
-      "DEFAULT_NULL_ORDERING=HIGH"
+      "jdbc:hsqldb:mem:mydb;",
+      "shutdown=true;"
   );
 
   private static final List<TestEntityEnum> DATA = Arrays.asList(
@@ -67,10 +65,8 @@ class TestEntityEnumTest {
 
   @BeforeAll
   static void init() throws SQLException {
-    pool = JdbcConnectionPool.create(DB_URL, "", "");
-
-    Connection connection = pool.getConnection();
-    DSLContext context = DSL.using(connection, SQLDialect.H2);
+    connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+    DSLContext context = DSL.using(connection);
     context
         .createSchemaIfNotExists(DefaultCatalog.DEFAULT_CATALOG.ENUMS)
         .execute();
@@ -81,20 +77,17 @@ class TestEntityEnumTest {
         .column(TEST_ENTITY_ENUM.INTEGER_FIELD)
         .column(TEST_ENTITY_ENUM.ENUM_FIELD)
         .execute();
-
-    connection.close();
   }
 
   @AfterAll
-  static void destroy() {
-    pool.dispose();
+  static void destroy() throws SQLException {
+    connection.close();
   }
 
   @Test
   @Order(1)
-  void insertTest() throws SQLException {
-    Connection connection = pool.getConnection();
-    DSLContext context = DSL.using(connection, SQLDialect.H2);
+  void insertTest() {
+    DSLContext context = DSL.using(connection);
 
     var insert = context
         .insertInto(TEST_ENTITY_ENUM)
@@ -110,15 +103,12 @@ class TestEntityEnumTest {
       );
     }
     Assertions.assertDoesNotThrow(insert::execute);
-
-    connection.close();
   }
 
   @Test
   @Order(2)
-  void selectTest() throws SQLException {
-    Connection connection = pool.getConnection();
-    DSLContext context = DSL.using(connection, SQLDialect.H2);
+  void selectTest() {
+    DSLContext context = DSL.using(connection);
 
     var select = context
         .select(
@@ -138,14 +128,12 @@ class TestEntityEnumTest {
               .anyMatch(result -> Objects.equals(result.getIntegerField(), integerField))
       );
     }
-    connection.close();
   }
 
   @Test
   @Order(3)
-  void updateTest() throws SQLException {
-    Connection connection = pool.getConnection();
-    DSLContext context = DSL.using(connection, SQLDialect.H2);
+  void updateTest() {
+    DSLContext context = DSL.using(connection);
 
     EnumConverter<TestEnum> converter = TEST_ENTITY_ENUM.TEST_ENUM_ENUM_CONVERTER;
     ArrayList<UpdateConditionStep<?>> updates = new ArrayList<>();
@@ -159,15 +147,12 @@ class TestEntityEnumTest {
       );
     }
     Assertions.assertDoesNotThrow(() -> context.batch(updates).execute());
-
-    connection.close();
   }
 
   @Test
   @Order(4)
-  void deleteTest() throws SQLException {
-    Connection connection = pool.getConnection();
-    DSLContext context = DSL.using(connection, SQLDialect.H2);
+  void deleteTest() {
+    DSLContext context = DSL.using(connection);
 
     DeleteConditionStep<Record> delete = context
         .delete(TEST_ENTITY_ENUM)
@@ -180,7 +165,5 @@ class TestEntityEnumTest {
             )
         );
     Assertions.assertDoesNotThrow(delete::execute);
-
-    connection.close();
   }
 }

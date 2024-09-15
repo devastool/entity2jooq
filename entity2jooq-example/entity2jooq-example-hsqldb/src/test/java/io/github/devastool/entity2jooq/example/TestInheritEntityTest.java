@@ -19,17 +19,16 @@ package io.github.devastool.entity2jooq.example;
 import static org.jooq.generated.test_inherit_schema.Tables.TEST_INHERIT_ENTITY;
 
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
-import org.h2.jdbcx.JdbcConnectionPool;
 import org.jooq.DSLContext;
 import org.jooq.DeleteConditionStep;
 import org.jooq.Record;
-import org.jooq.SQLDialect;
 import org.jooq.Table;
 import org.jooq.UpdateSetMoreStep;
 import org.jooq.generated.DefaultCatalog;
@@ -50,16 +49,14 @@ import org.junit.jupiter.api.TestMethodOrder;
  */
 @TestMethodOrder(OrderAnnotation.class)
 public class TestInheritEntityTest {
-  private static JdbcConnectionPool pool;
+  private static Connection connection;
+  private static final String DB_USER = "SA";
+  private static final String DB_PASSWORD = "";
   private static final String DB_URL = String.join(
       "",
-      "jdbc:h2:mem:db1;",
-      "DB_CLOSE_DELAY=-1;",
-      "MODE=HSQLDB;",
-      "DATABASE_TO_LOWER=TRUE;",
-      "DEFAULT_NULL_ORDERING=HIGH"
+      "jdbc:hsqldb:mem:mydb;",
+      "shutdown=true;"
   );
-
   private static final List<TestInheritEntity> DATA = Arrays.asList(
       new TestInheritEntity(),
       new TestInheritEntity(),
@@ -68,9 +65,7 @@ public class TestInheritEntityTest {
 
   @BeforeAll
   static void init() throws SQLException {
-    pool = JdbcConnectionPool.create(DB_URL, "", "");
-
-    Connection connection = pool.getConnection();
+    connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
     DSLContext context = DSL.using(connection);
     context
         .createSchemaIfNotExists(DefaultCatalog.DEFAULT_CATALOG.TEST_INHERIT_SCHEMA)
@@ -81,20 +76,17 @@ public class TestInheritEntityTest {
         .createTableIfNotExists(table)
         .column(TEST_INHERIT_ENTITY.INHERIT_FIELD)
         .execute();
-
-    connection.close();
   }
 
   @AfterAll
-  static void destroy() {
-    pool.dispose();
+  static void destroy() throws SQLException {
+    connection.close();
   }
 
   @Test
   @Order(1)
-  void insertTest() throws SQLException {
-    Connection connection = pool.getConnection();
-    DSLContext context = DSL.using(connection, SQLDialect.H2);
+  void insertTest() {
+    DSLContext context = DSL.using(connection);
 
     var insert = context
         .insertInto(TEST_INHERIT_ENTITY)
@@ -108,15 +100,12 @@ public class TestInheritEntityTest {
       );
     }
     Assertions.assertDoesNotThrow(insert::execute);
-
-    connection.close();
   }
 
   @Test
   @Order(2)
-  void selectTest() throws SQLException {
-    Connection connection = pool.getConnection();
-    DSLContext context = DSL.using(connection, SQLDialect.H2);
+  void selectTest() {
+    DSLContext context = DSL.using(connection);
 
     var select = context
         .select(
@@ -139,14 +128,12 @@ public class TestInheritEntityTest {
               .anyMatch(result -> Objects.equals(result.getInheritField(), inheritField))
       );
     }
-    connection.close();
   }
 
   @Test
   @Order(3)
-  void updateTest() throws SQLException {
-    Connection connection = pool.getConnection();
-    DSLContext context = DSL.using(connection, SQLDialect.H2);
+  void updateTest() {
+    DSLContext context = DSL.using(connection);
 
     ArrayList<UpdateSetMoreStep<?>> updates = new ArrayList<>();
     for (TestInheritEntity entity : DATA) {
@@ -157,15 +144,12 @@ public class TestInheritEntityTest {
       );
     }
     Assertions.assertDoesNotThrow(() -> context.batch(updates).execute());
-
-    connection.close();
   }
 
   @Test
   @Order(4)
-  void deleteTest() throws SQLException {
-    Connection connection = pool.getConnection();
-    DSLContext context = DSL.using(connection, SQLDialect.H2);
+  void deleteTest() {
+    DSLContext context = DSL.using(connection);
 
     DeleteConditionStep<Record> delete = context
         .delete(TEST_INHERIT_ENTITY)
@@ -178,7 +162,5 @@ public class TestInheritEntityTest {
             )
         );
     Assertions.assertDoesNotThrow(delete::execute);
-
-    connection.close();
   }
 }

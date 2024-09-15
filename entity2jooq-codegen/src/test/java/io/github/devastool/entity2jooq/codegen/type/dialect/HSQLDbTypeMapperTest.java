@@ -98,7 +98,7 @@ class HSQLDbTypeMapperTest {
   @Test
   void getEnumTest() {
     String sqlType = mapper.getSqlType("HSQLDB", Enum.class);
-    Assertions.assertEquals("varchar", sqlType);
+    Assertions.assertEquals("varchar(100)", sqlType);
   }
 
   @Test
