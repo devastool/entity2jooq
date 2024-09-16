@@ -20,6 +20,7 @@ import io.github.devastool.entity2jooq.annotation.type.NoSuchTypeException;
 import io.github.devastool.entity2jooq.annotation.type.TypeMapper;
 import io.github.devastool.entity2jooq.codegen.type.dialect.DefaultTypeMapper;
 import io.github.devastool.entity2jooq.codegen.type.dialect.H2TypeMapper;
+import io.github.devastool.entity2jooq.codegen.type.dialect.HSQLDbTypeMapper;
 import io.github.devastool.entity2jooq.codegen.type.dialect.MariaDBTypeMapper;
 import io.github.devastool.entity2jooq.codegen.type.dialect.MySQLTypeMapper;
 import io.github.devastool.entity2jooq.codegen.type.dialect.PostgresTypeMapper;
@@ -59,9 +60,8 @@ public class RouteTypeMapper implements TypeMapper {
     //    FirebirdTypeMapper firebirdMapper = new FirebirdTypeMapper();
     //    dialects.put(firebirdMapper.getDialect(), firebirdMapper);
 
-    //    TODO. HSQLDB dialect
-    //    HSQLDBTypeMapper hsqldbMapper = new HSQLDBTypeMapper();
-    //    dialects.put(hsqldbMapper.getDialect(), hsqldbMapper);
+    HSQLDbTypeMapper hsqldbMapper = new HSQLDbTypeMapper();
+    dialects.put(hsqldbMapper.getDialect(), hsqldbMapper);
 
     MariaDBTypeMapper mariaDBMapper = new MariaDBTypeMapper();
     dialects.put(mariaDBMapper.getDialect(), mariaDBMapper);
