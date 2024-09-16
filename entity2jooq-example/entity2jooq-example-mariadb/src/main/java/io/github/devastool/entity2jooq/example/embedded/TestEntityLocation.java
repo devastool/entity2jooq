@@ -14,24 +14,28 @@
  *    limitations under the License.
  */
 
-package io.github.devastool.entity2jooq.codegen.model;
+package io.github.devastool.entity2jooq.example.embedded;
 
-import io.github.devastool.entity2jooq.annotation.Column;
-import io.github.devastool.entity2jooq.annotation.ColumnOverride;
-import io.github.devastool.entity2jooq.annotation.Table;
+import io.github.devastool.entity2jooq.annotation.Embedded;
 
 /**
- * Example entity with embedded field, see tests.
+ * Example Embedded entity, see tests.
  *
- * @author Andrey_Yurzanov
+ * @author Sergey_Konovalov
  * @since 1.0.0
  */
-@Table
-public class TestEntityOverrideEmbedded {
-  @ColumnOverride(name = "intField", column = @Column("number"))
-  private TestEmbeddable embeddable;
+@Embedded
+public class TestEntityLocation {
+  private String point;
 
-  @ColumnOverride(name = "intField", column = @Column("other_number"))
-  @ColumnOverride(name = "stringField", column = @Column("string"))
-  private TestEmbeddable otherEmbeddable;
+  /**
+   * Constructs new instance of {@link TestEntityLocation}.
+   */
+  public TestEntityLocation(String point) {
+    this.point = point;
+  }
+
+  public String getPoint() {
+    return point;
+  }
 }

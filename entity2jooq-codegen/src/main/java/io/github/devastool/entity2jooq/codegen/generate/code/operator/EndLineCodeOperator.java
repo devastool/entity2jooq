@@ -38,7 +38,7 @@ public class EndLineCodeOperator implements OperatorCodeGenerator {
    * @param operators operators on the line
    */
   public EndLineCodeOperator(OperatorCodeGenerator... operators) {
-    if (operators != null && operators.length > 0) {
+    if (operators.length > 0) {
       this.operators = new ArrayList<>(Arrays.asList(operators));
     } else {
       this.operators = null;

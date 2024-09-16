@@ -28,10 +28,11 @@ import org.junit.jupiter.api.Test;
  */
 class MethodCodeGeneratorTest {
   private static final String METHOD_NAME = "testMethod";
-  private static final String PARAM_NAME = "testParam";
+  private static final String FIRST_PARAM_NAME = "firstTestParam";
+  private static final String SECOND_PARAM_NAME = "secondTestParam";
   private static final String WITH_RETURN_TYPE_EXPECTED = String.join(
       "",
-      "public String testMethod(String testParam) {",
+      "public String testMethod(String firstTestParam, Integer secondTestParam) {",
       System.lineSeparator(),
       "return \"Test\";",
       System.lineSeparator(),
@@ -52,7 +53,8 @@ class MethodCodeGeneratorTest {
     new MethodCodeGenerator()
         .setName(METHOD_NAME)
         .setReturnType(String.class)
-        .setParam(PARAM_NAME, String.class)
+        .setParam(FIRST_PARAM_NAME, String.class)
+        .setParam(SECOND_PARAM_NAME, Integer.class)
         .setOperator(new EndLineCodeOperator(new ReturnCodeGenerator("\"Test\"")))
         .generate(target);
 
@@ -66,6 +68,23 @@ class MethodCodeGeneratorTest {
         .setName(METHOD_NAME)
         .generate(target);
 
+    Assertions.assertEquals(WITHOUT_RETURN_TYPE_EXPECTED, target.getBuffer());
+  }
+
+  @Test
+  void generateWithVoidReturnTypeTest() {
+    BufferedCodeTarget target = new BufferedCodeTarget();
+    MethodCodeGenerator generator = new MethodCodeGenerator()
+        .setName(METHOD_NAME)
+        .setReturnType(Void.class);
+
+    generator.generate(target);
+    Assertions.assertEquals(WITHOUT_RETURN_TYPE_EXPECTED, target.getBuffer());
+
+    target = new BufferedCodeTarget();
+    generator = generator.setReturnType(void.class);
+
+    generator.generate(target);
     Assertions.assertEquals(WITHOUT_RETURN_TYPE_EXPECTED, target.getBuffer());
   }
 }

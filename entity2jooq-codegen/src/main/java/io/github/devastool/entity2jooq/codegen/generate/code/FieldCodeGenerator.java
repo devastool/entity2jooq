@@ -89,7 +89,7 @@ public class FieldCodeGenerator implements CodeGenerator {
         .write(type);
 
     // Generics
-    if (genericTypes != null && !genericTypes.isEmpty()) {
+    if (genericTypes != null) {
       target
           .write(GENERICS_BEGIN)
           .writeAll(genericTypes, codeTarget -> codeTarget.write(GENERICS_SEPARATOR))

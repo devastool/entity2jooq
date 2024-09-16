@@ -23,6 +23,7 @@ import io.github.devastool.entity2jooq.annotation.Schema;
 import io.github.devastool.entity2jooq.annotation.naming.NamingStrategy;
 import io.github.devastool.entity2jooq.codegen.definition.EntitySchemaDefinition;
 import io.github.devastool.entity2jooq.codegen.properties.CodegenProperties;
+import java.util.function.BiFunction;
 
 /**
  * The factory for {@link EntitySchemaDefinition} building.
@@ -32,18 +33,37 @@ import io.github.devastool.entity2jooq.codegen.properties.CodegenProperties;
  */
 public class EntitySchemaDefinitionFactory
     extends DefinitionFactory<Class<?>, EntitySchemaDefinition> {
+  private final BiFunction<Class<?>, String, String> defaultSchemaResolver;
+
+  private static final char PACKAGE_SEPARATOR = '.';
+
   /**
    * Constructs new instance of {@link EntitySchemaDefinitionFactory}.
    *
    * @param context instance of {@link FactoryContext}
    */
   public EntitySchemaDefinitionFactory(FactoryContext context) {
+    this(context, new DefaultSchemaResolver());
+  }
+
+  /**
+   * Constructs new instance of {@link EntitySchemaDefinitionFactory}.
+   *
+   * @param context               instance of {@link FactoryContext}
+   * @param defaultSchemaResolver resolver of default schema
+   */
+  public EntitySchemaDefinitionFactory(
+      FactoryContext context,
+      BiFunction<Class<?>, String, String> defaultSchemaResolver
+  ) {
     super(context);
+    this.defaultSchemaResolver = defaultSchemaResolver;
   }
 
   @Override
   public EntitySchemaDefinition build(Class<?> type, CodegenProperties properties) {
-    String name = getLastPackageName(type.getPackage());
+    Package typePackage = type.getPackage();
+    String name = defaultSchemaResolver.apply(type, typePackage.getName());
     Class<? extends NamingStrategy> naming = properties.require(NAMING_STRATEGY);
 
     Schema annotation = type.getAnnotation(Schema.class);
@@ -63,13 +83,20 @@ public class EntitySchemaDefinitionFactory
     );
   }
 
-  // Returns last name of class package
-  private String getLastPackageName(Package packageDefinition) {
-    String name = packageDefinition.getName();
-    int index = name.lastIndexOf('.');
-    if (index != -1) {
-      return name.substring(index + 1);
+  /**
+   * Resolver of default schema by entity type and package name.
+   *
+   * @author Andrey_Yurzanov
+   * @since 1.0.0
+   */
+  public static class DefaultSchemaResolver implements BiFunction<Class<?>, String, String> {
+    @Override
+    public String apply(Class<?> type, String packageName) {
+      int index = packageName.lastIndexOf(PACKAGE_SEPARATOR);
+      if (index != -1) {
+        return packageName.substring(index + 1);
+      }
+      return packageName;
     }
-    return name;
   }
 }

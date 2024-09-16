@@ -35,7 +35,7 @@ public class MethodCodeGenerator implements CodeGenerator {
   private static final String ACCESS_KEYWORD = "public";
   private static final String PARAMS_BEGIN = "(";
   private static final String PARAMS_END = ")";
-  private static final String PARAMS_SEPARATOR = ",";
+  private static final String PARAMS_SEPARATOR = ", ";
   private static final String BODY_BEGIN = "{";
   private static final String BODY_END = "}";
 

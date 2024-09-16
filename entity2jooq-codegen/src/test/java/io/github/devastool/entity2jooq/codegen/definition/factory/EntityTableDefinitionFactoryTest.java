@@ -21,8 +21,10 @@ import io.github.devastool.entity2jooq.annotation.naming.SnakeCaseStrategy;
 import io.github.devastool.entity2jooq.codegen.definition.EntityTableDefinition;
 import io.github.devastool.entity2jooq.codegen.model.TestEntity;
 import io.github.devastool.entity2jooq.codegen.model.TestEntityDisabledInheritance;
+import io.github.devastool.entity2jooq.codegen.model.TestEntityDuplicateColumns;
 import io.github.devastool.entity2jooq.codegen.model.TestEntityEmpty;
 import io.github.devastool.entity2jooq.codegen.model.TestEntityEnabledInheritance;
+import io.github.devastool.entity2jooq.codegen.model.TestEntityPrimitiveTypes;
 import io.github.devastool.entity2jooq.codegen.model.TestEntityTableName;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -34,6 +36,18 @@ import org.junit.jupiter.api.Test;
  */
 class EntityTableDefinitionFactoryTest extends CommonFactoryTest {
   @Test
+  void canBuildSuccessTest() {
+    EntityTableDefinitionFactory factory = getTableFactory();
+    Assertions.assertTrue(factory.canBuild(TestEntityTableName.class));
+  }
+
+  @Test
+  void canBuildFailureTest() {
+    EntityTableDefinitionFactory factory = getTableFactory();
+    Assertions.assertFalse(factory.canBuild(TestEntityEmpty.class));
+  }
+
+  @Test
   void buildSuccessTest() {
     EntityTableDefinitionFactory factory = getTableFactory();
     EntityTableDefinition built = Assertions.assertDoesNotThrow(
@@ -43,6 +57,25 @@ class EntityTableDefinitionFactoryTest extends CommonFactoryTest {
 
     Table annotation = TestEntityTableName.class.getAnnotation(Table.class);
     Assertions.assertEquals(annotation.value(), built.getName());
+  }
+
+  @Test
+  void buildWithPrimitiveTypesTest() {
+    EntityTableDefinitionFactory factory = getTableFactory();
+    EntityTableDefinition built = Assertions.assertDoesNotThrow(
+        () -> factory.build(TestEntityPrimitiveTypes.class, getProperties())
+    );
+    Assertions.assertNotNull(built);
+    Assertions.assertTrue(built.getColumns().isEmpty());
+  }
+
+  @Test
+  void buildWithDuplicateColumnsTest() {
+    EntityTableDefinitionFactory factory = getTableFactory();
+    Assertions.assertThrows(
+        IllegalArgumentException.class,
+        () -> factory.build(TestEntityDuplicateColumns.class, getProperties())
+    );
   }
 
   @Test

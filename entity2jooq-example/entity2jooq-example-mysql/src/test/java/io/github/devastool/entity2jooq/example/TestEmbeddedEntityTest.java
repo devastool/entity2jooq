@@ -14,7 +14,9 @@
  *    limitations under the License.
  */
 
-package example;
+package io.github.devastool.entity2jooq.example;
+
+import static org.jooq.generated.test_schema.tables.TestEmbeddedEntity.TEST_EMBEDDED_ENTITY;
 
 import io.github.devastool.entity2jooq.example.embedded.TestEmbeddedEntity;
 import java.sql.Connection;
@@ -40,8 +42,6 @@ import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
-
-import static org.jooq.generated.test_schema.tables.TestEmbeddedEntity.TEST_EMBEDDED_ENTITY;
 
 /**
  * Tests of {@link TestEmbeddedEntity} DDL.
