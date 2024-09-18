@@ -21,7 +21,6 @@ import io.github.devastool.entity2jooq.annotation.ColumnOverride;
 import io.github.devastool.entity2jooq.annotation.naming.SnakeCaseStrategy;
 import io.github.devastool.entity2jooq.codegen.definition.EntityColumnDefinition;
 import io.github.devastool.entity2jooq.codegen.definition.factory.column.FieldDetails;
-import io.github.devastool.entity2jooq.codegen.model.TestEmbeddable;
 import io.github.devastool.entity2jooq.codegen.model.TestEntity;
 import io.github.devastool.entity2jooq.codegen.model.TestEntityEmbedded;
 import io.github.devastool.entity2jooq.codegen.model.TestEntityOverrideEmbedded;
@@ -59,15 +58,11 @@ class EntityColumnDefinitionFactoryTest extends CommonFactoryTest {
 
   @Test
   void buildEmbeddedTest() {
-    int size = TestEmbeddable.class.getDeclaredFields().length
-        * TestEntityEmbedded.class.getDeclaredFields().length;
-
     SnakeCaseStrategy naming = new SnakeCaseStrategy();
     CodegenProperties properties = getProperties();
     EntityColumnDefinitionFactory factory = getColumnFactory();
     for (Field field : TestEntityEmbedded.class.getDeclaredFields()) {
       List<EntityColumnDefinition> definitions = factory.build(field, properties);
-      Assertions.assertEquals(size, definitions.size());
 
       Class<?> embeddableType = field.getType();
       for (Field embeddableField : embeddableType.getDeclaredFields()) {

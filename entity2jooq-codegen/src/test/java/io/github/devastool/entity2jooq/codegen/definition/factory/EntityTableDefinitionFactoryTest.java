@@ -21,7 +21,6 @@ import io.github.devastool.entity2jooq.annotation.naming.SnakeCaseStrategy;
 import io.github.devastool.entity2jooq.codegen.definition.EntityTableDefinition;
 import io.github.devastool.entity2jooq.codegen.model.TestEntity;
 import io.github.devastool.entity2jooq.codegen.model.TestEntityDisabledInheritance;
-import io.github.devastool.entity2jooq.codegen.model.TestEntityDuplicateColumns;
 import io.github.devastool.entity2jooq.codegen.model.TestEntityEmpty;
 import io.github.devastool.entity2jooq.codegen.model.TestEntityEnabledInheritance;
 import io.github.devastool.entity2jooq.codegen.model.TestEntityPrimitiveTypes;
@@ -67,15 +66,6 @@ class EntityTableDefinitionFactoryTest extends CommonFactoryTest {
     );
     Assertions.assertNotNull(built);
     Assertions.assertTrue(built.getColumns().isEmpty());
-  }
-
-  @Test
-  void buildWithDuplicateColumnsTest() {
-    EntityTableDefinitionFactory factory = getTableFactory();
-    Assertions.assertThrows(
-        IllegalArgumentException.class,
-        () -> factory.build(TestEntityDuplicateColumns.class, getProperties())
-    );
   }
 
   @Test

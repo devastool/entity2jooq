@@ -23,6 +23,7 @@ import io.github.devastool.entity2jooq.codegen.generate.code.IndentCodeTarget;
 import io.github.devastool.entity2jooq.codegen.model.TestEntity;
 import io.github.devastool.entity2jooq.codegen.model.TestEntityConverter;
 import io.github.devastool.entity2jooq.codegen.model.TestEntityDefaultConverter;
+import io.github.devastool.entity2jooq.codegen.model.TestEntityDisabledMapping;
 import io.github.devastool.entity2jooq.codegen.properties.CodegenProperties;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -61,6 +62,23 @@ class ConverterGenerateChainPartTest extends CommonFactoryTest {
     );
 
     Assertions.assertEquals(EXPECTED, target.getBuffer());
+  }
+
+  @Test
+  void generateWithDisabledMappingTest() {
+    CodegenProperties properties = getProperties();
+    EntityTableDefinitionFactory factory = getTableFactory();
+
+    BufferedCodeTarget target = new BufferedCodeTarget();
+    ConverterGenerateChainPart part = new ConverterGenerateChainPart();
+    part.generate(
+        new GenerateContext(
+            factory.build(TestEntityDisabledMapping.class, properties),
+            new IndentCodeTarget(target)
+        )
+    );
+
+    Assertions.assertEquals("", target.getBuffer());
   }
 
   @Test
