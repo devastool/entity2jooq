@@ -37,6 +37,7 @@ import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
 import org.jooq.Record;
@@ -68,6 +69,8 @@ public class ToEntityGenerateChainPart implements GenerateChainPart {
     if (table.isMapping()) {
       Class<?> type = table.getEntityType();
       EntityGenerationParams params = new EntityGenerationParams();
+      Map<Field, String> resolver = params.getNameResolver();
+      Set<LinkPair> entityLinks = params.getEntityLinks();
 
       MethodCodeGenerator generator = new MethodCodeGenerator()
           .setName(METHOD_NAME)
@@ -80,12 +83,18 @@ public class ToEntityGenerateChainPart implements GenerateChainPart {
 
           if (entityColumn.isEmbedded()) {
             FieldDetails fieldDetails = entityColumn.getFieldDetails();
+            String columnName = column.getName();
+            String entityName = null;
             Field parentField = null;
 
             for (Field field : fieldDetails.getParentFields()) {
               getGeneratedEntity(field, params);
 
-              if (Objects.nonNull(fieldDetails.getLastParentField())) {
+              entityName = Optional
+                  .ofNullable(entityName)
+                  .orElseGet(() -> resolver.get(fieldDetails.getLastParentField()));
+
+              if (entityLinks.add(new LinkPair(entityName, columnName))) {
                 OperatorCodeGenerator valueGetter
                     = getRecordValueGetter(context, table, entityColumn);
                 getValueSetter(entityColumn, valueGetter, params);
