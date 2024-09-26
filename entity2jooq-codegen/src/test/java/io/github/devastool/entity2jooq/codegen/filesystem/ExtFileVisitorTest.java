@@ -34,6 +34,7 @@ import org.junit.jupiter.api.io.TempDir;
  */
 class ExtFileVisitorTest {
   private static final List<String> JAVA_FILES = Arrays.asList("Test1.java", "Test2.java");
+  private static final List<String> TXT_FILES = Arrays.asList("Test1.txt", "Test2.txt");
 
   @Test
   void getFilteredSuccessTest(@TempDir File root) throws IOException {
@@ -64,5 +65,17 @@ class ExtFileVisitorTest {
       String fileName = file.getName();
       Assertions.assertTrue(JAVA_FILES.contains(fileName));
     }
+  }
+
+  @Test
+  void getFilteredNotFoundFilesTest(@TempDir File root) throws IOException {
+    for (String txtFile : TXT_FILES) {
+      new File(root, txtFile).createNewFile();
+    }
+
+    ExtFileVisitor visitor = new ExtFileVisitor(ExtFileVisitor.JAVA_FILE_EXT);
+    Files.walkFileTree(root.toPath(), visitor);
+
+    Assertions.assertTrue(visitor.getFiltered().isEmpty());
   }
 }

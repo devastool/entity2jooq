@@ -18,7 +18,6 @@ package io.github.devastool.entity2jooq.codegen.generate;
 
 import io.github.devastool.entity2jooq.annotation.naming.NamingStrategy;
 import io.github.devastool.entity2jooq.annotation.naming.SnakeCaseStrategy;
-import io.github.devastool.entity2jooq.codegen.definition.EntityColumnDefinition;
 import io.github.devastool.entity2jooq.codegen.definition.EntityTableDefinition;
 import io.github.devastool.entity2jooq.codegen.definition.type.ConverterDefinition;
 import io.github.devastool.entity2jooq.codegen.definition.type.EntityDataTypeDefinition;
@@ -26,7 +25,6 @@ import io.github.devastool.entity2jooq.codegen.generate.code.CodeTarget;
 import io.github.devastool.entity2jooq.codegen.generate.code.FieldCodeGenerator;
 import io.github.devastool.entity2jooq.codegen.generate.code.operator.NewCodeGenerator;
 import java.util.ArrayList;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.TreeSet;
 import org.jooq.meta.ColumnDefinition;
@@ -46,14 +44,11 @@ public class ConverterGenerateChainPart implements GenerateChainPart {
     if (table.isMapping()) {
       TreeSet<ConverterDefinition> converters = new TreeSet<>();
       for (ColumnDefinition column : table.getColumns()) {
-        Optional<EntityDataTypeDefinition> extracted = getType(column);
-        if (extracted.isPresent()) {
-          EntityDataTypeDefinition type = extracted.get();
+        EntityDataTypeDefinition type = (EntityDataTypeDefinition) column.getType();
 
-          ConverterDefinition converter = type.getConverterDefinition();
-          if (converter != null) {
-            converters.add(converter);
-          }
+        ConverterDefinition converter = type.getConverterDefinition();
+        if (converter != null) {
+          converters.add(converter);
         }
       }
 
@@ -87,17 +82,6 @@ public class ConverterGenerateChainPart implements GenerateChainPart {
         }
       }
     }
-  }
-
-  // Returns type of the column
-  private Optional<EntityDataTypeDefinition> getType(ColumnDefinition column) {
-    return Optional
-        .of(column)
-        .filter(value -> Objects.equals(EntityColumnDefinition.class, value.getClass()))
-        .map(EntityColumnDefinition.class::cast)
-        .map(EntityColumnDefinition::getType)
-        .filter(value -> Objects.equals(EntityDataTypeDefinition.class, value.getClass()))
-        .map(EntityDataTypeDefinition.class::cast);
   }
 
   // Returns name of the converter

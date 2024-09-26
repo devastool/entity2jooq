@@ -25,8 +25,7 @@ import io.github.devastool.entity2jooq.annotation.Embedded;
  * @since 1.0.0
  */
 @Embedded
-public class TestEmbeddable {
-  private Integer intField;
-  private String stringField;
-  private TestSecondEmbeddable secondEmbeddable;
+public class TestSecondEmbeddable {
+  private String secondStringField;
+  private Integer secondIntField;
 }

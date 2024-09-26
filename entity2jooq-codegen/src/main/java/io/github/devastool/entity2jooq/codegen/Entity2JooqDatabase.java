@@ -172,39 +172,41 @@ public class Entity2JooqDatabase extends AbstractDatabase {
     return new ArrayList<>();
   }
 
-  protected CodegenProperties init() {
-    Properties pluginProperties = getProperties();
+  protected CodegenProperties init() throws SQLException {
+    try {
+      Properties pluginProperties = getProperties();
 
-    ClassLoaderContext context = new ClassLoaderContext();
-    String classpath = pluginProperties.getProperty(CLASSPATH.getName());
-    context.addClasspath(classpath);
+      ClassLoaderContext context = new ClassLoaderContext();
+      String classpath = pluginProperties.getProperty(CLASSPATH.getName());
+      context.addClasspath(classpath);
 
-    String classes = pluginProperties.getProperty(CLASSES.getName());
-    context.addRoot(Paths.get(classes));
+      String classes = pluginProperties.getProperty(CLASSES.getName());
+      context.addRoot(Paths.get(classes));
 
-    String testClasses = pluginProperties.getProperty(TEST_CLASSES.getName());
-    context.addRoot(Paths.get(testClasses));
+      String testClasses = pluginProperties.getProperty(TEST_CLASSES.getName());
+      context.addRoot(Paths.get(testClasses));
 
-    if (entities.isEmpty()) {
-      try (PathClassLoader loader = new PathClassLoader(context)) {
-        for (ClassFile element : context) {
-          Class<?> loaded = loader.loadClass(element);
-          if (tableFactory.canBuild(loaded)) {
-            entities.add(loaded);
+      if (entities.isEmpty()) {
+        try (PathClassLoader loader = new PathClassLoader(context)) {
+          for (ClassFile element : context) {
+            Class<?> loaded = loader.loadClass(element);
+            if (tableFactory.canBuild(loaded)) {
+              entities.add(loaded);
+            }
           }
         }
-      } catch (Exception exception) {
-        throw new RuntimeException(exception);
       }
-    }
 
-    String dialect = pluginProperties.getProperty(DIALECT.getName());
-    return new CodegenProperties(Map.of(
-        CLASSPATH, classpath,
-        CLASSES, classes,
-        TEST_CLASSES, testClasses,
-        DATABASE, this,
-        DIALECT, dialect
-    ));
+      String dialect = pluginProperties.getProperty(DIALECT.getName());
+      return new CodegenProperties(Map.of(
+          CLASSPATH, classpath,
+          CLASSES, classes,
+          TEST_CLASSES, testClasses,
+          DATABASE, this,
+          DIALECT, dialect
+      ));
+    } catch (Exception exception) {
+      throw new SQLException();
+    }
   }
 }

@@ -26,6 +26,7 @@ import io.github.devastool.entity2jooq.codegen.generate.code.BufferedCodeTarget;
 import io.github.devastool.entity2jooq.codegen.generate.code.IndentCodeTarget;
 import io.github.devastool.entity2jooq.codegen.model.TestEntity;
 import io.github.devastool.entity2jooq.codegen.model.TestEntityConverter;
+import io.github.devastool.entity2jooq.codegen.model.TestEntityDisabledMapping;
 import io.github.devastool.entity2jooq.codegen.model.TestEntityEmbedded;
 import org.jooq.meta.ColumnDefinition;
 import org.junit.jupiter.api.Assertions;
@@ -103,9 +104,19 @@ class ToEntityGenerateChainPartTest extends CommonFactoryTest {
       "",
       "    public io.github.devastool.entity2jooq.codegen.model.TestEntityEmbedded toEntity(org.jooq.Record record) {",
       System.lineSeparator(),
+      "        io.github.devastool.entity2jooq.codegen.model.TestSecondEmbeddable secondEmbeddable_0 = new io.github.devastool.entity2jooq.codegen.model.TestSecondEmbeddable();",
+      System.lineSeparator(),
+      "        secondEmbeddable_0.setSecondIntField(record.get(TEST_ENTITY_EMBEDDED.EMBEDDABLE_SECOND_EMBEDDABLE_SECOND_INT_FIELD));",
+      System.lineSeparator(),
+      "        secondEmbeddable_0.setSecondStringField(record.get(TEST_ENTITY_EMBEDDED.EMBEDDABLE_SECOND_EMBEDDABLE_SECOND_STRING_FIELD));",
+      System.lineSeparator(),
+      "        ",
+      System.lineSeparator(),
       "        io.github.devastool.entity2jooq.codegen.model.TestEmbeddable embeddable_0 = new io.github.devastool.entity2jooq.codegen.model.TestEmbeddable();",
       System.lineSeparator(),
       "        embeddable_0.setIntField(record.get(TEST_ENTITY_EMBEDDED.EMBEDDABLE_INT_FIELD));",
+      System.lineSeparator(),
+      "        embeddable_0.setSecondEmbeddable(secondEmbeddable_0);",
       System.lineSeparator(),
       "        embeddable_0.setStringField(record.get(TEST_ENTITY_EMBEDDED.EMBEDDABLE_STRING_FIELD));",
       System.lineSeparator(),
@@ -135,6 +146,22 @@ class ToEntityGenerateChainPartTest extends CommonFactoryTest {
     );
 
     Assertions.assertEquals(EXPECTED, target.getBuffer());
+  }
+
+  @Test
+  void generateWithDisabledMappingTest() {
+    EntityTableDefinitionFactory factory = getTableFactory();
+
+    BufferedCodeTarget target = new BufferedCodeTarget();
+    ToEntityGenerateChainPart part = new ToEntityGenerateChainPart();
+    part.generate(
+        new GenerateContext(
+            factory.build(TestEntityDisabledMapping.class, getProperties()),
+            new IndentCodeTarget(target)
+        )
+    );
+
+    Assertions.assertEquals("", target.getBuffer());
   }
 
   @Test
