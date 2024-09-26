@@ -21,6 +21,8 @@ import static io.github.devastool.entity2jooq.codegen.properties.CodegenProperty
 import static io.github.devastool.entity2jooq.codegen.properties.CodegenProperty.DIALECT;
 import static io.github.devastool.entity2jooq.codegen.properties.CodegenProperty.TEST_CLASSES;
 
+import java.nio.file.Paths;
+import java.sql.SQLException;
 import java.util.Properties;
 import org.jooq.SQLDialect;
 import org.jooq.meta.DefaultRelations;
@@ -33,6 +35,7 @@ import org.junit.jupiter.api.Test;
  * @author Evgeniy_Gerasimov
  */
 class Entity2JooqDatabaseTest {
+  private final String classes = Paths.get("").toAbsolutePath() + "/target/test-classes";
   private final Entity2JooqDatabase db = new Entity2JooqDatabase();
 
   @Test
@@ -90,7 +93,7 @@ class Entity2JooqDatabaseTest {
   }
 
   @Test
-  void initTest() {
+  void initSuccessTest() {
     var properties = new Properties();
     properties.put(CLASSPATH.getName(), "testClassPath");
     properties.put(CLASSES.getName(), "classes");
@@ -102,15 +105,32 @@ class Entity2JooqDatabaseTest {
   }
 
   @Test
-  void getTables0Test() {
+  void initFailureTest() {
+    Assertions.assertThrows(SQLException.class, () -> db.init());
+  }
+
+  @Test
+  void getSchemata0Test() {
     var properties = new Properties();
     properties.put(CLASSPATH.getName(), "testClassPath");
-    properties.put(CLASSES.getName(), "classes");
+    properties.put(CLASSES.getName(), classes);
     properties.put(TEST_CLASSES.getName(), "testClasses");
     properties.put(DIALECT.getName(), SQLDialect.POSTGRES.getName());
     db.setProperties(properties);
 
-    Assertions.assertDoesNotThrow(() -> db.getTables0());
-    Assertions.assertDoesNotThrow(() -> db.getSchemata0());
+    Assertions.assertDoesNotThrow(db::getSchemata0);
+  }
+
+  @Test
+  void getTables0Test() {
+    var properties = new Properties();
+    properties.put(CLASSPATH.getName(), "testClassPath");
+    properties.put(CLASSES.getName(), classes);
+    properties.put(TEST_CLASSES.getName(), "testClasses");
+    properties.put(DIALECT.getName(), SQLDialect.POSTGRES.getName());
+    db.setProperties(properties);
+
+    Assertions.assertDoesNotThrow(db::getTables0);
+    Assertions.assertDoesNotThrow(db::getTables0);
   }
 }

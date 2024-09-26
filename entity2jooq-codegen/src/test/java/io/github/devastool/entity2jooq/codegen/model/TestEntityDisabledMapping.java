@@ -16,19 +16,14 @@
 
 package io.github.devastool.entity2jooq.codegen.model;
 
-import io.github.devastool.entity2jooq.annotation.Column;
 import io.github.devastool.entity2jooq.annotation.Table;
 
 /**
- * Example entity, see tests.
+ * Example entity with disable mapping, see tests.
  *
  * @author Andrey_Yurzanov
  * @since 1.0.0
  */
-@Table
-public class TestEntityDuplicateColumns {
-  @Column("duplicate")
-  private Short shortField;
-  @Column("duplicate")
-  private Integer intField;
+@Table(mapping = false)
+public class TestEntityDisabledMapping {
 }

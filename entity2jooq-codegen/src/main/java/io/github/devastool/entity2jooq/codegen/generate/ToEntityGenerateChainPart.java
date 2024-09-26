@@ -75,29 +75,24 @@ public class ToEntityGenerateChainPart implements GenerateChainPart {
           .setParam(PARAM_NAME, Record.class);
 
       for (ColumnDefinition column : new TreeSet<>(table.getColumns())) {
-        if (Objects.equals(EntityColumnDefinition.class, column.getClass())) {
-          EntityColumnDefinition entityColumn = (EntityColumnDefinition) column;
+        EntityColumnDefinition entityColumn = (EntityColumnDefinition) column;
 
-          if (entityColumn.isEmbedded()) {
-            FieldDetails fieldDetails = entityColumn.getFieldDetails();
-            Field parentField = null;
+        if (entityColumn.isEmbedded()) {
+          FieldDetails fieldDetails = entityColumn.getFieldDetails();
+          Field parentField = null;
 
-            for (Field field : fieldDetails.getParentFields()) {
-              getGeneratedEntity(field, params);
+          for (Field field : fieldDetails.getParentFields()) {
+            getGeneratedEntity(field, params);
 
-              if (Objects.nonNull(fieldDetails.getLastParentField())) {
-                OperatorCodeGenerator valueGetter
-                    = getRecordValueGetter(context, table, entityColumn);
-                getValueSetter(entityColumn, valueGetter, params);
-              }
+            OperatorCodeGenerator getter = getRecordValueGetter(context, table, entityColumn);
+            getValueSetter(entityColumn, getter, params);
 
-              getSetterLink(field, parentField, params);
-              parentField = field;
-            }
-          } else {
-            OperatorCodeGenerator valueGetter = getRecordValueGetter(context, table, entityColumn);
-            getValueSetter(entityColumn, valueGetter, params);
+            getSetterLink(field, parentField, params);
+            parentField = field;
           }
+        } else {
+          OperatorCodeGenerator valueGetter = getRecordValueGetter(context, table, entityColumn);
+          getValueSetter(entityColumn, valueGetter, params);
         }
       }
 
@@ -110,8 +105,7 @@ public class ToEntityGenerateChainPart implements GenerateChainPart {
             .setOperator(CodeTarget::writeln);
       }
 
-      generator
-          .setOperator(
+      generator.setOperator(
           new EndLineCodeOperator(
               new VarDefCodeGenerator(VARIABLE_NAME, type, new NewCodeGenerator(type))
           )
@@ -177,24 +171,23 @@ public class ToEntityGenerateChainPart implements GenerateChainPart {
     String columnName = column.getName();
 
     DataTypeDefinition type = column.getType();
-    if (EntityDataTypeDefinition.class.equals(type.getClass())) {
-      EntityDataTypeDefinition entityType = (EntityDataTypeDefinition) type;
-      ConverterDefinition converterDefinition = entityType.getConverterDefinition();
-      if (converterDefinition != null) {
-        String converterField = context.getVariable(converterDefinition, String.class);
-        return new VarMemberCodeGenerator(
-            PARAM_NAME,
-            new InvokeMethodCodeGenerator(
-                PARAM_METHOD_NAME,
-                new VarMemberCodeGenerator(
-                    tableName.toUpperCase(),
-                    target -> target.write(columnName.toUpperCase())
-                ),
-                target -> target.write(converterField)
-            )
-        );
-      }
+    EntityDataTypeDefinition entityType = (EntityDataTypeDefinition) type;
+    ConverterDefinition converterDefinition = entityType.getConverterDefinition();
+    if (converterDefinition != null) {
+      String converterField = context.getVariable(converterDefinition, String.class);
+      return new VarMemberCodeGenerator(
+          PARAM_NAME,
+          new InvokeMethodCodeGenerator(
+              PARAM_METHOD_NAME,
+              new VarMemberCodeGenerator(
+                  tableName.toUpperCase(),
+                  target -> target.write(columnName.toUpperCase())
+              ),
+              target -> target.write(converterField)
+          )
+      );
     }
+
     return new VarMemberCodeGenerator(
         PARAM_NAME,
         new InvokeMethodCodeGenerator(
