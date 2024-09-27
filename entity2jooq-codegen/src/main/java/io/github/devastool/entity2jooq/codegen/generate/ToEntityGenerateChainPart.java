@@ -68,6 +68,8 @@ public class ToEntityGenerateChainPart implements GenerateChainPart {
     if (table.isMapping()) {
       Class<?> type = table.getEntityType();
       EntityGenerationParams params = new EntityGenerationParams();
+      Map<Field, String> resolver = params.getNameResolver();
+      Set<LinkPair> entityLinks = params.getEntityLinks();
 
       MethodCodeGenerator generator = new MethodCodeGenerator()
           .setName(METHOD_NAME)
@@ -79,13 +81,21 @@ public class ToEntityGenerateChainPart implements GenerateChainPart {
 
         if (entityColumn.isEmbedded()) {
           FieldDetails fieldDetails = entityColumn.getFieldDetails();
+          String columnName = column.getName();
+          String entityName = null;
           Field parentField = null;
 
           for (Field field : fieldDetails.getParentFields()) {
             getGeneratedEntity(field, params);
 
-            OperatorCodeGenerator getter = getRecordValueGetter(context, table, entityColumn);
-            getValueSetter(entityColumn, getter, params);
+            if (Objects.isNull(entityName)) {
+              entityName = resolver.get(fieldDetails.getLastParentField());
+            }
+
+            if (entityLinks.add(new LinkPair(entityName, columnName))) {
+              OperatorCodeGenerator getter = getRecordValueGetter(context, table, entityColumn);
+              getValueSetter(entityColumn, getter, params);
+            }
 
             getSetterLink(field, parentField, params);
             parentField = field;

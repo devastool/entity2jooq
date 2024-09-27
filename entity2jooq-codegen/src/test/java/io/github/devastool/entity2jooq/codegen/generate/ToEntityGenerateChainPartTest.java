@@ -110,8 +110,6 @@ class ToEntityGenerateChainPartTest extends CommonFactoryTest {
       System.lineSeparator(),
       "        secondEmbeddable_0.setSecondStringField(record.get(TEST_ENTITY_EMBEDDED.EMBEDDABLE_SECOND_EMBEDDABLE_SECOND_STRING_FIELD));",
       System.lineSeparator(),
-      "        secondEmbeddable_0.setSecondStringField(record.get(TEST_ENTITY_EMBEDDED.EMBEDDABLE_SECOND_EMBEDDABLE_SECOND_STRING_FIELD));",
-      System.lineSeparator(),
       "        ",
       System.lineSeparator(),
       "        io.github.devastool.entity2jooq.codegen.model.TestEmbeddable embeddable_0 = new io.github.devastool.entity2jooq.codegen.model.TestEmbeddable();",
