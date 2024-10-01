@@ -27,10 +27,10 @@ import java.util.List;
  * @since 1.0.0
  */
 public class MethodCodeGenerator implements CodeGenerator {
-  private String name;
   private Class<?> returnType;
   private List<CodeGenerator> params;
   private List<OperatorCodeGenerator> operators;
+  private final String name;
 
   private static final String ACCESS_KEYWORD = "public";
   private static final String PARAMS_BEGIN = "(";
@@ -40,14 +40,12 @@ public class MethodCodeGenerator implements CodeGenerator {
   private static final String BODY_END = "}";
 
   /**
-   * Sets name of the method.
+   * Constructs new instance of {@link MethodCodeGenerator}.
    *
    * @param name name of the method
-   * @return current instance
    */
-  public MethodCodeGenerator setName(String name) {
+  public MethodCodeGenerator(String name) {
     this.name = name;
-    return this;
   }
 
   /**

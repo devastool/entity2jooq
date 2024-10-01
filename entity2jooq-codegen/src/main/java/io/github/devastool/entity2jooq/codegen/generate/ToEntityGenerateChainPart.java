@@ -18,7 +18,7 @@ package io.github.devastool.entity2jooq.codegen.generate;
 
 import io.github.devastool.entity2jooq.codegen.definition.EntityColumnDefinition;
 import io.github.devastool.entity2jooq.codegen.definition.EntityTableDefinition;
-import io.github.devastool.entity2jooq.codegen.definition.factory.column.FieldDetails;
+import io.github.devastool.entity2jooq.codegen.definition.factory.FieldDetails;
 import io.github.devastool.entity2jooq.codegen.definition.type.ConverterDefinition;
 import io.github.devastool.entity2jooq.codegen.definition.type.EntityDataTypeDefinition;
 import io.github.devastool.entity2jooq.codegen.generate.code.CodeTarget;
@@ -28,6 +28,7 @@ import io.github.devastool.entity2jooq.codegen.generate.code.operator.InvokeMeth
 import io.github.devastool.entity2jooq.codegen.generate.code.operator.NewCodeGenerator;
 import io.github.devastool.entity2jooq.codegen.generate.code.operator.OperatorCodeGenerator;
 import io.github.devastool.entity2jooq.codegen.generate.code.operator.ReturnCodeGenerator;
+import io.github.devastool.entity2jooq.codegen.generate.code.operator.TypeCodeGenerator;
 import io.github.devastool.entity2jooq.codegen.generate.code.operator.VarDefCodeGenerator;
 import io.github.devastool.entity2jooq.codegen.generate.code.operator.VarMemberCodeGenerator;
 import io.github.devastool.entity2jooq.codegen.generate.params.CodeGeneratorAccumulator;
@@ -71,8 +72,7 @@ public class ToEntityGenerateChainPart implements GenerateChainPart {
       Map<Field, String> resolver = params.getNameResolver();
       Set<LinkPair> entityLinks = params.getEntityLinks();
 
-      MethodCodeGenerator generator = new MethodCodeGenerator()
-          .setName(METHOD_NAME)
+      MethodCodeGenerator generator = new MethodCodeGenerator(METHOD_NAME)
           .setReturnType(type)
           .setParam(PARAM_NAME, Record.class);
 
@@ -115,11 +115,13 @@ public class ToEntityGenerateChainPart implements GenerateChainPart {
             .setOperator(CodeTarget::writeln);
       }
 
-      generator.setOperator(
-          new EndLineCodeOperator(
-              new VarDefCodeGenerator(VARIABLE_NAME, type, new NewCodeGenerator(type))
+      generator.setOperator(new EndLineCodeOperator(
+          new VarDefCodeGenerator(
+              VARIABLE_NAME,
+              new TypeCodeGenerator(type),
+              new NewCodeGenerator(type)
           )
-      );
+      ));
 
       params
           .getRootCodeAccumulator()
@@ -232,7 +234,10 @@ public class ToEntityGenerateChainPart implements GenerateChainPart {
       accumulator.accumulate(
           entityName,
           new EndLineCodeOperator(
-              new VarDefCodeGenerator(entityName, entityType, new NewCodeGenerator(entityType)
+              new VarDefCodeGenerator(
+                  entityName,
+                  new TypeCodeGenerator(entityType),
+                  new NewCodeGenerator(entityType)
               )
           )
       );

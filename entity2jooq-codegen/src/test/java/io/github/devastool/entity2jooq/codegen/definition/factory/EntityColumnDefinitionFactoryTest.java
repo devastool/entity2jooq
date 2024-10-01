@@ -20,7 +20,6 @@ import io.github.devastool.entity2jooq.annotation.Column;
 import io.github.devastool.entity2jooq.annotation.ColumnOverride;
 import io.github.devastool.entity2jooq.annotation.naming.SnakeCaseStrategy;
 import io.github.devastool.entity2jooq.codegen.definition.EntityColumnDefinition;
-import io.github.devastool.entity2jooq.codegen.definition.factory.column.FieldDetails;
 import io.github.devastool.entity2jooq.codegen.model.TestEntity;
 import io.github.devastool.entity2jooq.codegen.model.TestEntityEmbedded;
 import io.github.devastool.entity2jooq.codegen.model.TestEntityOverrideEmbedded;
