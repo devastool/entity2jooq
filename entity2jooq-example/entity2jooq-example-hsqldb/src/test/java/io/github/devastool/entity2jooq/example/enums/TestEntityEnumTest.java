@@ -29,7 +29,9 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import org.jooq.DSLContext;
 import org.jooq.DeleteConditionStep;
+import org.jooq.InsertValuesStepN;
 import org.jooq.Record;
+import org.jooq.SQLDialect;
 import org.jooq.Table;
 import org.jooq.UpdateConditionStep;
 import org.jooq.generated.DefaultCatalog;
@@ -66,7 +68,7 @@ class TestEntityEnumTest {
   @BeforeAll
   static void init() throws SQLException {
     connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
-    DSLContext context = DSL.using(connection);
+    DSLContext context = DSL.using(connection, SQLDialect.HSQLDB);
     context
         .createSchemaIfNotExists(DefaultCatalog.DEFAULT_CATALOG.ENUMS)
         .execute();
@@ -87,28 +89,26 @@ class TestEntityEnumTest {
   @Test
   @Order(1)
   void insertTest() {
-    DSLContext context = DSL.using(connection);
+    DSLContext context = DSL.using(connection, SQLDialect.HSQLDB);
 
-    var insert = context
-        .insertInto(TEST_ENTITY_ENUM)
-        .columns(
-            TEST_ENTITY_ENUM.INTEGER_FIELD,
-            TEST_ENTITY_ENUM.ENUM_FIELD
-        );
+    var insert = context.insertInto(TEST_ENTITY_ENUM);
+    var iterator = DATA.iterator();
+    while (iterator.hasNext()) {
+      Record record = TEST_ENTITY_ENUM.toRecord(iterator.next());
+      InsertValuesStepN<Record> insertStep = insert
+          .columns(record.fields())
+          .values(record.intoList());
 
-    for (TestEntityEnum entity : DATA) {
-      insert.values(
-          entity.getIntegerField(),
-          TEST_ENTITY_ENUM.TEST_ENUM_ENUM_CONVERTER.to(entity.getEnumField())
-      );
+      if (!iterator.hasNext()) {
+        Assertions.assertDoesNotThrow(insertStep::execute);
+      }
     }
-    Assertions.assertDoesNotThrow(insert::execute);
   }
 
   @Test
   @Order(2)
   void selectTest() {
-    DSLContext context = DSL.using(connection);
+    DSLContext context = DSL.using(connection, SQLDialect.HSQLDB);
 
     var select = context
         .select(
@@ -133,7 +133,7 @@ class TestEntityEnumTest {
   @Test
   @Order(3)
   void updateTest() {
-    DSLContext context = DSL.using(connection);
+    DSLContext context = DSL.using(connection, SQLDialect.HSQLDB);
 
     EnumConverter<TestEnum> converter = TEST_ENTITY_ENUM.TEST_ENUM_ENUM_CONVERTER;
     ArrayList<UpdateConditionStep<?>> updates = new ArrayList<>();
@@ -152,7 +152,7 @@ class TestEntityEnumTest {
   @Test
   @Order(4)
   void deleteTest() {
-    DSLContext context = DSL.using(connection);
+    DSLContext context = DSL.using(connection, SQLDialect.HSQLDB);
 
     DeleteConditionStep<Record> delete = context
         .delete(TEST_ENTITY_ENUM)

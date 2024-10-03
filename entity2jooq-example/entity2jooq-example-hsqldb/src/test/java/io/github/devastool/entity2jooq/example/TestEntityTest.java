@@ -28,6 +28,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import org.jooq.DSLContext;
 import org.jooq.DeleteConditionStep;
+import org.jooq.InsertValuesStepN;
 import org.jooq.Record;
 import org.jooq.SQLDialect;
 import org.jooq.Table;
@@ -66,7 +67,7 @@ class TestEntityTest {
   @BeforeAll
   static void init() throws SQLException {
     connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
-    DSLContext context = DSL.using(connection, SQLDialect.POSTGRES);
+    DSLContext context = DSL.using(connection, SQLDialect.HSQLDB);
     context
         .createSchemaIfNotExists(DefaultCatalog.DEFAULT_CATALOG.TEST_SCHEMA)
         .execute();
@@ -103,60 +104,26 @@ class TestEntityTest {
   @Test
   @Order(1)
   void insertTest() {
-    DSLContext context = DSL.using(connection, SQLDialect.POSTGRES);
+    DSLContext context = DSL.using(connection, SQLDialect.HSQLDB);
 
-    var insert = context
-        .insertInto(TEST_ENTITY)
-        .columns(
-            TEST_ENTITY.SHORT_FIELD,
-            TEST_ENTITY.INT_FIELD,
-            TEST_ENTITY.LONG_FIELD,
-            TEST_ENTITY.BIG_DECIMAL_FIELD,
-            TEST_ENTITY.FLOAT_FIELD,
-            TEST_ENTITY.DOUBLE_FIELD,
-            TEST_ENTITY.ENTITY_NAME,
-            TEST_ENTITY.LOCAL_DATE_FIELD,
-            TEST_ENTITY.DATE_FIELD,
-            TEST_ENTITY.SQL_DATE_FIELD,
-            TEST_ENTITY.LOCAL_TIME_FIELD,
-            TEST_ENTITY.TIME_FIELD,
-            TEST_ENTITY.OFFSET_TIME_FIELD,
-            TEST_ENTITY.LOCAL_DATE_TIME_FIELD,
-            TEST_ENTITY.TIMESTAMP_FIELD,
-            TEST_ENTITY.OFFSET_DATE_TIME_FIELD,
-            TEST_ENTITY.BOOLEAN_FIELD,
-            TEST_ENTITY.UUID_FIELD
-        );
+    var insert = context.insertInto(TEST_ENTITY);
+    var iterator = DATA.iterator();
+    while (iterator.hasNext()) {
+      Record record = TEST_ENTITY.toRecord(iterator.next());
+      InsertValuesStepN<Record> insertStep = insert
+          .columns(record.fields())
+          .values(record.intoList());
 
-    for (TestEntity entity : DATA) {
-      insert.values(
-          entity.getShortField(),
-          entity.getIntField(),
-          entity.getLongField(),
-          entity.getBigDecimalField(),
-          entity.getFloatField(),
-          entity.getDoubleField(),
-          entity.getStringField(),
-          entity.getLocalDateField(),
-          entity.getDateField(),
-          entity.getSqlDateField(),
-          entity.getLocalTimeField(),
-          entity.getTimeField(),
-          entity.getOffsetTimeField(),
-          entity.getLocalDateTimeField(),
-          entity.getTimestampField(),
-          entity.getOffsetDateTimeField(),
-          entity.getBooleanField(),
-          entity.getUuidField()
-      );
+      if (!iterator.hasNext()) {
+        Assertions.assertDoesNotThrow(insertStep::execute);
+      }
     }
-    Assertions.assertDoesNotThrow(insert::execute);
   }
 
   @Test
   @Order(2)
   void selectTest() {
-    DSLContext context = DSL.using(connection, SQLDialect.POSTGRES);
+    DSLContext context = DSL.using(connection, SQLDialect.HSQLDB);
 
     List<TestEntity> results = context
         .select(
@@ -196,7 +163,7 @@ class TestEntityTest {
   @Test
   @Order(3)
   void updateTest() {
-    DSLContext context = DSL.using(connection, SQLDialect.POSTGRES);
+    DSLContext context = DSL.using(connection, SQLDialect.HSQLDB);
 
     ArrayList<UpdateConditionStep<?>> updates = new ArrayList<>();
     for (TestEntity entity : DATA) {
@@ -214,7 +181,7 @@ class TestEntityTest {
   @Test
   @Order(4)
   void deleteTest() {
-    DSLContext context = DSL.using(connection, SQLDialect.POSTGRES);
+    DSLContext context = DSL.using(connection, SQLDialect.HSQLDB);
 
     DeleteConditionStep<Record> delete = context
         .delete(TEST_ENTITY)

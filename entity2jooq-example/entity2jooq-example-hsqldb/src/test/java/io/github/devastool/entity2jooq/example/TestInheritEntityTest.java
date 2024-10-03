@@ -28,7 +28,9 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import org.jooq.DSLContext;
 import org.jooq.DeleteConditionStep;
+import org.jooq.InsertValuesStepN;
 import org.jooq.Record;
+import org.jooq.SQLDialect;
 import org.jooq.Table;
 import org.jooq.UpdateSetMoreStep;
 import org.jooq.generated.DefaultCatalog;
@@ -66,7 +68,7 @@ public class TestInheritEntityTest {
   @BeforeAll
   static void init() throws SQLException {
     connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
-    DSLContext context = DSL.using(connection);
+    DSLContext context = DSL.using(connection, SQLDialect.HSQLDB);
     context
         .createSchemaIfNotExists(DefaultCatalog.DEFAULT_CATALOG.TEST_INHERIT_SCHEMA)
         .execute();
@@ -86,26 +88,26 @@ public class TestInheritEntityTest {
   @Test
   @Order(1)
   void insertTest() {
-    DSLContext context = DSL.using(connection);
+    DSLContext context = DSL.using(connection, SQLDialect.HSQLDB);
 
-    var insert = context
-        .insertInto(TEST_INHERIT_ENTITY)
-        .columns(
-            TEST_INHERIT_ENTITY.INHERIT_FIELD
-        );
+    var insert = context.insertInto(TEST_INHERIT_ENTITY);
+    var iterator = DATA.iterator();
+    while (iterator.hasNext()) {
+      Record record = TEST_INHERIT_ENTITY.toRecord(iterator.next());
+      InsertValuesStepN<Record> insertStep = insert
+          .columns(record.fields())
+          .values(record.intoList());
 
-    for (TestInheritEntity entity : DATA) {
-      insert.values(
-          entity.getInheritField()
-      );
+      if (!iterator.hasNext()) {
+        Assertions.assertDoesNotThrow(insertStep::execute);
+      }
     }
-    Assertions.assertDoesNotThrow(insert::execute);
   }
 
   @Test
   @Order(2)
   void selectTest() {
-    DSLContext context = DSL.using(connection);
+    DSLContext context = DSL.using(connection, SQLDialect.HSQLDB);
 
     var select = context
         .select(
@@ -133,7 +135,7 @@ public class TestInheritEntityTest {
   @Test
   @Order(3)
   void updateTest() {
-    DSLContext context = DSL.using(connection);
+    DSLContext context = DSL.using(connection, SQLDialect.HSQLDB);
 
     ArrayList<UpdateSetMoreStep<?>> updates = new ArrayList<>();
     for (TestInheritEntity entity : DATA) {
@@ -149,7 +151,7 @@ public class TestInheritEntityTest {
   @Test
   @Order(4)
   void deleteTest() {
-    DSLContext context = DSL.using(connection);
+    DSLContext context = DSL.using(connection, SQLDialect.HSQLDB);
 
     DeleteConditionStep<Record> delete = context
         .delete(TEST_INHERIT_ENTITY)

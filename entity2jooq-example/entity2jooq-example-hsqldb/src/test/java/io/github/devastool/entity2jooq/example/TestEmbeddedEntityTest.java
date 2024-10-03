@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
 import org.jooq.DSLContext;
 import org.jooq.DeleteConditionStep;
 import org.jooq.Record;
+import org.jooq.SQLDialect;
 import org.jooq.Table;
 import org.jooq.UpdateConditionStep;
 import org.jooq.generated.DefaultCatalog;
@@ -65,7 +66,7 @@ class TestEmbeddedEntityTest {
   @BeforeAll
   static void init() throws SQLException {
     connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
-    DSLContext context = DSL.using(connection);
+    DSLContext context = DSL.using(connection, SQLDialect.HSQLDB);
     context
         .createSchemaIfNotExists(DefaultCatalog.DEFAULT_CATALOG.TEST_SCHEMA)
         .execute();
@@ -84,10 +85,11 @@ class TestEmbeddedEntityTest {
       connection.close();
   }
 
+  // TODO. Use toRecord(...) after: https://github.com/devastool/entity2jooq/issues/51
   @Test
   @Order(1)
   void insertTest() {
-    DSLContext context = DSL.using(connection);
+    DSLContext context = DSL.using(connection, SQLDialect.HSQLDB);
 
     var insert = context
         .insertInto(TEST_EMBEDDED_ENTITY)
@@ -111,7 +113,7 @@ class TestEmbeddedEntityTest {
   @Test
   @Order(2)
   void selectTest(){
-    DSLContext context = DSL.using(connection);
+    DSLContext context = DSL.using(connection, SQLDialect.HSQLDB);
 
     var select = context
         .select(
@@ -143,7 +145,7 @@ class TestEmbeddedEntityTest {
   @Test
   @Order(3)
   void updateTest() {
-    DSLContext context = DSL.using(connection);
+    DSLContext context = DSL.using(connection, SQLDialect.HSQLDB);
 
     ArrayList<UpdateConditionStep<?>> updates = new ArrayList<>();
     for (TestEmbeddedEntity entity : DATA) {
@@ -162,7 +164,7 @@ class TestEmbeddedEntityTest {
   @Test
   @Order(4)
   void deleteTest() {
-    DSLContext context = DSL.using(connection);
+    DSLContext context = DSL.using(connection, SQLDialect.HSQLDB);
 
     DeleteConditionStep<Record> delete = context
         .delete(TEST_EMBEDDED_ENTITY)
