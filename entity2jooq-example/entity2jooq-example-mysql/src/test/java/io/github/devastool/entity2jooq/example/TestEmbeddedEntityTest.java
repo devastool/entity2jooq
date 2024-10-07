@@ -91,6 +91,7 @@ class TestEmbeddedEntityTest {
     pool.dispose();
   }
 
+  // TODO. Use toRecord(...) after: https://github.com/devastool/entity2jooq/issues/51
   @Test
   @Order(1)
   void insertTest() throws SQLException {

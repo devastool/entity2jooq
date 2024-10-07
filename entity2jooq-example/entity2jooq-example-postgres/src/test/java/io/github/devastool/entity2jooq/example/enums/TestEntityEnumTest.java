@@ -29,6 +29,7 @@ import java.util.stream.Collectors;
 import org.h2.jdbcx.JdbcConnectionPool;
 import org.jooq.DSLContext;
 import org.jooq.DeleteConditionStep;
+import org.jooq.InsertValuesStepN;
 import org.jooq.Record;
 import org.jooq.SQLDialect;
 import org.jooq.Table;
@@ -55,6 +56,7 @@ class TestEntityEnumTest {
       "",
       "jdbc:h2:mem:db1;",
       "DB_CLOSE_DELAY=-1;",
+      "MODE=PostgreSQL;",
       "DATABASE_TO_LOWER=TRUE;",
       "DEFAULT_NULL_ORDERING=HIGH"
   );
@@ -69,7 +71,7 @@ class TestEntityEnumTest {
     pool = JdbcConnectionPool.create(DB_URL, "", "");
 
     Connection connection = pool.getConnection();
-    DSLContext context = DSL.using(connection, SQLDialect.H2);
+    DSLContext context = DSL.using(connection, SQLDialect.POSTGRES);
     context
         .createSchemaIfNotExists(DefaultCatalog.DEFAULT_CATALOG.ENUMS)
         .execute();
@@ -93,22 +95,20 @@ class TestEntityEnumTest {
   @Order(1)
   void insertTest() throws SQLException {
     Connection connection = pool.getConnection();
-    DSLContext context = DSL.using(connection, SQLDialect.H2);
+    DSLContext context = DSL.using(connection, SQLDialect.POSTGRES);
 
-    var insert = context
-        .insertInto(TEST_ENTITY_ENUM)
-        .columns(
-            TEST_ENTITY_ENUM.INTEGER_FIELD,
-            TEST_ENTITY_ENUM.ENUM_FIELD
-        );
+    var insert = context.insertInto(TEST_ENTITY_ENUM);
+    var iterator = DATA.iterator();
+    while (iterator.hasNext()) {
+      Record record = TEST_ENTITY_ENUM.toRecord(iterator.next());
+      InsertValuesStepN<Record> insertStep = insert
+          .columns(record.fields())
+          .values(record.intoList());
 
-    for (TestEntityEnum entity : DATA) {
-      insert.values(
-          entity.getIntegerField(),
-          TEST_ENTITY_ENUM.TEST_ENUM_ENUM_CONVERTER.to(entity.getEnumField())
-      );
+      if (!iterator.hasNext()) {
+        Assertions.assertDoesNotThrow(insertStep::execute);
+      }
     }
-    Assertions.assertDoesNotThrow(insert::execute);
 
     connection.close();
   }
@@ -117,7 +117,7 @@ class TestEntityEnumTest {
   @Order(2)
   void selectTest() throws SQLException {
     Connection connection = pool.getConnection();
-    DSLContext context = DSL.using(connection, SQLDialect.H2);
+    DSLContext context = DSL.using(connection, SQLDialect.POSTGRES);
 
     var select = context
         .select(
@@ -144,7 +144,7 @@ class TestEntityEnumTest {
   @Order(3)
   void updateTest() throws SQLException {
     Connection connection = pool.getConnection();
-    DSLContext context = DSL.using(connection, SQLDialect.H2);
+    DSLContext context = DSL.using(connection, SQLDialect.POSTGRES);
 
     EnumConverter<TestEnum> converter = TEST_ENTITY_ENUM.TEST_ENUM_ENUM_CONVERTER;
     ArrayList<UpdateConditionStep<?>> updates = new ArrayList<>();
@@ -166,7 +166,7 @@ class TestEntityEnumTest {
   @Order(4)
   void deleteTest() throws SQLException {
     Connection connection = pool.getConnection();
-    DSLContext context = DSL.using(connection, SQLDialect.H2);
+    DSLContext context = DSL.using(connection, SQLDialect.POSTGRES);
 
     DeleteConditionStep<Record> delete = context
         .delete(TEST_ENTITY_ENUM)

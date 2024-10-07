@@ -16,7 +16,7 @@
 
 package io.github.devastool.entity2jooq.codegen.definition;
 
-import io.github.devastool.entity2jooq.codegen.definition.factory.column.FieldDetails;
+import io.github.devastool.entity2jooq.codegen.definition.factory.FieldDetails;
 import org.jooq.meta.DataTypeDefinition;
 import org.jooq.meta.DefaultColumnDefinition;
 import org.jooq.meta.TableDefinition;

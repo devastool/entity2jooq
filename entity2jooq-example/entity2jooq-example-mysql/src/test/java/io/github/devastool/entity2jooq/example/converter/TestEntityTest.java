@@ -14,11 +14,10 @@
  *    limitations under the License.
  */
 
-package io.github.devastool.entity2jooq.example.enums;
+package io.github.devastool.entity2jooq.example.converter;
 
-import static org.jooq.generated.enums.tables.TestEntityEnum.TEST_ENTITY_ENUM;
+import static org.jooq.generated.converter.Tables.TEST_ENTITY;
 
-import io.github.devastool.entity2jooq.annotation.type.converter.EnumConverter;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -45,24 +44,26 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 
 /**
- * Tests of {@link TestEntityEnum} DDL.
+ * Tests of {@link TestEntity} DDL.
  *
  * @author Andrey_Yurzanov
  */
 @TestMethodOrder(OrderAnnotation.class)
-class TestEntityEnumTest {
+class TestEntityTest {
   private static JdbcConnectionPool pool;
   private static final String DB_URL = String.join(
       "",
       "jdbc:h2:mem:db1;",
       "DB_CLOSE_DELAY=-1;",
+      "MODE=MySQL;",
       "DATABASE_TO_LOWER=TRUE;",
       "DEFAULT_NULL_ORDERING=HIGH"
   );
 
-  private static final List<TestEntityEnum> DATA = Arrays.asList(
-      new TestEntityEnum(1, TestEnum.FIRST),
-      new TestEntityEnum(2, TestEnum.SECOND)
+  private static final List<TestEntity> DATA = Arrays.asList(
+      new TestEntity(),
+      new TestEntity(),
+      new TestEntity()
   );
 
   @BeforeAll
@@ -70,16 +71,15 @@ class TestEntityEnumTest {
     pool = JdbcConnectionPool.create(DB_URL, "", "");
 
     Connection connection = pool.getConnection();
-    DSLContext context = DSL.using(connection, SQLDialect.H2);
+    DSLContext context = DSL.using(connection, SQLDialect.MYSQL);
     context
-        .createSchemaIfNotExists(DefaultCatalog.DEFAULT_CATALOG.ENUMS)
+        .createSchemaIfNotExists(DefaultCatalog.DEFAULT_CATALOG.CONVERTER)
         .execute();
 
-    Table<Record> table = TEST_ENTITY_ENUM.asTable();
+    Table<Record> table = TEST_ENTITY.asTable();
     context
         .createTableIfNotExists(table)
-        .column(TEST_ENTITY_ENUM.INTEGER_FIELD)
-        .column(TEST_ENTITY_ENUM.ENUM_FIELD)
+        .column(TEST_ENTITY.INT_FIELD)
         .execute();
 
     connection.close();
@@ -94,12 +94,12 @@ class TestEntityEnumTest {
   @Order(1)
   void insertTest() throws SQLException {
     Connection connection = pool.getConnection();
-    DSLContext context = DSL.using(connection, SQLDialect.H2);
+    DSLContext context = DSL.using(connection, SQLDialect.MYSQL);
 
-    var insert = context.insertInto(TEST_ENTITY_ENUM);
+    var insert = context.insertInto(TEST_ENTITY);
     var iterator = DATA.iterator();
     while (iterator.hasNext()) {
-      Record record = TEST_ENTITY_ENUM.toRecord(iterator.next());
+      Record record = TEST_ENTITY.toRecord(iterator.next());
       InsertValuesStepN<Record> insertStep = insert
           .columns(record.fields())
           .values(record.intoList());
@@ -116,24 +116,21 @@ class TestEntityEnumTest {
   @Order(2)
   void selectTest() throws SQLException {
     Connection connection = pool.getConnection();
-    DSLContext context = DSL.using(connection, SQLDialect.H2);
+    DSLContext context = DSL.using(connection, SQLDialect.MYSQL);
 
     var select = context
-        .select(
-            TEST_ENTITY_ENUM.INTEGER_FIELD,
-            TEST_ENTITY_ENUM.ENUM_FIELD
-        )
-        .from(TEST_ENTITY_ENUM)
-        .where(TEST_ENTITY_ENUM.INTEGER_FIELD.isNotNull());
+        .select(TEST_ENTITY.INT_FIELD)
+        .from(TEST_ENTITY)
+        .where(TEST_ENTITY.INT_FIELD.isNotNull());
 
-    List<TestEntityEnum> results = select.fetch(TEST_ENTITY_ENUM::toEntity);
+    List<TestEntity> results = select.fetch(TEST_ENTITY::toEntity);
 
-    for (TestEntityEnum entity : DATA) {
-      Integer integerField = entity.getIntegerField();
+    for (TestEntity entity : DATA) {
+      Integer intField = entity.getIntField();
       Assertions.assertTrue(
           results
               .stream()
-              .anyMatch(result -> Objects.equals(result.getIntegerField(), integerField))
+              .anyMatch(result -> Objects.equals(result.getIntField(), intField))
       );
     }
     connection.close();
@@ -143,17 +140,15 @@ class TestEntityEnumTest {
   @Order(3)
   void updateTest() throws SQLException {
     Connection connection = pool.getConnection();
-    DSLContext context = DSL.using(connection, SQLDialect.H2);
+    DSLContext context = DSL.using(connection, SQLDialect.MYSQL);
 
-    EnumConverter<TestEnum> converter = TEST_ENTITY_ENUM.TEST_ENUM_ENUM_CONVERTER;
     ArrayList<UpdateConditionStep<?>> updates = new ArrayList<>();
-    for (TestEntityEnum entity : DATA) {
+    for (TestEntity entity : DATA) {
       updates.add(
           context
-              .update(TEST_ENTITY_ENUM)
-              .set(TEST_ENTITY_ENUM.INTEGER_FIELD, entity.getIntegerField())
-              .set(TEST_ENTITY_ENUM.ENUM_FIELD, converter.to(entity.getEnumField()))
-              .where(TEST_ENTITY_ENUM.INTEGER_FIELD.eq(entity.getIntegerField()))
+              .update(TEST_ENTITY)
+              .set(TEST_ENTITY.INT_FIELD, TEST_ENTITY.TEST_CONVERTER.to(entity.getIntField()))
+              .where(TEST_ENTITY.INT_FIELD.eq(TEST_ENTITY.TEST_CONVERTER.to(entity.getIntField())))
       );
     }
     Assertions.assertDoesNotThrow(() -> context.batch(updates).execute());
@@ -165,15 +160,15 @@ class TestEntityEnumTest {
   @Order(4)
   void deleteTest() throws SQLException {
     Connection connection = pool.getConnection();
-    DSLContext context = DSL.using(connection, SQLDialect.H2);
+    DSLContext context = DSL.using(connection, SQLDialect.MYSQL);
 
     DeleteConditionStep<Record> delete = context
-        .delete(TEST_ENTITY_ENUM)
+        .delete(TEST_ENTITY)
         .where(
-            TEST_ENTITY_ENUM.INTEGER_FIELD.in(
+            TEST_ENTITY.INT_FIELD.in(
                 DATA
                     .stream()
-                    .map(TestEntityEnum::getIntegerField)
+                    .map(TestEntity::getIntField)
                     .collect(Collectors.toList())
             )
         );

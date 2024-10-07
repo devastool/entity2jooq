@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
 import org.h2.jdbcx.JdbcConnectionPool;
 import org.jooq.DSLContext;
 import org.jooq.DeleteConditionStep;
+import org.jooq.InsertValuesStepN;
 import org.jooq.Record;
 import org.jooq.SQLDialect;
 import org.jooq.Table;
@@ -113,54 +114,18 @@ class TestEntityTest {
     Connection connection = pool.getConnection();
     DSLContext context = DSL.using(connection, SQLDialect.MYSQL);
 
-    var insert = context
-        .insertInto(TEST_ENTITY)
-        .columns(
-            TEST_ENTITY.BYTE_FIELD,
-            TEST_ENTITY.SHORT_FIELD,
-            TEST_ENTITY.INT_FIELD,
-            TEST_ENTITY.LONG_FIELD,
-            TEST_ENTITY.BIG_DECIMAL_FIELD,
-            TEST_ENTITY.FLOAT_FIELD,
-            TEST_ENTITY.DOUBLE_FIELD,
-            TEST_ENTITY.ENTITY_NAME,
-            TEST_ENTITY.LOCAL_DATE_FIELD,
-            TEST_ENTITY.DATE_FIELD,
-            TEST_ENTITY.SQL_DATE_FIELD,
-            TEST_ENTITY.LOCAL_TIME_FIELD,
-            TEST_ENTITY.TIME_FIELD,
-            TEST_ENTITY.OFFSET_TIME_FIELD,
-            TEST_ENTITY.LOCAL_DATE_TIME_FIELD,
-            TEST_ENTITY.TIMESTAMP_FIELD,
-            TEST_ENTITY.OFFSET_DATE_TIME_FIELD,
-            TEST_ENTITY.BOOLEAN_FIELD,
-            TEST_ENTITY.UUID_FIELD
-        );
+    var insert = context.insertInto(TEST_ENTITY);
+    var iterator = DATA.iterator();
+    while (iterator.hasNext()) {
+      Record record = TEST_ENTITY.toRecord(iterator.next());
+      InsertValuesStepN<Record> insertStep = insert
+          .columns(record.fields())
+          .values(record.intoList());
 
-    for (TestEntity entity : DATA) {
-      insert.values(
-          entity.getByteField(),
-          entity.getShortField(),
-          entity.getIntField(),
-          entity.getLongField(),
-          entity.getBigDecimalField(),
-          entity.getFloatField(),
-          entity.getDoubleField(),
-          entity.getStringField(),
-          entity.getLocalDateField(),
-          entity.getDateField(),
-          entity.getSqlDateField(),
-          entity.getLocalTimeField(),
-          entity.getTimeField(),
-          entity.getOffsetTimeField(),
-          entity.getLocalDateTimeField(),
-          entity.getTimestampField(),
-          entity.getOffsetDateTimeField(),
-          entity.getBooleanField(),
-          entity.getUuidField()
-      );
+      if (!iterator.hasNext()) {
+        Assertions.assertDoesNotThrow(insertStep::execute);
+      }
     }
-    Assertions.assertDoesNotThrow(insert::execute);
 
     connection.close();
   }

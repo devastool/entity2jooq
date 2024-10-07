@@ -22,6 +22,7 @@ import io.github.devastool.entity2jooq.codegen.generate.ConverterGenerateChainPa
 import io.github.devastool.entity2jooq.codegen.generate.GenerateChainPart;
 import io.github.devastool.entity2jooq.codegen.generate.GenerateContext;
 import io.github.devastool.entity2jooq.codegen.generate.ToEntityGenerateChainPart;
+import io.github.devastool.entity2jooq.codegen.generate.ToRecordGenerateChainPart;
 import io.github.devastool.entity2jooq.codegen.generate.code.BufferedCodeTarget;
 import io.github.devastool.entity2jooq.codegen.generate.code.IndentCodeTarget;
 import java.util.List;
@@ -42,7 +43,8 @@ import org.jooq.meta.TableDefinition;
 public class Entity2JooqJavaGenerator extends JavaGenerator {
   private final List<GenerateChainPart> methods = List.of(
       new ConverterGenerateChainPart(),
-      new ToEntityGenerateChainPart()
+      new ToEntityGenerateChainPart(),
+      new ToRecordGenerateChainPart()
   );
 
   @Override

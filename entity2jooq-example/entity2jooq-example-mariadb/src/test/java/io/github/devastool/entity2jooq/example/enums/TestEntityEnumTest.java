@@ -56,6 +56,7 @@ class TestEntityEnumTest {
       "",
       "jdbc:h2:mem:db1;",
       "DB_CLOSE_DELAY=-1;",
+      "MODE=MariaDB;",
       "DATABASE_TO_LOWER=TRUE;",
       "DEFAULT_NULL_ORDERING=HIGH"
   );
@@ -70,7 +71,7 @@ class TestEntityEnumTest {
     pool = JdbcConnectionPool.create(DB_URL, "", "");
 
     Connection connection = pool.getConnection();
-    DSLContext context = DSL.using(connection, SQLDialect.H2);
+    DSLContext context = DSL.using(connection, SQLDialect.MARIADB);
     context
         .createSchemaIfNotExists(DefaultCatalog.DEFAULT_CATALOG.ENUMS)
         .execute();
@@ -94,7 +95,7 @@ class TestEntityEnumTest {
   @Order(1)
   void insertTest() throws SQLException {
     Connection connection = pool.getConnection();
-    DSLContext context = DSL.using(connection, SQLDialect.H2);
+    DSLContext context = DSL.using(connection, SQLDialect.MARIADB);
 
     var insert = context.insertInto(TEST_ENTITY_ENUM);
     var iterator = DATA.iterator();
@@ -116,7 +117,7 @@ class TestEntityEnumTest {
   @Order(2)
   void selectTest() throws SQLException {
     Connection connection = pool.getConnection();
-    DSLContext context = DSL.using(connection, SQLDialect.H2);
+    DSLContext context = DSL.using(connection, SQLDialect.MARIADB);
 
     var select = context
         .select(
@@ -143,7 +144,7 @@ class TestEntityEnumTest {
   @Order(3)
   void updateTest() throws SQLException {
     Connection connection = pool.getConnection();
-    DSLContext context = DSL.using(connection, SQLDialect.H2);
+    DSLContext context = DSL.using(connection, SQLDialect.MARIADB);
 
     EnumConverter<TestEnum> converter = TEST_ENTITY_ENUM.TEST_ENUM_ENUM_CONVERTER;
     ArrayList<UpdateConditionStep<?>> updates = new ArrayList<>();
@@ -165,7 +166,7 @@ class TestEntityEnumTest {
   @Order(4)
   void deleteTest() throws SQLException {
     Connection connection = pool.getConnection();
-    DSLContext context = DSL.using(connection, SQLDialect.H2);
+    DSLContext context = DSL.using(connection, SQLDialect.MARIADB);
 
     DeleteConditionStep<Record> delete = context
         .delete(TEST_ENTITY_ENUM)

@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
 import org.h2.jdbcx.JdbcConnectionPool;
 import org.jooq.DSLContext;
 import org.jooq.DeleteConditionStep;
+import org.jooq.InsertValuesStepN;
 import org.jooq.Record;
 import org.jooq.SQLDialect;
 import org.jooq.Table;
@@ -41,7 +42,6 @@ import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
-
 
 /**
  * Tests of {@link TestInheritEntity} DDL.
@@ -95,20 +95,20 @@ public class TestInheritEntityTest {
   @Order(1)
   void insertTest() throws SQLException {
     Connection connection = pool.getConnection();
-    DSLContext context = DSL.using(connection, SQLDialect.H2);
+    DSLContext context = DSL.using(connection, SQLDialect.POSTGRES);
 
-    var insert = context
-        .insertInto(TEST_INHERIT_ENTITY)
-        .columns(
-            TEST_INHERIT_ENTITY.INHERIT_FIELD
-        );
+    var insert = context.insertInto(TEST_INHERIT_ENTITY);
+    var iterator = DATA.iterator();
+    while (iterator.hasNext()) {
+      Record record = TEST_INHERIT_ENTITY.toRecord(iterator.next());
+      InsertValuesStepN<Record> insertStep = insert
+          .columns(record.fields())
+          .values(record.intoList());
 
-    for (TestInheritEntity entity : DATA) {
-      insert.values(
-          entity.getInheritField()
-      );
+      if (!iterator.hasNext()) {
+        Assertions.assertDoesNotThrow(insertStep::execute);
+      }
     }
-    Assertions.assertDoesNotThrow(insert::execute);
 
     connection.close();
   }
@@ -117,7 +117,7 @@ public class TestInheritEntityTest {
   @Order(2)
   void selectTest() throws SQLException {
     Connection connection = pool.getConnection();
-    DSLContext context = DSL.using(connection, SQLDialect.H2);
+    DSLContext context = DSL.using(connection, SQLDialect.POSTGRES);
 
     var select = context
         .select(
@@ -147,7 +147,7 @@ public class TestInheritEntityTest {
   @Order(3)
   void updateTest() throws SQLException {
     Connection connection = pool.getConnection();
-    DSLContext context = DSL.using(connection, SQLDialect.H2);
+    DSLContext context = DSL.using(connection, SQLDialect.POSTGRES);
 
     ArrayList<UpdateSetMoreStep<?>> updates = new ArrayList<>();
     for (TestInheritEntity entity : DATA) {
@@ -166,7 +166,7 @@ public class TestInheritEntityTest {
   @Order(4)
   void deleteTest() throws SQLException {
     Connection connection = pool.getConnection();
-    DSLContext context = DSL.using(connection, SQLDialect.H2);
+    DSLContext context = DSL.using(connection, SQLDialect.POSTGRES);
 
     DeleteConditionStep<Record> delete = context
         .delete(TEST_INHERIT_ENTITY)

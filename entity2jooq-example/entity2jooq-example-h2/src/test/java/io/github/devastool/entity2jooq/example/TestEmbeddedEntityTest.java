@@ -30,6 +30,7 @@ import org.h2.jdbcx.JdbcConnectionPool;
 import org.jooq.DSLContext;
 import org.jooq.DeleteConditionStep;
 import org.jooq.Record;
+import org.jooq.SQLDialect;
 import org.jooq.Table;
 import org.jooq.UpdateConditionStep;
 import org.jooq.generated.DefaultCatalog;
@@ -68,7 +69,7 @@ class TestEmbeddedEntityTest {
     pool = JdbcConnectionPool.create(DB_URL, "", "");
 
     Connection connection = pool.getConnection();
-    DSLContext context = DSL.using(connection);
+    DSLContext context = DSL.using(connection, SQLDialect.H2);
     context
         .createSchemaIfNotExists(DefaultCatalog.DEFAULT_CATALOG.TEST_SCHEMA)
         .execute();
@@ -89,11 +90,12 @@ class TestEmbeddedEntityTest {
     pool.dispose();
   }
 
+  // TODO. Use toRecord(...) after: https://github.com/devastool/entity2jooq/issues/51
   @Test
   @Order(1)
   void insertTest() throws SQLException {
     Connection connection = pool.getConnection();
-    DSLContext context = DSL.using(connection);
+    DSLContext context = DSL.using(connection, SQLDialect.H2);
 
     var insert = context
         .insertInto(TEST_EMBEDDED_ENTITY)
@@ -119,7 +121,7 @@ class TestEmbeddedEntityTest {
   @Order(2)
   void selectTest() throws SQLException {
     Connection connection = pool.getConnection();
-    DSLContext context = DSL.using(connection);
+    DSLContext context = DSL.using(connection, SQLDialect.H2);
 
     var select = context
         .select(
@@ -153,7 +155,7 @@ class TestEmbeddedEntityTest {
   @Order(3)
   void updateTest() throws SQLException {
     Connection connection = pool.getConnection();
-    DSLContext context = DSL.using(connection);
+    DSLContext context = DSL.using(connection, SQLDialect.H2);
 
     ArrayList<UpdateConditionStep<?>> updates = new ArrayList<>();
     for (TestEmbeddedEntity entity : DATA) {
@@ -174,7 +176,7 @@ class TestEmbeddedEntityTest {
   @Order(4)
   void deleteTest() throws SQLException {
     Connection connection = pool.getConnection();
-    DSLContext context = DSL.using(connection);
+    DSLContext context = DSL.using(connection, SQLDialect.H2);
 
     DeleteConditionStep<Record> delete = context
         .delete(TEST_EMBEDDED_ENTITY)

@@ -17,45 +17,39 @@
 package io.github.devastool.entity2jooq.codegen.generate.code.operator;
 
 import io.github.devastool.entity2jooq.codegen.generate.code.BufferedCodeTarget;
-import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 /**
- * Tests of {@link VarDefCodeGenerator}.
+ * Tests of {@link TypeCodeGenerator}.
  *
  * @author Andrey_Yurzanov
  */
-class VarDefCodeGeneratorTest {
-  private static final String VARIABLE_NAME = "myVariable";
-  private static final String WITHOUT_ASSIGNMENT_EXPECTED = "java.util.ArrayList myVariable";
-  private static final String WITH_ASSIGNMENT_EXPECTED =
-      "java.util.ArrayList myVariable = new java.util.ArrayList()";
+class TypeCodeGeneratorTest {
+  private static final String EXPECTED = "java.util.Map<String, java.util.List<Integer>>";
 
   @Test
-  void generateWithoutAssignmentTest() {
-    VarDefCodeGenerator operator = new VarDefCodeGenerator(
-        VARIABLE_NAME,
-        new TypeCodeGenerator(ArrayList.class)
-    );
-
+  void generateTest() {
     BufferedCodeTarget target = new BufferedCodeTarget();
-    operator.generate(target);
 
-    Assertions.assertEquals(WITHOUT_ASSIGNMENT_EXPECTED, target.getBuffer());
+    new TypeCodeGenerator(
+        Map.class,
+        new TypeCodeGenerator(String.class),
+        new TypeCodeGenerator(List.class, new TypeCodeGenerator(Integer.class))
+    ).generate(target);
+
+    Assertions.assertEquals(EXPECTED, target.getBuffer());
   }
 
   @Test
-  void generateWithAssignmentTest() {
-    VarDefCodeGenerator operator = new VarDefCodeGenerator(
-        VARIABLE_NAME,
-        new TypeCodeGenerator(ArrayList.class),
-        new NewCodeGenerator(ArrayList.class)
-    );
-
+  void generateWithoutGenericsTest() {
     BufferedCodeTarget target = new BufferedCodeTarget();
-    operator.generate(target);
 
-    Assertions.assertEquals(WITH_ASSIGNMENT_EXPECTED, target.getBuffer());
+    TypeCodeGenerator generator = new TypeCodeGenerator(Integer.class);
+    generator.generate(target);
+
+    Assertions.assertEquals(Integer.class.getSimpleName(), target.getBuffer());
   }
 }

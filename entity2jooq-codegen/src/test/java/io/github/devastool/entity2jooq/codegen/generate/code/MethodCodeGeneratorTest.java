@@ -50,8 +50,7 @@ class MethodCodeGeneratorTest {
   @Test
   void generateWithReturnTypeTest() {
     BufferedCodeTarget target = new BufferedCodeTarget();
-    new MethodCodeGenerator()
-        .setName(METHOD_NAME)
+    new MethodCodeGenerator(METHOD_NAME)
         .setReturnType(String.class)
         .setParam(FIRST_PARAM_NAME, String.class)
         .setParam(SECOND_PARAM_NAME, Integer.class)
@@ -64,8 +63,7 @@ class MethodCodeGeneratorTest {
   @Test
   void generateWithoutReturnTypeTest() {
     BufferedCodeTarget target = new BufferedCodeTarget();
-    new MethodCodeGenerator()
-        .setName(METHOD_NAME)
+    new MethodCodeGenerator(METHOD_NAME)
         .generate(target);
 
     Assertions.assertEquals(WITHOUT_RETURN_TYPE_EXPECTED, target.getBuffer());
@@ -74,8 +72,7 @@ class MethodCodeGeneratorTest {
   @Test
   void generateWithVoidReturnTypeTest() {
     BufferedCodeTarget target = new BufferedCodeTarget();
-    MethodCodeGenerator generator = new MethodCodeGenerator()
-        .setName(METHOD_NAME)
+    MethodCodeGenerator generator = new MethodCodeGenerator(METHOD_NAME)
         .setReturnType(Void.class);
 
     generator.generate(target);

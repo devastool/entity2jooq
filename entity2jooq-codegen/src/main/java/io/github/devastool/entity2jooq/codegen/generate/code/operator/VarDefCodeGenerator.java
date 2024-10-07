@@ -27,7 +27,7 @@ import io.github.devastool.entity2jooq.codegen.generate.code.CodeTarget;
 public class VarDefCodeGenerator implements OperatorCodeGenerator {
   private final OperatorCodeGenerator assignment;
   private final String name;
-  private final Class<?> type;
+  private final TypeCodeGenerator type;
 
   private static final String ASSIGN_OPERATOR = "=";
 
@@ -37,7 +37,7 @@ public class VarDefCodeGenerator implements OperatorCodeGenerator {
    * @param name name of the variable
    * @param type type of the variable
    */
-  public VarDefCodeGenerator(String name, Class<?> type) {
+  public VarDefCodeGenerator(String name, TypeCodeGenerator type) {
     this(name, type, null);
   }
 
@@ -48,7 +48,11 @@ public class VarDefCodeGenerator implements OperatorCodeGenerator {
    * @param type       type of the variable
    * @param assignment assignment value to the variable
    */
-  public VarDefCodeGenerator(String name, Class<?> type, OperatorCodeGenerator assignment) {
+  public VarDefCodeGenerator(
+      String name,
+      TypeCodeGenerator type,
+      OperatorCodeGenerator assignment
+  ) {
     this.name = name;
     this.type = type;
     this.assignment = assignment;

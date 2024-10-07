@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
 import org.h2.jdbcx.JdbcConnectionPool;
 import org.jooq.DSLContext;
 import org.jooq.DeleteConditionStep;
+import org.jooq.InsertValuesStepN;
 import org.jooq.Record;
 import org.jooq.SQLDialect;
 import org.jooq.Table;
@@ -54,6 +55,7 @@ class TestEntityTest {
       "",
       "jdbc:h2:mem:db1;",
       "DB_CLOSE_DELAY=-1;",
+      "MODE=PostgreSQL;",
       "DATABASE_TO_LOWER=TRUE;",
       "DEFAULT_NULL_ORDERING=HIGH"
   );
@@ -94,14 +96,18 @@ class TestEntityTest {
     Connection connection = pool.getConnection();
     DSLContext context = DSL.using(connection, SQLDialect.POSTGRES);
 
-    var insert = context
-        .insertInto(TEST_ENTITY)
-        .columns(TEST_ENTITY.INT_FIELD);
+    var insert = context.insertInto(TEST_ENTITY);
+    var iterator = DATA.iterator();
+    while (iterator.hasNext()) {
+      Record record = TEST_ENTITY.toRecord(iterator.next());
+      InsertValuesStepN<Record> insertStep = insert
+          .columns(record.fields())
+          .values(record.intoList());
 
-    for (TestEntity entity : DATA) {
-      insert.values(TEST_ENTITY.TEST_CONVERTER.to(entity.getIntField()));
+      if (!iterator.hasNext()) {
+        Assertions.assertDoesNotThrow(insertStep::execute);
+      }
     }
-    Assertions.assertDoesNotThrow(insert::execute);
 
     connection.close();
   }

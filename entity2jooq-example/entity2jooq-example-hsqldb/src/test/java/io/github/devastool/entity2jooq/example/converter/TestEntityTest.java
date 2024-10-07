@@ -28,7 +28,9 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import org.jooq.DSLContext;
 import org.jooq.DeleteConditionStep;
+import org.jooq.InsertValuesStepN;
 import org.jooq.Record;
+import org.jooq.SQLDialect;
 import org.jooq.Table;
 import org.jooq.UpdateConditionStep;
 import org.jooq.generated.DefaultCatalog;
@@ -66,7 +68,7 @@ class TestEntityTest {
   @BeforeAll
   static void init() throws SQLException {
     connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
-    DSLContext context = DSL.using(connection);
+    DSLContext context = DSL.using(connection, SQLDialect.HSQLDB);
     context
         .createSchemaIfNotExists(DefaultCatalog.DEFAULT_CATALOG.CONVERTER)
         .execute();
@@ -86,22 +88,26 @@ class TestEntityTest {
   @Test
   @Order(1)
   void insertTest() {
-    DSLContext context = DSL.using(connection);
+    DSLContext context = DSL.using(connection, SQLDialect.HSQLDB);
 
-    var insert = context
-        .insertInto(TEST_ENTITY)
-        .columns(TEST_ENTITY.INT_FIELD);
+    var insert = context.insertInto(TEST_ENTITY);
+    var iterator = DATA.iterator();
+    while (iterator.hasNext()) {
+      Record record = TEST_ENTITY.toRecord(iterator.next());
+      InsertValuesStepN<Record> insertStep = insert
+          .columns(record.fields())
+          .values(record.intoList());
 
-    for (TestEntity entity : DATA) {
-      insert.values(TEST_ENTITY.TEST_CONVERTER.to(entity.getIntField()));
+      if (!iterator.hasNext()) {
+        Assertions.assertDoesNotThrow(insertStep::execute);
+      }
     }
-    Assertions.assertDoesNotThrow(insert::execute);
   }
 
   @Test
   @Order(2)
   void selectTest() {
-    DSLContext context = DSL.using(connection);
+    DSLContext context = DSL.using(connection, SQLDialect.HSQLDB);
 
     var select = context
         .select(TEST_ENTITY.INT_FIELD)
@@ -123,7 +129,7 @@ class TestEntityTest {
   @Test
   @Order(3)
   void updateTest() {
-    DSLContext context = DSL.using(connection);
+    DSLContext context = DSL.using(connection, SQLDialect.HSQLDB);
 
     ArrayList<UpdateConditionStep<?>> updates = new ArrayList<>();
     for (TestEntity entity : DATA) {
@@ -140,7 +146,7 @@ class TestEntityTest {
   @Test
   @Order(4)
   void deleteTest() {
-    DSLContext context = DSL.using(connection);
+    DSLContext context = DSL.using(connection, SQLDialect.HSQLDB);
 
     DeleteConditionStep<Record> delete = context
         .delete(TEST_ENTITY)
